@@ -84,7 +84,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <Suspense fallback={<Loading />}>
             <Navbar locale={locale} />
-            <main>{children}</main>
+            <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">{children}</main>
             <Footer locale={locale} />
             <CartButton locale={locale} />
           </Suspense>

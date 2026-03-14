@@ -30,7 +30,7 @@ import {
 // ─── MAIN HOME TEMPLATE ───────────────────────────────────────
 export default function HomeTemplate({ locale = "en" }: { locale?: string }) {
   return (
-    <div className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">
+    <div>
       {/* Hero */}
       {/* <HeroSection locale={locale} /> */}
       <Banners bottomOverlay={<HomeModulesOverlay locale={locale} />} />
