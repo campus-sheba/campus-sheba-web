@@ -7,7 +7,8 @@ import {
   GraduationCap, Briefcase, Heart, Package, Trash2, MapPin,
   Star, CheckCircle, Users, Building2, Zap, Shield,
   ChevronRight, Globe, TrendingUp,
-  Search, MessageCircle,
+  Search, MessageCircle, Store,
+  LayoutGrid,
 } from "lucide-react";
 import Banners from "../components/Banners";
 import {
@@ -15,6 +16,7 @@ import {
   TrendingShopsSection,
   BooksSectionExpanded,
   MarketplaceSectionExpanded,
+  EntrepreneurshipSection,
   BloodBankSection,
   TuitionSectionExpanded,
   LostFoundSectionExpanded,
@@ -78,12 +80,13 @@ const MODULES = [
   { id: "delivery", label: "Delivery Sheba", desc: "Food & courier", icon: Bike, color: "#6D28D9", bg: "#EDE9FE", href: "/delivery" },
   { id: "books", label: "Book Sheba", desc: "Buy, sell & lend", icon: BookOpen, color: "#2563EB", bg: "#DBEAFE", href: "/books" },
   { id: "sell", label: "Buy & Sell", desc: "Campus marketplace", icon: ShoppingBag, color: "#059669", bg: "#D1FAE5", href: "/marketplace" },
+  { id: "entrepreneur", label: "Entrepreneurship", desc: "Shops & skills", icon: Store, color: "#E30A13", bg: "#FEE2E2", href: "/marketplace/shop/create" },
   { id: "blood", label: "Blood Bank", desc: "Emergency network", icon: Droplets, color: "#DC2626", bg: "#FEE2E2", href: "/blood-bank" },
   { id: "tuition", label: "Tuition Sheba", desc: "Find tutors", icon: GraduationCap, color: "#D97706", bg: "#FEF3C7", href: "/tuition" },
   { id: "jobs", label: "Jobs", desc: "Part-time & gigs", icon: Briefcase, color: "#0284C7", bg: "#E0F2FE", href: "/jobs" },
   { id: "donation", label: "Donation", desc: "Social causes", icon: Heart, color: "#16A34A", bg: "#DCFCE7", href: "/donation" },
   { id: "parcel", label: "Parcel", desc: "Send packages", icon: Package, color: "#7C3AED", bg: "#EDE9FE", href: "/parcel" },
-  // { id: "garbage", label: "Eco Pickup", desc: "Waste management", icon: Trash2, color: "#64748B", bg: "#F1F5F9", href: "/garbage" },
+  { id: "garbage", label: "Eco Pickup", desc: "Waste management", icon: Trash2, color: "#64748B", bg: "#F1F5F9", href: "/garbage" },
   { id: "lost", label: "Lost & Found", desc: "Recover items", icon: MapPin, color: "#CA8A04", bg: "#FEF9C3", href: "/lost-found" },
 ];
 
@@ -243,7 +246,7 @@ function ModuleButton({ icon: Icon, label, desc, color, bg, href, locale }: {
       </div>
       <div className="text-center">
         <p className="text-sm font-semibold text-neutral-800 leading-tight">{label}</p>
-        <p className="text-xs text-neutral-400 leading-tight mt-0.5">{desc}</p>
+        {/* <p className="text-xs text-neutral-400 leading-tight mt-0.5">{desc}</p> */}
       </div>
     </Link>
   );
@@ -818,21 +821,38 @@ function CTASection({ locale }: { locale: string }) {
 // ─── MAIN HOME TEMPLATE ───────────────────────────────────────
 export default function HomeTemplate({ locale = "en" }: { locale?: string }) {
   return (
-    <div className="pt-[var(--navbar-height)]">
+    <div className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">
       {/* Hero */}
       {/* <HeroSection locale={locale} /> */}
       <Banners
-        bottomOverlay={(
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 lg:grid-cols-9">
-            {MODULES.map((m) => (
+        bottomOverlay={
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+            {MODULES.slice(0, 7).map((m) => (
               <ModuleButton key={m.id} {...m} locale={locale} />
             ))}
+            <Link
+              href={`/${locale}/services`}
+              className="module-card group border border-dashed border-[#00A651]/40 rounded-xl p-4 flex flex-col items-center gap-3 text-center transition hover:border-[#00A651] hover:shadow-lg"
+            >
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-md"
+                style={{ background: "#F0FFF7" }}
+              >
+                <LayoutGrid className="w-7 h-7" style={{ color: "#00A651" }} strokeWidth={1.8} />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold leading-tight" style={{ color: "#00A651" }}>Explore All</p>
+              </div>
+            </Link>
           </div>
-        )}
+        }
       />
 
       {/* Trust + Navigation */}
       <UniversitiesSection />
+
+      {/* Entrepreneurship */}
+      <EntrepreneurshipSection />
 
       {/* Food & Dining */}
       <FoodExploreSection />

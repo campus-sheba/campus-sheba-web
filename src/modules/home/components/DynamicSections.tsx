@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -7,7 +8,8 @@ import {
   Star, Clock, ChevronRight, User, CircleDollarSign, Flame, Droplets, Package,
   Trash2, Bike, AlertCircle, Search, BadgeCheck, TrendingUp, Coffee, UtensilsCrossed,
   ShoppingCart, Tag, CalendarDays, Phone, Building2, DollarSign, Users,
-  Gift, Volume2, Bookmark, Eye, ThumbsUp, Share2, Trophy, Target
+  Gift, Volume2, Bookmark, Eye, ThumbsUp, Share2, Trophy, Target, Store, PenTool,
+  Palette, Sparkles, Dumbbell, Smartphone
 } from "lucide-react";
 
 // Intersection Observer Hook
@@ -690,7 +692,140 @@ export function MarketplaceSectionExpanded() {
   );
 }
 
-// ─── 11. EXPANDED TUITION SECTION ────────────────────────────────────────────
+// ─── 11. ENTREPRENEURSHIP & CAMPUS ECOMMERCE ───────────────────────────────
+const ENTREPRENEUR_CATEGORIES = [
+  { name: "Food", icon: Coffee, color: "#F97316", bg: "#FFF7ED" },
+  { name: "Regular Items", icon: ShoppingBag, color: "#16A34A", bg: "#ECFDF3" },
+  { name: "Handicraft", icon: Palette, color: "#7C3AED", bg: "#F5F3FF" },
+  { name: "Stationeries", icon: PenTool, color: "#2563EB", bg: "#EFF6FF" },
+  { name: "Beauty & Health", icon: Sparkles, color: "#DB2777", bg: "#FDF2F8" },
+  { name: "Fashion & Lifestyle", icon: Tag, color: "#BE123C", bg: "#FFF1F2" },
+  { name: "Sports", icon: Dumbbell, color: "#0F766E", bg: "#F0FDFA" },
+  { name: "Gadget", icon: Smartphone, color: "#0EA5E9", bg: "#F0F9FF" },
+  { name: "Skill-Based", icon: GraduationCap, color: "#CA8A04", bg: "#FEF9C3" },
+];
+
+const ENTREPRENEUR_SHOPS = [
+  { id: 1, name: "Maya Handmade Studio", owner: "Maya, BBA 3rd Year", niche: "Handicraft", rating: 4.9, products: 42, sales: "1.2k", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&q=80" },
+  { id: 2, name: "Campus Gadget Corner", owner: "Rafi, CSE 4th Year", niche: "Gadget", rating: 4.8, products: 87, sales: "2.4k", image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&q=80" },
+  { id: 3, name: "Healthy Bites by Nitu", owner: "Nitu, Nutrition", niche: "Food", rating: 4.7, products: 28, sales: "890", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80" },
+];
+
+export function EntrepreneurshipSection() {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const filteredShops = activeCategory === "All"
+    ? ENTREPRENEUR_SHOPS
+    : ENTREPRENEUR_SHOPS.filter((shop) => shop.niche === activeCategory);
+
+  return (
+    <Section className="py-16 bg-white" id="entrepreneurship">
+      <div className="cs-container">
+        <SectionHeader
+          tag="Entrepreneurship"
+          title={<>Campus <span className="text-[#E30A13]">Shops & Skill Market</span></>}
+          subtitle="Students can create shops, sell products, offer skills, and run a complete mini e-commerce business on campus."
+          linkAction="Create Your Shop"
+          linkHref="/marketplace/shop/create"
+        />
+
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+          <button
+            onClick={() => setActiveCategory("All")}
+            className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+              activeCategory === "All"
+                ? "bg-[#E30A13] text-white border-[#E30A13]"
+                : "bg-white text-neutral-600 border-neutral-200 hover:border-[#E30A13]/40"
+            }`}
+          >
+            <Store className="w-3.5 h-3.5" /> All
+          </button>
+          {ENTREPRENEUR_CATEGORIES.map((cat) => (
+            <button
+              key={cat.name}
+              onClick={() => setActiveCategory(cat.name)}
+              className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+                activeCategory === cat.name
+                  ? "text-white border-transparent"
+                  : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
+              }`}
+              style={activeCategory === cat.name ? { background: cat.color } : undefined}
+            >
+              <cat.icon
+                className="w-3.5 h-3.5"
+                style={activeCategory === cat.name ? { color: "#FFFFFF" } : { color: cat.color }}
+                strokeWidth={1.9}
+              />
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          {filteredShops.map((shop) => (
+            <div key={shop.id} className="card overflow-hidden group border border-neutral-100 hover:border-red-200 transition-colors">
+              <div className="h-40 overflow-hidden bg-neutral-100 relative">
+                <img src={shop.image} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-semibold text-neutral-700">
+                  {shop.niche}
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="font-display font-semibold text-base text-brand-navy-DEFAULT">{shop.name}</h3>
+                <p className="text-xs text-neutral-500 mb-3">Owner: {shop.owner}</p>
+                <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
+                  <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-brand-amber-DEFAULT text-brand-amber-DEFAULT" /> {shop.rating}</span>
+                  <span>{shop.products} products</span>
+                  <span>{shop.sales} sales</span>
+                </div>
+                <div className="flex gap-2">
+                  <Link href="/marketplace" className="flex-1 py-2 rounded-lg bg-[#E30A13] text-white text-center text-xs font-bold hover:bg-red-700 transition-colors">
+                    Visit Shop
+                  </Link>
+                  <button className="w-9 h-9 rounded-lg border border-neutral-200 text-neutral-500 flex items-center justify-center hover:border-brand-green-DEFAULT hover:text-brand-green-DEFAULT transition-colors">
+                    <ShoppingCart className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredShops.length === 0 && (
+            <div className="md:col-span-3 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 p-8 text-center">
+              <p className="text-sm font-semibold text-neutral-700">No featured shops yet in this category</p>
+              <p className="text-xs text-neutral-500 mt-1">Try another tab or open your own campus shop.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-neutral-100 bg-neutral-50 p-5 md:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="rounded-xl bg-white border border-neutral-100 p-4">
+              <p className="text-xs text-neutral-400 mb-1">Step 1</p>
+              <p className="font-semibold text-neutral-800">Create shop & list products/services</p>
+            </div>
+            <div className="rounded-xl bg-white border border-neutral-100 p-4">
+              <p className="text-xs text-neutral-400 mb-1">Step 2</p>
+              <p className="font-semibold text-neutral-800">Customers search, add to cart, and place orders</p>
+            </div>
+            <div className="rounded-xl bg-white border border-neutral-100 p-4">
+              <p className="text-xs text-neutral-400 mb-1">Step 3</p>
+              <p className="font-semibold text-neutral-800">Track orders, fulfill, and grow your campus brand</p>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/marketplace/shop/create" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E30A13] text-white text-sm font-bold hover:bg-red-700 transition-colors">
+              <Store className="w-4 h-4" /> Open Campus Shop
+            </Link>
+            <Link href="/marketplace" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-brand-green-DEFAULT text-brand-green-DEFAULT text-sm font-semibold hover:bg-brand-green-50 transition-colors">
+              Explore Products & Services
+            </Link>
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── 12. EXPANDED TUITION SECTION ────────────────────────────────────────────
 const MOCK_TUITION_ALL = [
   { id: 1, subject: "A-Level Physics & Math", location: "Gulshan (Home Tutoring)", salary: "৳8,000/mo", days: "3 days/week", author: "Parent", posted: "1 hr ago", type: "Student Needed", urgency: true },
   { id: 2, subject: "Class 9 & 10 All Subjects", location: "Banani (Online)", salary: "Negotiable", days: "4 days/week", author: "Student", posted: "4 hrs ago", type: "Tutor Available", urgency: false },
@@ -1008,6 +1143,16 @@ const FEATURED_HIGHLIGHTS = [
     href: "/marketplace",
   },
   {
+    module: "Entrepreneurship",
+    color: "#E30A13",
+    bg: "#FEE2E2",
+    icon: Store,
+    stat: "1,000+ student shops",
+    highlight: "Launch your own e-commerce style campus shop and sell products or skills.",
+    tags: ["Create Shop", "Sell Skills", "Cart & Orders"],
+    href: "/marketplace/shop/create",
+  },
+  {
     module: "Blood Bank",
     color: "#DC2626",
     bg: "#FEE2E2",
@@ -1084,9 +1229,9 @@ export function FeaturedModuleHighlights() {
     <Section className="py-20 bg-white" id="all-features">
       <div className="cs-container">
         <SectionHeader
-          tag="All 10 Modules"
+          tag="All 11 Modules"
           title={<>Every Service, <span className="text-brand-green-DEFAULT">One Platform</span></>}
-          subtitle="Campus Sheba brings together 10 powerful modules to cover every aspect of student life."
+          subtitle="Campus Sheba brings together 11 powerful modules to cover every aspect of student life."
           center={true}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
