@@ -10,6 +10,19 @@ import {
   Search, Bell, MessageCircle,
 } from "lucide-react";
 import Banners from "../components/Banners";
+import {
+  FoodExploreSection,
+  TrendingShopsSection,
+  BooksSectionExpanded,
+  MarketplaceSectionExpanded,
+  BloodBankSection,
+  TuitionSectionExpanded,
+  LostFoundSectionExpanded,
+  DonationSection,
+  JobsSection,
+  DonationAndJobsSection,
+  FeaturedModuleHighlights,
+} from "../components/DynamicSections";
 
 // ─── Mockup Data ──────────────────────────────────────────────
 const STATS = [
@@ -777,11 +790,46 @@ function CTASection({ locale }: { locale: string }) {
 export default function HomeTemplate({ locale = "en" }: { locale?: string }) {
   return (
     <div className="pt-[var(--navbar-height)]">
+      {/* Hero */}
       {/* <HeroSection locale={locale} /> */}
-
       <Banners />
+
+      {/* Trust + Navigation */}
       <UniversitiesSection />
       <ModuleSection locale={locale} />
+
+      {/* Food & Dining */}
+      <FoodExploreSection />
+      <TrendingShopsSection />
+
+      {/* Books */}
+      <BooksSectionExpanded />
+
+      {/* Marketplace */}
+      <MarketplaceSectionExpanded />
+
+      {/* Blood Bank */}
+      <BloodBankSection />
+
+      {/* Tuition */}
+      <TuitionSectionExpanded />
+
+      {/* Lost & Found */}
+      <LostFoundSectionExpanded />
+
+      {/* Donation Campaigns */}
+      <DonationSection />
+
+      {/* Jobs Board */}
+      <JobsSection />
+
+      {/* Donation + Jobs compact side-by-side widget */}
+      <DonationAndJobsSection />
+
+      {/* All 10 Module Highlights */}
+      <FeaturedModuleHighlights />
+
+      {/* Detailed feature breakdowns */}
       <FeaturesSection />
       <HowItWorksSection />
       <TestimonialsSection />
