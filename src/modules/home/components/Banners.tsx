@@ -1,16 +1,12 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
-// Import Swiper components and styles
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-fade";
 import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
-
-// Import custom pagination styles
 import "./banner-pagination.css";
 import { landingPageEndpoints } from "@/utils/endpoints/endpoints";
 import { getPublic } from "@/utils/api/get";
@@ -23,8 +19,11 @@ interface Banner {
   link?: string;
 }
 
-const Banners = () => {
-  // State to manage banners, loading state, and error
+interface BannersProps {
+  bottomOverlay?: ReactNode;
+}
+
+const Banners = ({ bottomOverlay }: BannersProps) => {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +34,6 @@ const Banners = () => {
     const fetchBanners = async () => {
       try {
         const res: any = await getPublic(landingPageEndpoints.heroBanner);
-        console.log("Fetched banners:", res);
         setBanners(res?.data || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -43,7 +41,6 @@ const Banners = () => {
         setIsLoading(false);
       }
     };
-
     fetchBanners();
   }, []);
 
@@ -53,72 +50,78 @@ const Banners = () => {
     }
   }, [imagesLoaded, banners.length, isLoading]);
 
-  const handleImageLoad = () => {
-    setImagesLoaded(prev => prev + 1);
-  };
+  const handleImageLoad = () => setImagesLoaded((prev) => prev + 1);
 
   const renderSkeleton = () => (
-    <div className="relative my-10 h-96 w-full animate-pulse rounded-xl bg-gray-200">
-      <div className="absolute right-4 bottom-4 flex space-x-2">
-        {[1].map(i => (
-          <div key={i} className="h-2 w-8 rounded-full bg-gray-300"></div>
-        ))}
-      </div>
+    <div className="relative h-[65vh] w-full animate-pulse bg-gray-100">
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
     </div>
   );
 
   if (error) {
-    return <div className="text-red-500">Error loading banners. Please try again later.</div>;
+    return (
+      <div className="flex h-[55vh] items-center justify-center text-sm text-gray-400">
+        Unable to load banners.
+      </div>
+    );
   }
 
-  if (isLoading || banners.length === 0) {
-    return renderSkeleton();
-  }
+  if (isLoading || banners.length === 0) return renderSkeleton();
 
   return (
-    <div className="relative my-10 w-full overflow-hidden rounded-xl bg-gray-100">
+    <div className="relative mb-24 w-full overflow-visible md:mb-28">
+      {/* Hidden pre-loader */}
       {!allImagesLoaded && renderSkeleton()}
 
       <div
-        className={`transition-opacity duration-500 ${allImagesLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`transition-opacity duration-700 ${allImagesLoaded ? "opacity-100" : "opacity-0 absolute inset-0"}`}
       >
         <Swiper
           modules={[Autoplay, Pagination, Navigation, EffectFade]}
           spaceBetween={0}
           slidesPerView={1}
           effect="fade"
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
           pagination={{
             clickable: true,
-            el: '.custom-pagination',
-            type: 'bullets',
+            el: ".custom-pagination",
+            type: "bullets",
           }}
           className="banner-swiper"
         >
-          {banners.map(banner => (
+          {banners.map((banner) => (
             <SwiperSlide key={banner._id}>
-              <div className="relative h-96 w-full">
+              <div className="relative h-[55vh] w-full">
                 <Image
                   src={banner.photo?.url || "/placeholder.jpg"}
                   alt={banner.title}
                   fill
                   sizes="100vw"
                   priority
-                  className="object-cover transition-transform duration-700 hover:scale-105"
+                  className="object-cover"
                   onLoad={handleImageLoad}
                 />
-                <div className="bg-opacity-40 absolute inset-0 flex flex-col items-start justify-center px-8 md:px-16">
-                  {/* Banner content can be uncommented if needed */}
-                </div>
+                {/* Subtle bottom gradient for overlay legibility */}
+                <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/50 to-transparent" />
               </div>
             </SwiperSlide>
           ))}
-          <div className="custom-pagination absolute right-4 bottom-4 z-10"></div>
+
+          {/* Pagination dots — top right */}
+          <div className="custom-pagination absolute right-5 top-5 z-10" />
         </Swiper>
       </div>
+
+      {/* Bottom overlay — 50% inside banner, 50% outside banner */}
+      {bottomOverlay && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 translate-y-1/2 px-4 md:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="pointer-events-auto bg-transparent px-0 py-0">
+              {bottomOverlay}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

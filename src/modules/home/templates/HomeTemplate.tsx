@@ -6,8 +6,8 @@ import {
   ArrowRight, Bike, BookOpen, ShoppingBag, Droplets,
   GraduationCap, Briefcase, Heart, Package, Trash2, MapPin,
   Star, CheckCircle, Users, Building2, Zap, Shield,
-  ChevronRight, Play, Download, Phone, Globe, TrendingUp,
-  Search, Bell, MessageCircle,
+  ChevronRight, Globe, TrendingUp,
+  Search, MessageCircle,
 } from "lucide-react";
 import Banners from "../components/Banners";
 import {
@@ -32,6 +32,48 @@ const STATS = [
   { value: "98%", label: "Satisfaction Rate", icon: Star },
 ];
 
+const HERO_ROLES = [
+  {
+    id: "student",
+    label: "Student",
+    subtitle: "Discover essentials, opportunities, and community support.",
+    primary: { label: "Order Food", href: "/delivery", icon: Bike },
+    secondary: { label: "Find Books", href: "/books", icon: BookOpen },
+  },
+  {
+    id: "provider",
+    label: "Provider",
+    subtitle: "List products, run your shop, and manage campus orders.",
+    primary: { label: "Open Shop", href: "/marketplace", icon: ShoppingBag },
+    secondary: { label: "Manage Listings", href: "/login", icon: Package },
+  },
+  {
+    id: "delivery-hero",
+    label: "Delivery Hero",
+    subtitle: "Accept tasks, track routes, and handle campus fulfillment.",
+    primary: { label: "View Deliveries", href: "/delivery", icon: Bike },
+    secondary: { label: "Parcel Tasks", href: "/parcel", icon: Package },
+  },
+  {
+    id: "admin",
+    label: "Admin",
+    subtitle: "Moderate modules, monitor activity, and keep trust high.",
+    primary: { label: "Admin Login", href: "/login", icon: Shield },
+    secondary: { label: "View Reports", href: "/login", icon: TrendingUp },
+  },
+];
+
+const HERO_LIVE_SIGNALS = [
+  { title: "Food Delivery", text: "Kacchi Bhai order delivered in 24 min", time: "1 min ago", icon: Bike, color: "#6D28D9", bg: "#EDE9FE" },
+  { title: "Book Sheba", text: "Calculus book rented by CSE 2nd year", time: "3 min ago", icon: BookOpen, color: "#2563EB", bg: "#DBEAFE" },
+  { title: "Marketplace", text: "Laptop listing got 12 responses", time: "5 min ago", icon: ShoppingBag, color: "#059669", bg: "#D1FAE5" },
+  { title: "Blood Bank", text: "A+ donor matched near Dhaka Medical", time: "6 min ago", icon: Droplets, color: "#DC2626", bg: "#FEE2E2" },
+  { title: "Tuition Sheba", text: "Physics tutor post viewed 46 times", time: "8 min ago", icon: GraduationCap, color: "#D97706", bg: "#FEF3C7" },
+  { title: "Jobs", text: "Campus ambassador role posted", time: "12 min ago", icon: Briefcase, color: "#0284C7", bg: "#E0F2FE" },
+  { title: "Donation", text: "Medical campaign reached 78% target", time: "15 min ago", icon: Heart, color: "#16A34A", bg: "#DCFCE7" },
+  { title: "Lost & Found", text: "Wallet recovered at central library", time: "18 min ago", icon: MapPin, color: "#CA8A04", bg: "#FEF9C3" },
+];
+
 const MODULES = [
   { id: "delivery", label: "Delivery Sheba", desc: "Food & courier", icon: Bike, color: "#6D28D9", bg: "#EDE9FE", href: "/delivery" },
   { id: "books", label: "Book Sheba", desc: "Buy, sell & lend", icon: BookOpen, color: "#2563EB", bg: "#DBEAFE", href: "/books" },
@@ -41,7 +83,7 @@ const MODULES = [
   { id: "jobs", label: "Jobs", desc: "Part-time & gigs", icon: Briefcase, color: "#0284C7", bg: "#E0F2FE", href: "/jobs" },
   { id: "donation", label: "Donation", desc: "Social causes", icon: Heart, color: "#16A34A", bg: "#DCFCE7", href: "/donation" },
   { id: "parcel", label: "Parcel", desc: "Send packages", icon: Package, color: "#7C3AED", bg: "#EDE9FE", href: "/parcel" },
-  { id: "garbage", label: "Eco Pickup", desc: "Waste management", icon: Trash2, color: "#64748B", bg: "#F1F5F9", href: "/garbage" },
+  // { id: "garbage", label: "Eco Pickup", desc: "Waste management", icon: Trash2, color: "#64748B", bg: "#F1F5F9", href: "/garbage" },
   { id: "lost", label: "Lost & Found", desc: "Recover items", icon: MapPin, color: "#CA8A04", bg: "#FEF9C3", href: "/lost-found" },
 ];
 
@@ -195,7 +237,7 @@ function ModuleButton({ icon: Icon, label, desc, color, bg, href, locale }: {
   color: string; bg: string; href: string; locale: string;
 }) {
   return (
-    <Link href={`/${locale}${href}`} className="module-card group">
+    <Link href={`/${locale}${href}`} className="module-card group border border-gray-200 rounded-xl p-4 flex flex-col items-center gap-3 text-center transition hover:shadow-lg">
       <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-md" style={{ background: bg }}>
         <Icon className="w-7 h-7" style={{ color }} strokeWidth={1.8} />
       </div>
@@ -221,8 +263,17 @@ function Stars({ count = 5 }: { count?: number }) {
 // ─── HERO SECTION ─────────────────────────────────────────────
 function HeroSection({ locale }: { locale: string }) {
   const [activeModule, setActiveModule] = useState(0);
+  const [activeRole, setActiveRole] = useState(HERO_ROLES[0].id);
+  const [activeSignal, setActiveSignal] = useState(0);
+  const selectedRole = HERO_ROLES.find((r) => r.id === activeRole) || HERO_ROLES[0];
+
   useEffect(() => {
-    const t = setInterval(() => setActiveModule((p) => (p + 1) % MODULES.length), 2000);
+    const t = setInterval(() => setActiveModule((p) => (p + 1) % MODULES.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setActiveSignal((p) => (p + 1) % HERO_LIVE_SIGNALS.length), 3200);
     return () => clearInterval(t);
   }, []);
 
@@ -246,33 +297,67 @@ function HeroSection({ locale }: { locale: string }) {
         />
       </div>
 
-      <div className="cs-container relative z-10 py-28 lg:py-36">
+      <div className="cs-container relative z-10 py-20 lg:py-28">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-          {/* Left: Content */}
+          {/* Left: Content and role actions */}
           <div className="space-y-8 animate-fade-up">
-            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
               <div className="w-2 h-2 rounded-full bg-brand-green-DEFAULT animate-pulse-slow" />
               <span className="text-xs font-semibold text-white/80 tracking-wider uppercase">
-                Now live at 3+ Universities in Bangladesh
+                360 degree campus operating platform
               </span>
             </div>
 
-            {/* Headline */}
             <div className="space-y-3">
               <h1 className="font-display font-extrabold leading-none tracking-tight" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "white" }}>
-                Your Campus.{" "}
+                Campus Sheba.{" "}
                 <span style={{ background: "linear-gradient(135deg, #00A651, #00d46b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  Your World.
+                  One Platform.
                 </span>
               </h1>
               <p className="text-lg lg:text-xl text-white/60 leading-relaxed max-w-xl font-body">
-                A 360° campus lifestyle super-app. Food delivery, books, marketplace, blood bank, tuition — everything in one trusted platform.
+                Enterprise-grade, university-verified ecosystem for delivery, marketplace, books, blood, tuition, jobs, donation, parcel, lost and found, and daily services.
               </p>
             </div>
 
-            {/* Animated module ticker */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {HERO_ROLES.map((role) => (
+                <button
+                  key={role.id}
+                  onClick={() => setActiveRole(role.id)}
+                  className={`text-left px-4 py-3 rounded-xl border transition-all duration-200 ${
+                    activeRole === role.id
+                      ? "border-brand-green-DEFAULT/60 bg-brand-green-DEFAULT/10 text-white"
+                      : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  <p className="text-sm font-semibold">{role.label}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm space-y-3">
+              <p className="text-sm text-white/70 leading-relaxed">{selectedRole.subtitle}</p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={`/${locale}${selectedRole.primary.href}`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ background: "linear-gradient(135deg, #00A651, #00c460)" }}
+                >
+                  <selectedRole.primary.icon className="w-4 h-4" />
+                  {selectedRole.primary.label}
+                </Link>
+                <Link
+                  href={`/${locale}${selectedRole.secondary.href}`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white border border-white/15 hover:bg-white/10 transition-all duration-200"
+                >
+                  <selectedRole.secondary.icon className="w-4 h-4" />
+                  {selectedRole.secondary.label}
+                </Link>
+              </div>
+            </div>
+
             <div className="flex items-center gap-3">
               <div
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/8 border border-white/10 backdrop-blur-sm"
@@ -292,10 +377,9 @@ function HeroSection({ locale }: { locale: string }) {
                   {MODULES[activeModule].label}
                 </span>
               </div>
-              <span className="text-white/40 text-sm">+ 9 more services</span>
+              <span className="text-white/40 text-sm">+ integrated live operations</span>
             </div>
 
-            {/* CTAs */}
             <div className="flex flex-wrap gap-3">
               <Link
                 href={`/${locale}/login`}
@@ -306,163 +390,108 @@ function HeroSection({ locale }: { locale: string }) {
                 Get Started Free
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <button
-                id="hero-watch-demo-btn"
+              <Link
+                href={`/${locale}/features`}
+                id="hero-explore-features-btn"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-base text-white border border-white/15 hover:bg-white/10 transition-all duration-200 active:scale-[0.97]"
               >
-                <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center">
-                  <Play className="w-3 h-3 fill-white text-white ml-0.5" />
-                </div>
-                Watch Demo
-              </button>
-            </div>
-
-            {/* App Store Badges */}
-            <div className="flex items-center gap-3">
-              <p className="text-white/40 text-xs">Available on</p>
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/8 border border-white/10 cursor-pointer hover:bg-white/12 transition-colors">
-                  <Phone className="w-4 h-4 text-white/70" />
-                  <div>
-                    <p className="text-[9px] text-white/50 leading-none">Download on</p>
-                    <p className="text-xs font-semibold text-white leading-none">App Store</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/8 border border-white/10 cursor-pointer hover:bg-white/12 transition-colors">
-                  <Download className="w-4 h-4 text-white/70" />
-                  <div>
-                    <p className="text-[9px] text-white/50 leading-none">Get it on</p>
-                    <p className="text-xs font-semibold text-white leading-none">Google Play</p>
-                  </div>
-                </div>
-              </div>
+                Explore All Services
+              </Link>
             </div>
           </div>
 
-          {/* Right: Phone Mockup */}
-          <div className="relative flex items-center justify-center animate-float">
-            {/* Glow ring */}
-            <div className="absolute w-72 h-72 rounded-full bg-brand-green-DEFAULT/15 blur-3xl" />
+          {/* Right: live operations overview */}
+          <div className="relative">
+            <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-brand-green-DEFAULT/15 blur-3xl" />
+            <div className="relative rounded-3xl p-6 border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-white/50 font-semibold">Live Campus Pulse</p>
+                  <h3 className="text-xl font-display font-bold text-white mt-1">Real-time activity feed</h3>
+                </div>
+                <span className="text-xs text-white/40">University scoped</span>
+              </div>
 
-            {/* Phone frame */}
-            <div className="relative w-64 lg:w-72">
-              <div
-                className="relative rounded-[3rem] border-[6px] shadow-2xl overflow-hidden"
-                style={{ borderColor: "rgba(255,255,255,0.12)", background: "#0D1B2A", aspectRatio: "9/19" }}
-              >
-                {/* Screen content mockup */}
-                <div className="absolute inset-0 p-4 flex flex-col gap-3">
-                  {/* Status bar */}
-                  <div className="flex justify-between items-center">
-                    <span className="text-white text-[10px] font-medium">9:41</span>
-                    <div className="flex gap-1">
-                      <div className="w-3 h-1.5 bg-white/60 rounded-full" />
-                      <div className="w-3 h-1.5 bg-white/60 rounded-full" />
-                    </div>
+              <div className="p-4 rounded-2xl border border-white/10 bg-brand-navy-DEFAULT/50 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: HERO_LIVE_SIGNALS[activeSignal].bg }}>
+                    {React.createElement(HERO_LIVE_SIGNALS[activeSignal].icon, {
+                      className: "w-5 h-5",
+                      style: { color: HERO_LIVE_SIGNALS[activeSignal].color },
+                      strokeWidth: 2,
+                    })}
                   </div>
-                  {/* Greeting */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-brand-green-DEFAULT flex items-center justify-center text-white text-xs font-bold">T</div>
-                    <div>
-                      <p className="text-white/50 text-[9px]">Good morning 👋</p>
-                      <p className="text-white text-xs font-semibold">Tanha Akter</p>
-                    </div>
-                    <Bell className="w-4 h-4 text-white/50 ml-auto" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white">{HERO_LIVE_SIGNALS[activeSignal].title}</p>
+                    <p className="text-xs text-white/60 leading-relaxed mt-0.5">{HERO_LIVE_SIGNALS[activeSignal].text}</p>
+                    <p className="text-[11px] text-brand-green-300 mt-2">{HERO_LIVE_SIGNALS[activeSignal].time}</p>
                   </div>
-                  {/* Module grid */}
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {MODULES.slice(0, 8).map((m) => (
-                      <div key={m.id} className="flex flex-col items-center gap-1 p-1.5 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }}>
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: m.bg + "33" }}>
-                          <m.icon className="w-3.5 h-3.5" style={{ color: m.color }} strokeWidth={2} />
-                        </div>
-                        <span className="text-[7px] text-white/60 text-center leading-none">{m.label.split(" ")[0]}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                {HERO_LIVE_SIGNALS.slice(0, 4).map((item) => (
+                  <div key={item.title} className="flex items-center justify-between rounded-xl px-3 py-2.5 border border-white/10 bg-white/[0.04]">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: item.bg }}>
+                        <item.icon className="w-3.5 h-3.5" style={{ color: item.color }} strokeWidth={2} />
                       </div>
-                    ))}
+                      <div className="min-w-0">
+                        <p className="text-xs text-white/85 font-medium truncate">{item.title}</p>
+                        <p className="text-[11px] text-white/45 truncate">{item.text}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-white/35 ml-2">{item.time}</span>
                   </div>
-                  {/* Active order card */}
-                  <div className="rounded-xl p-3" style={{ background: "rgba(0,166,81,0.15)", border: "1px solid rgba(0,166,81,0.25)" }}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Bike className="w-3.5 h-3.5 text-brand-green-DEFAULT" />
-                      <span className="text-[10px] text-brand-green-400 font-semibold">Order on the way!</span>
-                    </div>
-                    <p className="text-white text-xs font-medium leading-tight">Biriyani × 1 · ৳120</p>
-                    <div className="mt-1.5 flex gap-1">
-                      {["Ordered", "Prep", "Picked", "Deliver"].map((s, i) => (
-                        <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${i < 3 ? "bg-brand-green-DEFAULT" : "bg-white/20"}`} />
-                      ))}
-                    </div>
-                  </div>
-                  {/* Blood alert */}
-                  <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ background: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.2)" }}>
-                    <div className="w-6 h-6 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                      <Droplets className="w-3 h-3 text-red-400" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-red-300 font-semibold">URGENT: A+ needed</p>
-                      <p className="text-[8px] text-white/40">Dhaka Medical · 5 min ago</p>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Floating badge cards */}
-              <div className="absolute -left-8 top-20 bg-white rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float" style={{ animationDelay: "0.5s" }}>
-                <div className="w-8 h-8 rounded-xl bg-brand-green-50 flex items-center justify-center">
-                  <BookOpen className="w-4 h-4 text-brand-green-DEFAULT" />
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-xl px-3 py-3 border border-white/10 bg-white/[0.04]">
+                  <p className="text-[11px] text-white/45">Critical Response</p>
+                  <p className="text-sm font-semibold text-white mt-1">Blood match in 15 min</p>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-neutral-800">Book Sold!</p>
-                  <p className="text-[10px] text-neutral-400">Sold for ৳350</p>
-                </div>
-              </div>
-
-              <div className="absolute -right-10 bottom-28 bg-white rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float" style={{ animationDelay: "1s" }}>
-                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center">
-                  <Droplets className="w-4 h-4 text-red-500" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-neutral-800">Donor Found</p>
-                  <p className="text-[10px] text-neutral-400">O+ · 15 min</p>
+                <div className="rounded-xl px-3 py-3 border border-white/10 bg-white/[0.04]">
+                  <p className="text-[11px] text-white/45">Order Fulfillment</p>
+                  <p className="text-sm font-semibold text-white mt-1">98 percent on-time</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats row at bottom of hero */}
-        <div className="mt-16 pt-10 border-t border-white/8">
+        <div className="mt-12 pt-8 border-t border-white/8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
             {STATS.map((s) => (
               <div key={s.label} className="text-center lg:text-left">
-                <div className="font-display font-extrabold text-3xl lg:text-4xl text-white mb-1">{s.value}</div>
+                <div className="inline-flex items-center gap-2 mb-1.5">
+                  <s.icon className="w-4 h-4 text-brand-green-DEFAULT" />
+                  <span className="font-display font-extrabold text-3xl lg:text-4xl text-white">{s.value}</span>
+                </div>
                 <div className="text-sm text-white/40 font-medium">{s.label}</div>
               </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            {[
+              "University Verified Users",
+              "Role-Based Access Control",
+              "Campus Scoped Data",
+              "Moderated Marketplace",
+            ].map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 text-xs text-white/60 bg-white/[0.03]"
+              >
+                <CheckCircle className="w-3.5 h-3.5 text-brand-green-DEFAULT" />
+                {item}
+              </span>
             ))}
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-// ─── QUICK MODULE GRID ─────────────────────────────────────────
-function ModuleSection({ locale }: { locale: string }) {
-  return (
-    <Section id="features" className="py-20 bg-gradient-section">
-      <div className="cs-container">
-        <SectionHeader
-          tag="10 Powerful Services"
-          title={<>One Platform. <span className="gradient-text-green">All Services.</span></>}
-          subtitle="Everything campus life demands — connected, verified, and available at your fingertips."
-        />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {MODULES.map((m) => (
-            <ModuleButton key={m.id} {...m} locale={locale} />
-          ))}
-        </div>
-      </div>
-    </Section>
   );
 }
 
@@ -562,7 +591,7 @@ function TestimonialsSection() {
                 <Stars />
                 <span className="badge-green text-[10px]">{t.module}</span>
               </div>
-              <p className="text-neutral-600 text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
+              <p className="text-neutral-600 text-sm leading-relaxed mb-6 italic">&ldquo;{t.text}&rdquo;</p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-brand-green-DEFAULT flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                   {t.avatar}
@@ -792,11 +821,18 @@ export default function HomeTemplate({ locale = "en" }: { locale?: string }) {
     <div className="pt-[var(--navbar-height)]">
       {/* Hero */}
       {/* <HeroSection locale={locale} /> */}
-      <Banners />
+      <Banners
+        bottomOverlay={(
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 lg:grid-cols-9">
+            {MODULES.map((m) => (
+              <ModuleButton key={m.id} {...m} locale={locale} />
+            ))}
+          </div>
+        )}
+      />
 
       {/* Trust + Navigation */}
       <UniversitiesSection />
-      <ModuleSection locale={locale} />
 
       {/* Food & Dining */}
       <FoodExploreSection />

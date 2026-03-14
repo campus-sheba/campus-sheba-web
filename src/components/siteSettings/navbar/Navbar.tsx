@@ -21,6 +21,7 @@ import {
   Bell,
   User,
 } from "lucide-react";
+import Logo from "./Logo";
 
 // ─── Nav Link Data ───────────────────────────────────────────
 const servicesMenu = [
@@ -98,11 +99,11 @@ const Navbar = ({ locale }: { locale: string }) => {
             aria-label="Campus Sheba Home"
             id="navbar-logo"
           >
-            <div className="relative w-9 h-9 rounded-xl bg-brand-green-DEFAULT flex items-center justify-center shadow-sm group-hover:shadow-glow transition-all duration-200">
+            {/* <div className="relative w-9 h-9 rounded-xl bg-brand-green-DEFAULT flex items-center justify-center shadow-sm group-hover:shadow-glow transition-all duration-200">
               <GraduationCap className="w-5 h-5 text-white" strokeWidth={2.5} />
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-brand-amber-DEFAULT rounded-full border-2 border-white" />
-            </div>
-            <div className="flex flex-col leading-none">
+            </div> */}
+            {/* <div className="flex flex-col leading-none">
               <span className="font-display font-bold text-[18px] text-neutral-900 leading-none tracking-tight">
                 Campus
                 <span className="text-brand-green-DEFAULT">Sheba</span>
@@ -110,7 +111,8 @@ const Navbar = ({ locale }: { locale: string }) => {
               <span className="text-[9px] font-medium text-neutral-400 tracking-widest uppercase leading-none mt-0.5">
                 Your Campus. Your World.
               </span>
-            </div>
+            </div> */}
+            <Logo />
           </Link>
 
           {/* ─── Desktop Navigation ─── */}
