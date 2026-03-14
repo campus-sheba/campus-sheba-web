@@ -6,7 +6,7 @@ import { SectionWrapper } from "@/components/wrappers";
 const HeroSection = () => {
   return (
     <SectionWrapper>
-      <div className="grid w-full grid-cols-1 items-center gap-8 md:grid-cols-2 lg:gap-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-20">
+      <div className="grid w-full grid-cols-1 items-center gap-8 md:grid-cols-2 lg:gap-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-24">
         {/* Left: Text content */}
         <div className="h-full space-y-6">
           {/* Main heading with responsive sizing */}

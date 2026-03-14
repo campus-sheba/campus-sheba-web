@@ -1,30 +1,793 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
+"use client";
 
-import HeroSection from '../components/HeroSection';
-import FAQSection from '../components/FAQSection';
-import Banners from '../components/Banners';
-import CampusFeaturesSections from '../components/CampusFeaturesSections';
-import CampusServiceComponents from '../components/CampusServiceComponents';
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  ArrowRight, Bike, BookOpen, ShoppingBag, Droplets,
+  GraduationCap, Briefcase, Heart, Package, Trash2, MapPin,
+  Star, CheckCircle, Users, Building2, Zap, Shield,
+  ChevronRight, Play, Download, Phone, Globe, TrendingUp,
+  Search, Bell, MessageCircle,
+} from "lucide-react";
+import Banners from "../components/Banners";
 
-interface HomeTemplateProps {
-  t: (key: string) => string;
+// ─── Mockup Data ──────────────────────────────────────────────
+const STATS = [
+  { value: "10,000+", label: "Active Students", icon: Users },
+  { value: "3", label: "Universities", icon: Building2 },
+  { value: "10+", label: "Service Modules", icon: Zap },
+  { value: "98%", label: "Satisfaction Rate", icon: Star },
+];
+
+const MODULES = [
+  { id: "delivery", label: "Delivery Sheba", desc: "Food & courier", icon: Bike, color: "#6D28D9", bg: "#EDE9FE", href: "/delivery" },
+  { id: "books", label: "Book Sheba", desc: "Buy, sell & lend", icon: BookOpen, color: "#2563EB", bg: "#DBEAFE", href: "/books" },
+  { id: "sell", label: "Buy & Sell", desc: "Campus marketplace", icon: ShoppingBag, color: "#059669", bg: "#D1FAE5", href: "/marketplace" },
+  { id: "blood", label: "Blood Bank", desc: "Emergency network", icon: Droplets, color: "#DC2626", bg: "#FEE2E2", href: "/blood-bank" },
+  { id: "tuition", label: "Tuition Sheba", desc: "Find tutors", icon: GraduationCap, color: "#D97706", bg: "#FEF3C7", href: "/tuition" },
+  { id: "jobs", label: "Jobs", desc: "Part-time & gigs", icon: Briefcase, color: "#0284C7", bg: "#E0F2FE", href: "/jobs" },
+  { id: "donation", label: "Donation", desc: "Social causes", icon: Heart, color: "#16A34A", bg: "#DCFCE7", href: "/donation" },
+  { id: "parcel", label: "Parcel", desc: "Send packages", icon: Package, color: "#7C3AED", bg: "#EDE9FE", href: "/parcel" },
+  { id: "garbage", label: "Eco Pickup", desc: "Waste management", icon: Trash2, color: "#64748B", bg: "#F1F5F9", href: "/garbage" },
+  { id: "lost", label: "Lost & Found", desc: "Recover items", icon: MapPin, color: "#CA8A04", bg: "#FEF9C3", href: "/lost-found" },
+];
+
+const FEATURES = [
+  {
+    tag: "CAMPUS ESSENTIALS",
+    title: "Everything You Need",
+    subtitle: "Daily services built for campus life",
+    items: [
+      { icon: Bike, color: "#6D28D9", bg: "#EDE9FE", title: "Delivery Sheba", desc: "Order food from campus canteens or nearby restaurants. Real-time tracking included.", label: "Most Popular" },
+      { icon: BookOpen, color: "#2563EB", bg: "#DBEAFE", title: "Book Sheba", desc: "Buy, sell, lend, or swap textbooks with verified campus students. Save up to 70%.", label: "Save Money" },
+      { icon: Droplets, color: "#DC2626", bg: "#FEE2E2", title: "Blood Bank", desc: "Emergency blood request system with real-time donor matching. Accessible in <3 taps.", label: "Emergency" },
+      { icon: ShoppingBag, color: "#059669", bg: "#D1FAE5", title: "Campus Marketplace", desc: "Peer-to-peer buying and selling for students. Gadgets, clothing, furniture and more.", label: "Sustainable" },
+    ],
+  },
+  {
+    tag: "STUDENT EMPOWERMENT",
+    title: "Grow Your Opportunities",
+    subtitle: "Tools that help you earn, learn, and connect",
+    items: [
+      { icon: GraduationCap, color: "#D97706", bg: "#FEF3C7", title: "Tuition Sheba", desc: "Connect with qualified campus tutors or monetize your knowledge by teaching peers.", label: "Earn & Learn" },
+      { icon: Briefcase, color: "#0284C7", bg: "#E0F2FE", title: "Campus Jobs", desc: "Find part-time jobs, internships, and freelance gigs scoped to your university.", label: "Build Career" },
+      { icon: Heart, color: "#16A34A", bg: "#DCFCE7", title: "Donation Drives", desc: "Participate in or organize flood relief, Ramadan packs, and medical aid campaigns.", label: "Social Impact" },
+      { icon: Package, color: "#7C3AED", bg: "#EDE9FE", title: "Parcel Delivery", desc: "Send and receive parcels across campus with real-time tracking. Fast and reliable.", label: "Reliable" },
+    ],
+  },
+];
+
+const HOW_IT_WORKS = [
+  { step: "01", title: "Choose Your University", desc: "Select from 10+ partner universities. Your data stays scoped to your campus.", icon: Building2 },
+  { step: "02", title: "Verify Your Identity", desc: "Upload your student ID for trusted, verified campus-only access.", icon: Shield },
+  { step: "03", title: "Explore Services", desc: "Browse all 10 modules — from food delivery to blood bank — in one app.", icon: Search },
+  { step: "04", title: "Transact & Grow", desc: "Order, sell, lend, donate, or apply. Everything at your fingertips.", icon: TrendingUp },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Tanha Akter",
+    role: "CSE Student, JU",
+    avatar: "TA",
+    rating: 5,
+    text: "Campus Sheba changed how I survive university life. I get food delivered to my dorm, sold my old textbooks, and even found a part-time job — all from one app!",
+    module: "Delivery + Books + Jobs",
+  },
+  {
+    name: "Rafi Ahmed",
+    role: "Student Entrepreneur, DU",
+    avatar: "RA",
+    rating: 5,
+    text: "I launched my handmade craft business on Campus Sheba and got 50+ orders in the first month. The shop management tools are genuinely enterprise-level.",
+    module: "Entrepreneurship",
+  },
+  {
+    name: "Nasrin Sultana",
+    role: "Medical Student, CU",
+    avatar: "NS",
+    rating: 5,
+    text: "The blood bank feature is a lifesaver. During an emergency, I found a matching donor within 15 minutes. This platform is doing real social good.",
+    module: "Blood Bank",
+  },
+];
+
+const UNIVERSITIES = [
+  "Jahangirnagar University",
+  "Dhaka University",
+  "Chittagong University",
+  "BUET",
+  "KUET",
+  "RUET",
+];
+
+const BLOOD_REQUESTS = [
+  { group: "A+", location: "Dhaka Medical", urgency: "Critical", time: "5 min ago" },
+  { group: "O-", location: "DMCH", urgency: "Urgent", time: "12 min ago" },
+  { group: "B+", location: "Jahangirnagar Clinic", urgency: "Normal", time: "23 min ago" },
+];
+
+// ─── Hook: Intersection Observer ─────────────────────────────
+function useInView(threshold = 0.05) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, inView };
 }
 
-const HomeTemplate: React.FC<HomeTemplateProps> = ({ t }: HomeTemplateProps) => {
+// ─── Sub-components ───────────────────────────────────────────
+
+// Section Wrapper with subtle fade-up animation (starts visible to avoid SSR opacity-0 flash)
+function Section({ children, className = "", id = "" }: { children: React.ReactNode; className?: string; id?: string }) {
+  const { ref, inView } = useInView();
   return (
-    <div>
-      <HeroSection />
-      <Banners />
-     
-      <CampusFeaturesSections />
-      
-      <CampusServiceComponents />
-      <FAQSection />
-      {/* <CampusMap /> */}
-      {/* <SubscribeNowSection /> */}
+    <section
+      ref={ref}
+      id={id}
+      style={{
+        transition: "opacity 0.6s ease, transform 0.6s ease",
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(24px)",
+      }}
+      className={className}
+    >
+      {children}
+    </section>
+  );
+}
+
+
+// Section Header
+function SectionHeader({ tag, title, subtitle, center = true }: { tag: string; title: React.ReactNode; subtitle?: string; center?: boolean }) {
+  return (
+    <div className={`mb-12 ${center ? "text-center" : ""}`}>
+      <span className="section-tag mb-4 inline-flex">{tag}</span>
+      <h2 className="section-heading mt-3 mb-4">{title}</h2>
+      {subtitle && <p className={`section-subheading ${center ? "mx-auto" : ""}`}>{subtitle}</p>}
     </div>
   );
-};
+}
 
-export default HomeTemplate;
+// Feature Card
+function FeatureCard({ icon: Icon, color, bg, title, desc, label, index }: {
+  icon: React.ElementType; color: string; bg: string;
+  title: string; desc: string; label: string; index: number;
+}) {
+  return (
+    <div
+      className="card p-6 group hover:-translate-y-1.5 transition-all duration-300"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
+      <div className="flex items-start justify-between mb-5">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200" style={{ background: bg }}>
+          <Icon className="w-6 h-6" style={{ color }} strokeWidth={2} />
+        </div>
+        <span className="badge-neutral text-[10px] font-semibold">{label}</span>
+      </div>
+      <h3 className="font-display font-semibold text-lg text-neutral-900 mb-2">{title}</h3>
+      <p className="text-sm text-neutral-500 leading-relaxed">{desc}</p>
+      <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-brand-green-DEFAULT opacity-0 group-hover:opacity-100 translate-x-0 group-hover:translate-x-1 transition-all duration-200">
+        Learn more <ChevronRight className="w-4 h-4" />
+      </div>
+    </div>
+  );
+}
+
+// Module Icon Button
+function ModuleButton({ icon: Icon, label, desc, color, bg, href, locale }: {
+  icon: React.ElementType; label: string; desc: string;
+  color: string; bg: string; href: string; locale: string;
+}) {
+  return (
+    <Link href={`/${locale}${href}`} className="module-card group">
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-md" style={{ background: bg }}>
+        <Icon className="w-7 h-7" style={{ color }} strokeWidth={1.8} />
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-semibold text-neutral-800 leading-tight">{label}</p>
+        <p className="text-xs text-neutral-400 leading-tight mt-0.5">{desc}</p>
+      </div>
+    </Link>
+  );
+}
+
+// Star Rating
+function Stars({ count = 5 }: { count?: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: count }).map((_, i) => (
+        <Star key={i} className="w-3.5 h-3.5 fill-brand-amber-DEFAULT text-brand-amber-DEFAULT" />
+      ))}
+    </div>
+  );
+}
+
+// ─── HERO SECTION ─────────────────────────────────────────────
+function HeroSection({ locale }: { locale: string }) {
+  const [activeModule, setActiveModule] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setActiveModule((p) => (p + 1) % MODULES.length), 2000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div
+      className="relative min-h-screen flex items-center overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #0D1B2A 0%, #1a3055 60%, #0D1B2A 100%)" }}
+    >
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-brand-green-DEFAULT/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-brand-amber-DEFAULT/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl" />
+        {/* Grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+
+      <div className="cs-container relative z-10 py-28 lg:py-36">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+          {/* Left: Content */}
+          <div className="space-y-8 animate-fade-up">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+              <div className="w-2 h-2 rounded-full bg-brand-green-DEFAULT animate-pulse-slow" />
+              <span className="text-xs font-semibold text-white/80 tracking-wider uppercase">
+                Now live at 3+ Universities in Bangladesh
+              </span>
+            </div>
+
+            {/* Headline */}
+            <div className="space-y-3">
+              <h1 className="font-display font-extrabold leading-none tracking-tight" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "white" }}>
+                Your Campus.{" "}
+                <span style={{ background: "linear-gradient(135deg, #00A651, #00d46b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  Your World.
+                </span>
+              </h1>
+              <p className="text-lg lg:text-xl text-white/60 leading-relaxed max-w-xl font-body">
+                A 360° campus lifestyle super-app. Food delivery, books, marketplace, blood bank, tuition — everything in one trusted platform.
+              </p>
+            </div>
+
+            {/* Animated module ticker */}
+            <div className="flex items-center gap-3">
+              <div
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/8 border border-white/10 backdrop-blur-sm"
+                style={{ background: "rgba(255,255,255,0.06)" }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                  style={{ background: MODULES[activeModule].bg }}
+                >
+                  {React.createElement(MODULES[activeModule].icon, {
+                    className: "w-4 h-4",
+                    style: { color: MODULES[activeModule].color },
+                    strokeWidth: 2,
+                  })}
+                </div>
+                <span className="text-sm font-semibold text-white/90 min-w-[140px] transition-all duration-300">
+                  {MODULES[activeModule].label}
+                </span>
+              </div>
+              <span className="text-white/40 text-sm">+ 9 more services</span>
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/${locale}/login`}
+                id="hero-get-started-btn"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-base text-white shadow-lg transition-all duration-200 hover:shadow-glow-lg hover:-translate-y-0.5 active:scale-[0.97]"
+                style={{ background: "linear-gradient(135deg, #00A651, #00c460)" }}
+              >
+                Get Started Free
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button
+                id="hero-watch-demo-btn"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-base text-white border border-white/15 hover:bg-white/10 transition-all duration-200 active:scale-[0.97]"
+              >
+                <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center">
+                  <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+                </div>
+                Watch Demo
+              </button>
+            </div>
+
+            {/* App Store Badges */}
+            <div className="flex items-center gap-3">
+              <p className="text-white/40 text-xs">Available on</p>
+              <div className="flex gap-2">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/8 border border-white/10 cursor-pointer hover:bg-white/12 transition-colors">
+                  <Phone className="w-4 h-4 text-white/70" />
+                  <div>
+                    <p className="text-[9px] text-white/50 leading-none">Download on</p>
+                    <p className="text-xs font-semibold text-white leading-none">App Store</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/8 border border-white/10 cursor-pointer hover:bg-white/12 transition-colors">
+                  <Download className="w-4 h-4 text-white/70" />
+                  <div>
+                    <p className="text-[9px] text-white/50 leading-none">Get it on</p>
+                    <p className="text-xs font-semibold text-white leading-none">Google Play</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Phone Mockup */}
+          <div className="relative flex items-center justify-center animate-float">
+            {/* Glow ring */}
+            <div className="absolute w-72 h-72 rounded-full bg-brand-green-DEFAULT/15 blur-3xl" />
+
+            {/* Phone frame */}
+            <div className="relative w-64 lg:w-72">
+              <div
+                className="relative rounded-[3rem] border-[6px] shadow-2xl overflow-hidden"
+                style={{ borderColor: "rgba(255,255,255,0.12)", background: "#0D1B2A", aspectRatio: "9/19" }}
+              >
+                {/* Screen content mockup */}
+                <div className="absolute inset-0 p-4 flex flex-col gap-3">
+                  {/* Status bar */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-white text-[10px] font-medium">9:41</span>
+                    <div className="flex gap-1">
+                      <div className="w-3 h-1.5 bg-white/60 rounded-full" />
+                      <div className="w-3 h-1.5 bg-white/60 rounded-full" />
+                    </div>
+                  </div>
+                  {/* Greeting */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-brand-green-DEFAULT flex items-center justify-center text-white text-xs font-bold">T</div>
+                    <div>
+                      <p className="text-white/50 text-[9px]">Good morning 👋</p>
+                      <p className="text-white text-xs font-semibold">Tanha Akter</p>
+                    </div>
+                    <Bell className="w-4 h-4 text-white/50 ml-auto" />
+                  </div>
+                  {/* Module grid */}
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {MODULES.slice(0, 8).map((m) => (
+                      <div key={m.id} className="flex flex-col items-center gap-1 p-1.5 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }}>
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: m.bg + "33" }}>
+                          <m.icon className="w-3.5 h-3.5" style={{ color: m.color }} strokeWidth={2} />
+                        </div>
+                        <span className="text-[7px] text-white/60 text-center leading-none">{m.label.split(" ")[0]}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Active order card */}
+                  <div className="rounded-xl p-3" style={{ background: "rgba(0,166,81,0.15)", border: "1px solid rgba(0,166,81,0.25)" }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bike className="w-3.5 h-3.5 text-brand-green-DEFAULT" />
+                      <span className="text-[10px] text-brand-green-400 font-semibold">Order on the way!</span>
+                    </div>
+                    <p className="text-white text-xs font-medium leading-tight">Biriyani × 1 · ৳120</p>
+                    <div className="mt-1.5 flex gap-1">
+                      {["Ordered", "Prep", "Picked", "Deliver"].map((s, i) => (
+                        <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${i < 3 ? "bg-brand-green-DEFAULT" : "bg-white/20"}`} />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Blood alert */}
+                  <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ background: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.2)" }}>
+                    <div className="w-6 h-6 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                      <Droplets className="w-3 h-3 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-red-300 font-semibold">URGENT: A+ needed</p>
+                      <p className="text-[8px] text-white/40">Dhaka Medical · 5 min ago</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating badge cards */}
+              <div className="absolute -left-8 top-20 bg-white rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float" style={{ animationDelay: "0.5s" }}>
+                <div className="w-8 h-8 rounded-xl bg-brand-green-50 flex items-center justify-center">
+                  <BookOpen className="w-4 h-4 text-brand-green-DEFAULT" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-neutral-800">Book Sold!</p>
+                  <p className="text-[10px] text-neutral-400">Sold for ৳350</p>
+                </div>
+              </div>
+
+              <div className="absolute -right-10 bottom-28 bg-white rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float" style={{ animationDelay: "1s" }}>
+                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center">
+                  <Droplets className="w-4 h-4 text-red-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-neutral-800">Donor Found</p>
+                  <p className="text-[10px] text-neutral-400">O+ · 15 min</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats row at bottom of hero */}
+        <div className="mt-16 pt-10 border-t border-white/8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+            {STATS.map((s) => (
+              <div key={s.label} className="text-center lg:text-left">
+                <div className="font-display font-extrabold text-3xl lg:text-4xl text-white mb-1">{s.value}</div>
+                <div className="text-sm text-white/40 font-medium">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── QUICK MODULE GRID ─────────────────────────────────────────
+function ModuleSection({ locale }: { locale: string }) {
+  return (
+    <Section id="features" className="py-20 bg-gradient-section">
+      <div className="cs-container">
+        <SectionHeader
+          tag="10 Powerful Services"
+          title={<>One Platform. <span className="gradient-text-green">All Services.</span></>}
+          subtitle="Everything campus life demands — connected, verified, and available at your fingertips."
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {MODULES.map((m) => (
+            <ModuleButton key={m.id} {...m} locale={locale} />
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── FEATURES SECTIONS ─────────────────────────────────────────
+function FeaturesSection() {
+  return (
+    <>
+      {FEATURES.map((group, gi) => (
+        <Section
+          key={group.tag}
+          className={`py-20 ${gi % 2 === 0 ? "bg-white" : "bg-neutral-50"}`}
+        >
+          <div className="cs-container">
+            <SectionHeader tag={group.tag} title={group.title} subtitle={group.subtitle} />
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {group.items.map((item, i) => (
+                <FeatureCard key={item.title} {...item} index={i} />
+              ))}
+            </div>
+          </div>
+        </Section>
+      ))}
+    </>
+  );
+}
+
+// ─── HOW IT WORKS ─────────────────────────────────────────────
+function HowItWorksSection() {
+  return (
+    <Section id="how-it-works" className="py-20 bg-brand-navy-700 relative overflow-hidden">
+      {/* Background decor */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-green-DEFAULT/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-amber-DEFAULT/5 rounded-full blur-3xl" />
+      </div>
+      <div className="cs-container relative z-10">
+        <SectionHeader
+          tag="Simple Process"
+          title={<span className="text-white">Get Started in <span style={{ background: "linear-gradient(135deg,#00A651,#00d46b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>4 Steps</span></span>}
+          subtitle=""
+        />
+        <div className="grid md:grid-cols-4 gap-6 lg:gap-8">
+          {HOW_IT_WORKS.map((step, i) => (
+            <div key={step.step} className="relative text-center group">
+              {/* Connector line */}
+              {i < HOW_IT_WORKS.length - 1 && (
+                <div className="hidden md:block absolute top-10 left-[55%] w-full h-px bg-white/10" />
+              )}
+              {/* Step circle */}
+              <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6 mx-auto border border-white/10 group-hover:border-brand-green-DEFAULT/40 transition-all duration-300" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <step.icon className="w-8 h-8 text-brand-green-DEFAULT" strokeWidth={1.5} />
+                <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-brand-green-DEFAULT flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-white">{step.step}</span>
+                </div>
+              </div>
+              <h3 className="font-display font-bold text-lg text-white mb-2">{step.title}</h3>
+              <p className="text-sm text-white/50 leading-relaxed">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mt-14">
+          <Link
+            href="/login"
+            id="hiw-cta-btn"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-base text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]"
+            style={{ background: "linear-gradient(135deg, #00A651, #00c460)" }}
+          >
+            Join Campus Sheba Today
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── TESTIMONIALS ─────────────────────────────────────────────
+function TestimonialsSection() {
+  return (
+    <Section className="py-20 bg-white">
+      <div className="cs-container">
+        <SectionHeader
+          tag="Loved by Students"
+          title={<>What Our <span className="gradient-text-green">Community</span> Says</>}
+          subtitle="Real stories from real campus students across Bangladesh."
+        />
+        <div className="grid md:grid-cols-3 gap-6">
+          {TESTIMONIALS.map((t, i) => (
+            <div
+              key={t.name}
+              className="card p-7 hover:-translate-y-1 transition-all duration-300"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              <div className="flex items-start justify-between mb-5">
+                <Stars />
+                <span className="badge-green text-[10px]">{t.module}</span>
+              </div>
+              <p className="text-neutral-600 text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-green-DEFAULT flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  {t.avatar}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-neutral-900">{t.name}</p>
+                  <p className="text-xs text-neutral-400">{t.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── BLOOD BANK EMERGENCY WIDGET ──────────────────────────────
+function BloodWidget({ locale }: { locale: string }) {
+  return (
+    <Section className="py-16 bg-neutral-50">
+      <div className="cs-container">
+        <div className="rounded-3xl overflow-hidden border border-red-100" style={{ background: "linear-gradient(135deg, #FEF2F2 0%, #FFF 100%)" }}>
+          <div className="p-8 lg:p-12 grid lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold mb-4">
+                <Droplets className="w-3.5 h-3.5" />
+                EMERGENCY BLOOD NETWORK
+              </span>
+              <h2 className="font-display font-bold text-3xl text-neutral-900 mb-3">
+                Active Blood{" "}
+                <span style={{ color: "#DC2626" }}>Requests</span>
+              </h2>
+              <p className="text-neutral-500 text-base mb-6 leading-relaxed">
+                Join 500+ registered donors on Campus Sheba. Your blood can save a life in 15 minutes.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href={`/${locale}/blood-bank`} id="blood-register-btn" className="btn-primary">
+                  Register as Donor
+                </Link>
+                <Link href={`/${locale}/blood-bank`} id="blood-request-btn" className="btn-secondary">
+                  <Droplets className="w-4 h-4 text-red-500" />
+                  Emergency Request
+                </Link>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {BLOOD_REQUESTS.map((r, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-neutral-100 shadow-xs hover:shadow-sm transition-all duration-200">
+                  <div className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <span className="text-white font-bold text-sm">{r.group}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-sm font-semibold text-neutral-800 truncate">{r.location}</p>
+                      <span className={`badge text-[10px] flex-shrink-0 ${r.urgency === "Critical" ? "bg-red-100 text-red-700 border-red-200" : r.urgency === "Urgent" ? "bg-orange-100 text-orange-700 border-orange-200" : "bg-yellow-100 text-yellow-700 border-yellow-200"}`}>
+                        {r.urgency}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-400">{r.time}</p>
+                  </div>
+                  <button className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-green-DEFAULT bg-brand-green-50 hover:bg-brand-green-100 transition-colors border border-brand-green-100">
+                    Respond
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── UNIVERSITIES SECTION ──────────────────────────────────────
+function UniversitiesSection() {
+  return (
+    <Section className="py-14 bg-white border-y border-neutral-100">
+      <div className="cs-container">
+        <p className="text-center text-xs font-semibold text-neutral-400 uppercase tracking-widest mb-8">
+          Serving Students at
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {UNIVERSITIES.map((u) => (
+            <div key={u} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-50 border border-neutral-200 hover:border-brand-green-DEFAULT hover:bg-brand-green-50 transition-all duration-200 cursor-default group">
+              <Building2 className="w-3.5 h-3.5 text-neutral-400 group-hover:text-brand-green-DEFAULT transition-colors" />
+              <span className="text-sm font-medium text-neutral-600 group-hover:text-brand-green-700 transition-colors">{u}</span>
+            </div>
+          ))}
+          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-green-50 border border-brand-green-DEFAULT/30">
+            <Globe className="w-3.5 h-3.5 text-brand-green-DEFAULT" />
+            <span className="text-sm font-semibold text-brand-green-700">+ More Coming</span>
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── FAQ SECTION ───────────────────────────────────────────────
+const FAQS = [
+  { q: "Who can use Campus Sheba?", a: "Any student, teacher, or staff with a valid university ID from a partner campus can register and access all services." },
+  { q: "Is it free to join?", a: "Yes! Registration is completely free. Small service fees may apply on certain transactions (typically 5-10%), always shown upfront." },
+  { q: "How do I get verified?", a: "Upload your university ID card during signup. Our team reviews it within 24 hours and approves your account." },
+  { q: "Can I sell my old items?", a: "Absolutely. Create a listing through Buy & Sell or Book Sheba, set your price, and your campus peers can find and purchase it." },
+  { q: "How safe are transactions?", a: "Only verified campus users can transact. We have a review system, dispute resolution, and admin moderation to keep everything trusted." },
+  { q: "Is there a mobile app?", a: "Yes! Available on Android (Play Store) and iOS (App Store). The web platform is also fully responsive." },
+];
+
+function FAQSection() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <Section className="py-20 bg-neutral-50">
+      <div className="cs-container">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          <div>
+            <SectionHeader
+              tag="FAQ"
+              title={<>Frequently Asked <span className="gradient-text-green">Questions</span></>}
+              subtitle="Everything you need to know before getting started."
+              center={false}
+            />
+            <div className="mt-8">
+              <p className="text-sm text-neutral-500 mb-4">Still have questions?</p>
+              <a
+                href="mailto:campussheba24@gmail.com"
+                id="faq-contact-link"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green-DEFAULT hover:underline"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Contact our support team →
+              </a>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {FAQS.map((faq, i) => (
+              <div
+                key={i}
+                id={`faq-item-${i}`}
+                className="bg-white rounded-2xl border border-neutral-100 overflow-hidden hover:border-neutral-200 transition-colors duration-150"
+              >
+                <button
+                  onClick={() => setOpen(open === i ? null : i)}
+                  className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left"
+                  aria-expanded={open === i}
+                >
+                  <span className="text-sm font-semibold text-neutral-800">{faq.q}</span>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${open === i ? "bg-brand-green-DEFAULT rotate-45" : "bg-neutral-100"}`}>
+                    <span className={`text-lg leading-none font-light ${open === i ? "text-white" : "text-neutral-500"}`}>+</span>
+                  </div>
+                </button>
+                {open === i && (
+                  <div className="px-6 pb-5 animate-fade-in">
+                    <p className="text-sm text-neutral-500 leading-relaxed">{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── CTA BANNER ─────────────────────────────────────────────────
+function CTASection({ locale }: { locale: string }) {
+  return (
+    <Section className="py-20 bg-white">
+      <div className="cs-container">
+        <div
+          className="relative rounded-3xl overflow-hidden text-center py-16 px-8"
+          style={{ background: "linear-gradient(135deg, #0D1B2A 0%, #1a3055 60%, #0D1B2A 100%)" }}
+        >
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-brand-green-DEFAULT/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-brand-amber-DEFAULT/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <span className="section-tag mb-6 inline-flex" style={{ background: "rgba(0,166,81,0.15)", borderColor: "rgba(0,166,81,0.3)", color: "#4ade80" }}>
+              🎓 Join 10,000+ Students
+            </span>
+            <h2 className="font-display font-extrabold text-4xl lg:text-5xl text-white mb-4 tracking-tight">
+              Ready to Transform Your<br /> Campus Experience?
+            </h2>
+            <p className="text-white/50 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+              Join thousands of students already using Campus Sheba to simplify, enrich, and supercharge their university life.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link
+                href={`/${locale}/login`}
+                id="cta-main-btn"
+                className="inline-flex items-center gap-2 px-9 py-4 rounded-xl font-bold text-base text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow-lg"
+                style={{ background: "linear-gradient(135deg, #00A651, #00c460)" }}
+              >
+                Get Started — It&apos;s Free
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href={`/${locale}/about`}
+                id="cta-learn-btn"
+                className="inline-flex items-center gap-2 px-9 py-4 rounded-xl font-bold text-base text-white border border-white/15 hover:bg-white/10 transition-all duration-200"
+              >
+                Learn More
+              </Link>
+            </div>
+
+            {/* Trust signals */}
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
+              {["University Verified", "100% Secure", "Free to Join", "3+ Campuses"].map((s) => (
+                <div key={s} className="flex items-center gap-2 text-white/50 text-xs font-medium">
+                  <CheckCircle className="w-3.5 h-3.5 text-brand-green-DEFAULT" />
+                  {s}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ─── MAIN HOME TEMPLATE ───────────────────────────────────────
+export default function HomeTemplate({ locale = "en" }: { locale?: string }) {
+  return (
+    <div className="pt-[var(--navbar-height)]">
+      {/* <HeroSection locale={locale} /> */}
+
+      <Banners />
+      <UniversitiesSection />
+      <ModuleSection locale={locale} />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <BloodWidget locale={locale} />
+      <FAQSection />
+      <CTASection locale={locale} />
+    </div>
+  );
+}
