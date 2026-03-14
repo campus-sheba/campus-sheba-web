@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import Loading from "@/components/common/Loading";
 import Navbar from "@/components/siteSettings/navbar/Navbar";
 import Footer from "@/components/siteSettings/footer/Footer";
+import CartButton from "@/components/cart/CartButton";
 import { Toaster } from "sonner";
 
 const sora = Sora({
@@ -85,6 +86,7 @@ export default async function RootLayout({
             <Navbar locale={locale} />
             <main>{children}</main>
             <Footer locale={locale} />
+            <CartButton locale={locale} />
           </Suspense>
           <Toaster
             position="top-right"
