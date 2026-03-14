@@ -22,7 +22,6 @@ import {
   User,
   Store,
   ShoppingCart,
-  Check,
 } from "lucide-react";
 import Logo from "./Logo";
 
@@ -35,6 +34,89 @@ const CAMPUSES = [
   { id: "kuet", name: "KUET", short: "KUET", location: "Khulna" },
   { id: "ruet", name: "RUET", short: "RUET", location: "Rajshahi" },
 ];
+
+const DEFAULT_CAMPUS_LOCATION_GROUPS = [
+  {
+    title: "Residential Zones",
+    items: ["Main Hall Area", "Dormitory Road", "Residence Block", "Guest House Area"],
+  },
+  {
+    title: "Academic Spots",
+    items: ["Central Library", "Academic Building", "Department Zone", "Admin Building"],
+  },
+  {
+    title: "Student Hubs",
+    items: ["Main Gate", "Cafeteria", "TSC", "Central Field"],
+  },
+];
+
+const CAMPUS_LOCATION_GROUPS: Record<string, Array<{ title: string; items: string[] }>> = {
+  ju: [
+    {
+      title: "Male Halls",
+      items: [
+        "Al Beruni Hall",
+        "Mir Mosharraf Hossain Hall",
+        "A.F.M. Kamaluddin Hall",
+        "Maulana Bhashani Hall",
+        "Shaheed Salam-Barkat Hall",
+        "Shaheed Rafiq-Jabbar Hall",
+        "Bishwakabi Rabindranath Tagore Hall",
+        "Sher-e-Bangla AK Fazlul Huq Hall",
+        "Nawab Salimullah Hall",
+        "Shaheed Tajuddin Ahmad Hall",
+        "Jatiya Kabi Kazi Nazrul Islam Hall",
+      ],
+    },
+    {
+      title: "Female Halls",
+      items: [
+        "Nawab Faizunnesa Hall",
+        "Fazilatunnesa Hall",
+        "Jahanara Imam Hall",
+        "Pritilata Hall",
+        "Begum Khaleda Zia Hall",
+        "Begum Sufia Kamal Hall",
+        "Rokeya Hall",
+        "Bir Protik Taramon Bibi Hall",
+        "July 24 Jagarani Hall",
+        "Shaheed Felani Khatun Hall",
+        "Female Student Hall No. 13",
+      ],
+    },
+    {
+      title: "Natural Landmarks",
+      items: [
+        "Lakes & Migratory Birds",
+        "Monpura",
+        "London Bridge",
+        "VC Pukur",
+        "Switzerland",
+      ],
+    },
+    {
+      title: "Monuments & Sculptures",
+      items: [
+        "Central Shaheed Minar",
+        "Sangshaptak",
+        "Amar Ekushey",
+        "Selim Al Deen Muktomoncho",
+      ],
+    },
+    {
+      title: "Student Hubs & Food Spots",
+      items: ["Bot Tola", "Tarzan Point", "Chowrongi", "Central Field"],
+    },
+    {
+      title: "Other Notable Sites",
+      items: [
+        "Central Mosque",
+        "Butterfly Park and Research Centre",
+        "Zahir Raihan Auditorium",
+      ],
+    },
+  ],
+};
 
 // ─── Nav Link Data ───────────────────────────────────────────
 const servicesMenu = [
@@ -65,7 +147,11 @@ const Navbar = ({ locale }: { locale: string }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [selectedCampus, setSelectedCampus] = useState<string | null>(null);
+  const [selectedCampusLocation, setSelectedCampusLocation] = useState<string | null>(null);
   const [campusOpen, setCampusOpen] = useState(false);
+  const [campusModalOpen, setCampusModalOpen] = useState(false);
+  const [draftCampus, setDraftCampus] = useState<string | null>(null);
+  const [draftCampusLocation, setDraftCampusLocation] = useState<string | null>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const campusRef = useRef<HTMLDivElement>(null);
 
@@ -89,13 +175,27 @@ const Navbar = ({ locale }: { locale: string }) => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    document.body.style.overflow = mobileOpen || campusModalOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
+  }, [campusModalOpen, mobileOpen]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("cs-selected-campus");
-    if (saved) setSelectedCampus(saved);
+    const savedCampus = localStorage.getItem("cs-selected-campus");
+    const savedLocation = localStorage.getItem("cs-selected-campus-location");
+
+    if (savedCampus) {
+      setSelectedCampus(savedCampus);
+      setDraftCampus(savedCampus);
+    }
+
+    if (savedLocation) {
+      setSelectedCampusLocation(savedLocation);
+      setDraftCampusLocation(savedLocation);
+    }
+
+    if (!savedCampus || !savedLocation) {
+      setCampusModalOpen(true);
+    }
   }, []);
 
   const handleLanguageChange = (newLocale: string) => {
@@ -103,17 +203,169 @@ const Navbar = ({ locale }: { locale: string }) => {
     router.push(`/${newLocale}/${path}`);
   };
 
-  const handleCampusSelect = (campusName: string) => {
-    setSelectedCampus(campusName);
-    localStorage.setItem("cs-selected-campus", campusName);
-    setCampusOpen(false);
+  const handleCampusDraftSelect = (campusName: string) => {
+    setDraftCampus(campusName);
+    setDraftCampusLocation(null);
   };
+
+  const handleCampusLocationDraftSelect = (location: string) => {
+    setDraftCampusLocation(location);
+  };
+
+  const saveCampusSelection = () => {
+    if (!draftCampus || !draftCampusLocation) return;
+
+    setSelectedCampus(draftCampus);
+    setSelectedCampusLocation(draftCampusLocation);
+    localStorage.setItem("cs-selected-campus", draftCampus);
+    localStorage.setItem("cs-selected-campus-location", draftCampusLocation);
+    setCampusOpen(false);
+    setCampusModalOpen(false);
+  };
+
+  const toggleCampusPicker = () => {
+    if (!campusOpen) {
+      setDraftCampus(selectedCampus);
+      setDraftCampusLocation(selectedCampusLocation);
+    }
+    setCampusOpen((prev) => !prev);
+  };
+
+  const activeCampusId = CAMPUSES.find((campus) => campus.name === draftCampus)?.id;
+  const activeLocationGroups = activeCampusId
+    ? (CAMPUS_LOCATION_GROUPS[activeCampusId] ?? DEFAULT_CAMPUS_LOCATION_GROUPS)
+    : [];
+  const selectedCampusSummary = selectedCampus
+    ? selectedCampusLocation
+      ? `${selectedCampus} • ${selectedCampusLocation}`
+      : selectedCampus
+    : null;
 
   return (
     <>
+      {campusModalOpen && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-brand-navy-DEFAULT/45 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/30 bg-white shadow-2xl">
+            <div className="grid lg:grid-cols-[320px,1fr]">
+              <div className="border-b lg:border-b-0 lg:border-r border-neutral-100 bg-gradient-to-br from-brand-green-DEFAULT/8 via-white to-red-50 p-6">
+                <span className="inline-flex rounded-full border border-brand-green-DEFAULT/15 bg-brand-green-DEFAULT/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-green-DEFAULT">
+                  Campus Setup
+                </span>
+                <h2 className="mt-4 font-display text-2xl font-bold text-brand-navy-DEFAULT">
+                  Tell us where you study
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-500">
+                  Campus Sheba uses your university and in-campus location to personalize delivery, listings, blood requests, and nearby services.
+                </p>
+
+                <div className="mt-6 space-y-3 rounded-2xl border border-neutral-100 bg-white p-4">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Step 1</p>
+                    <p className="mt-1 text-sm font-semibold text-brand-navy-DEFAULT">Choose your university</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Step 2</p>
+                    <p className="mt-1 text-sm font-semibold text-brand-navy-DEFAULT">Select your hall, landmark, or student hub</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-4">
+                  <p className="text-xs font-semibold text-[#E30A13]">Required before browsing</p>
+                  <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+                    We need this once on first visit so your feed, food spots, halls, and emergency support stay campus-specific.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">University</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {CAMPUSES.map((campus) => (
+                      <button
+                        key={campus.id}
+                        onClick={() => handleCampusDraftSelect(campus.name)}
+                        className={`rounded-2xl border p-4 text-left transition-all ${
+                          draftCampus === campus.name
+                            ? "border-brand-green-DEFAULT bg-brand-green-DEFAULT/10 shadow-sm"
+                            : "border-neutral-200 bg-white hover:border-brand-green-DEFAULT/30"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-green-DEFAULT/10 text-xs font-bold text-brand-green-DEFAULT">
+                            {campus.short}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-brand-navy-DEFAULT">{campus.name}</p>
+                            <p className="mt-1 text-xs text-neutral-500">{campus.location}</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Campus Location</p>
+                    {draftCampusLocation && (
+                      <span className="rounded-full bg-brand-green-DEFAULT/10 px-3 py-1 text-[11px] font-semibold text-brand-green-DEFAULT">
+                        {draftCampusLocation}
+                      </span>
+                    )}
+                  </div>
+
+                  {draftCampus ? (
+                    <div className="mt-3 max-h-[360px] space-y-4 overflow-y-auto pr-1">
+                      {activeLocationGroups.map((group) => (
+                        <div key={group.title}>
+                          <p className="mb-2 text-xs font-semibold text-neutral-500">{group.title}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {group.items.map((item) => (
+                              <button
+                                key={item}
+                                onClick={() => handleCampusLocationDraftSelect(item)}
+                                className={`rounded-full border px-3 py-2 text-xs font-medium transition-all ${
+                                  draftCampusLocation === item
+                                    ? "border-brand-green-DEFAULT bg-brand-green-DEFAULT text-white"
+                                    : "border-neutral-200 bg-white text-neutral-600 hover:border-brand-green-DEFAULT/30 hover:text-brand-navy-DEFAULT"
+                                }`}
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-3 flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 text-center">
+                      <div>
+                        <p className="text-sm font-semibold text-brand-navy-DEFAULT">Select your university first</p>
+                        <p className="mt-1 text-xs text-neutral-500">We will then show the halls, landmarks, and student spots from that campus.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex items-center justify-end gap-3 border-t border-neutral-100 pt-5">
+                  <button
+                    onClick={saveCampusSelection}
+                    disabled={!draftCampus || !draftCampusLocation}
+                    className="inline-flex items-center rounded-xl bg-[#E30A13] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+                  >
+                    Continue to Campus Sheba
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Top Utility Bar ─── */}
       <div
-        className="fixed top-0 left-0 right-0 z-[51] flex text-black items-center bg-[white] backdrop-blur-sm border-b border-black/10"
+        className="fixed top-0 left-0 right-0 z-[51] flex items-center bg-white/95 backdrop-blur-sm border-b border-brand-green-DEFAULT/10 text-brand-navy-DEFAULT"
         style={{ height: "var(--topbar-height)" }}
         id="campus-topbar"
       >
@@ -121,8 +373,8 @@ const Navbar = ({ locale }: { locale: string }) => {
           {/* ── Campus Selector ── */}
           <div className="relative" ref={campusRef}>
             <button
-              onClick={() => setCampusOpen(!campusOpen)}
-              className="flex items-center gap-1.5 text-xs font-medium  transition-colors"
+              onClick={toggleCampusPicker}
+              className="flex items-center gap-1.5 text-xs font-medium text-neutral-600 hover:text-brand-navy-DEFAULT transition-colors"
               aria-label="Select campus"
               aria-expanded={campusOpen}
             >
@@ -130,9 +382,9 @@ const Navbar = ({ locale }: { locale: string }) => {
                 className="w-3 h-3 text-[#00A651] flex-shrink-0"
                 strokeWidth={2.5}
               />
-              {selectedCampus ? (
-                <span className="max-w-[110px] sm:max-w-[220px] truncate text-primary font-semibold flex items-center gap-1.5">
-                  {selectedCampus}
+              {selectedCampusSummary ? (
+                <span className="max-w-[180px] sm:max-w-[320px] truncate text-brand-navy-DEFAULT font-semibold">
+                  {selectedCampusSummary}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5 text-amber-400 font-semibold">
@@ -141,45 +393,100 @@ const Navbar = ({ locale }: { locale: string }) => {
                 </span>
               )}
               <ChevronDown
-                className={`w-3 h-3 text-white/50 transition-transform duration-200 flex-shrink-0 ${campusOpen ? "rotate-180" : ""}`}
+                className={`w-3 h-3 text-neutral-400 transition-transform duration-200 flex-shrink-0 ${campusOpen ? "rotate-180" : ""}`}
               />
             </button>
             {campusOpen && (
-              <div className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-xl shadow-2xl border border-neutral-100 overflow-hidden z-[60]">
-                <div className="px-3 py-2 border-b border-neutral-100 bg-neutral-50">
-                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-                    Select Your Campus
-                  </p>
-                  <p className="text-[10px] text-neutral-400 mt-0.5">
-                    Choose a campus to personalize your feed
-                  </p>
-                </div>
-                {CAMPUSES.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => handleCampusSelect(c.name)}
-                    className={`w-full text-left px-3 py-2.5 hover:bg-neutral-50 transition-colors flex items-center gap-2.5 ${
-                      selectedCampus === c.name ? "bg-green-50" : ""
-                    }`}
-                  >
-                    <span className="text-[10px] font-bold text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded w-11 text-center flex-shrink-0">
-                      {c.short}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p
-                        className={`text-xs font-semibold leading-none mb-0.5 ${selectedCampus === c.name ? "text-[#00A651]" : "text-neutral-800"}`}
-                      >
-                        {c.name}
-                      </p>
-                      <p className="text-[10px] text-neutral-400">
-                        {c.location}
-                      </p>
+              <div className="absolute top-full left-0 mt-2 w-[92vw] max-w-4xl rounded-2xl border border-neutral-100 bg-white shadow-2xl overflow-hidden z-[60]">
+                <div className="grid lg:grid-cols-[280px,1fr]">
+                  <div className="border-b lg:border-b-0 lg:border-r border-neutral-100 bg-neutral-50/80 p-4">
+                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.18em]">
+                      University
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-1 mb-3">
+                      Select your university first.
+                    </p>
+                    <div className="space-y-2">
+                      {CAMPUSES.map((campus) => (
+                        <button
+                          key={campus.id}
+                          onClick={() => handleCampusDraftSelect(campus.name)}
+                          className={`w-full rounded-xl border px-3 py-3 text-left transition-all ${
+                            draftCampus === campus.name
+                              ? "border-brand-green-DEFAULT bg-brand-green-DEFAULT/10"
+                              : "border-neutral-200 bg-white hover:border-brand-green-DEFAULT/30"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-green-DEFAULT/10 text-[11px] font-bold text-brand-green-DEFAULT">
+                              {campus.short}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-brand-navy-DEFAULT">
+                                {campus.name}
+                              </p>
+                              <p className="text-[11px] text-neutral-500">{campus.location}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                    {selectedCampus === c.name && (
-                      <Check className="w-3.5 h-3.5 text-[#00A651] flex-shrink-0" />
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div>
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.18em]">
+                          Campus Location
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Pick your hall, landmark, or student zone inside campus.
+                        </p>
+                      </div>
+                      <button
+                        onClick={saveCampusSelection}
+                        disabled={!draftCampus || !draftCampusLocation}
+                        className="inline-flex items-center rounded-xl bg-[#E30A13] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+                      >
+                        Save Campus
+                      </button>
+                    </div>
+
+                    {draftCampus ? (
+                      <div className="max-h-[420px] overflow-y-auto pr-1 space-y-4">
+                        {activeLocationGroups.map((group) => (
+                          <div key={group.title}>
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">
+                              {group.title}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {group.items.map((item) => (
+                                <button
+                                  key={item}
+                                  onClick={() => handleCampusLocationDraftSelect(item)}
+                                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                                    draftCampusLocation === item
+                                      ? "border-brand-green-DEFAULT bg-brand-green-DEFAULT text-white"
+                                      : "border-neutral-200 bg-white text-neutral-600 hover:border-brand-green-DEFAULT/30 hover:text-brand-navy-DEFAULT"
+                                  }`}
+                                >
+                                  {item}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 text-center">
+                        <div>
+                          <p className="text-sm font-semibold text-brand-navy-DEFAULT">Choose a university first</p>
+                          <p className="mt-1 text-xs text-neutral-500">Then we will show the relevant campus locations.</p>
+                        </div>
+                      </div>
                     )}
-                  </button>
-                ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -189,7 +496,7 @@ const Navbar = ({ locale }: { locale: string }) => {
             <select
               value={locale}
               onChange={(e) => handleLanguageChange(e.target.value)}
-              className="text-xs font-medium  bg-transparent border-none focus:outline-none cursor-pointer  transition-colors appearance-none"
+              className="text-xs font-medium text-neutral-500 bg-transparent border-none focus:outline-none cursor-pointer hover:text-brand-navy-DEFAULT transition-colors appearance-none"
               aria-label="Select language"
               id="topbar-language-select"
             >
@@ -200,18 +507,18 @@ const Navbar = ({ locale }: { locale: string }) => {
                 বাং
               </option>
             </select>
-            <div className="w-px h-3.5 bg-white/20" />
+            <div className="w-px h-3.5 bg-neutral-200" />
             {/* Become a provider/shop owner */}
             <Link
               href={`/${locale}/login?redirect=/marketplace/shop/create`}
-              className="text-xs font-medium text-[#E30A13] hover:text-red-700 transition-colors  border-red-200 px-2 py-1 rounded-lg"
+              className="rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-medium text-[#E30A13] transition-colors hover:bg-red-100 hover:text-red-700"
             >
               Become a Provider
             </Link>
             <Link
               href={`/${locale}/blood-bank`}
               id="topbar-sos-btn"
-              className="flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+              className="flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
               title="Emergency Blood Request"
             >
               <Droplets className="w-3 h-3" strokeWidth={2.5} />
@@ -454,7 +761,7 @@ const Navbar = ({ locale }: { locale: string }) => {
               </p>
               {selectedCampus ? (
                 <p className="text-xs font-semibold text-neutral-800 truncate">
-                  {selectedCampus}
+                  {selectedCampusLocation ? `${selectedCampus} • ${selectedCampusLocation}` : selectedCampus}
                 </p>
               ) : (
                 <p className="text-xs font-semibold text-amber-500">
