@@ -1,91 +1,81 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import Logo from "./Logo";
-import NavItem from "./NavItem";
-import NavItemWithDropdown from "./NavItemWithDropdown";
-import SearchButton from "./SearchButton";
-import Sidebar from "./Sidebar";
-import MobileNavbar from "./MobileNavbar";
 
-export type NavItemType = { label: string; href: string };
+const Navbar = ({ locale }: { locale: string }) => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-const navItems: NavItemType[] = [
-  { label: "Home", href: "/" },
-  { label: "News", href: "/news" },
-  { label: "Politics", href: "/politics" },
-  { label: "Business", href: "/business" },
-  { label: "National", href: "/national" },
-  { label: "Culture", href: "/culture" },
-  { label: "Opinion", href: "/opinion" },
-  { label: "Lifestyle", href: "/lifestyle" },
-  { label: "Sports", href: "/sports" },
-];
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-const homeDropdownItems = [
-  { label: "Breaking News", href: "/breaking-news" },
-  { label: "Latest Updates", href: "/latest" },
-  { label: "Featured Stories", href: "/featured" },
-  { label: "Editor's Pick", href: "/editors-pick" },
-];
-
-export default function Navbar() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const nav = useMemo(() => navItems, []);
+  const handleLanguageChange = (newLocale: string) => {
+    const path = pathname ? pathname.split("/").slice(2).join("/") : "";
+    router.push(`/${newLocale}/${path}`);
+  };
 
   return (
-    <header className="w-full bg-white">
-      {/* Desktop (lg+) */}
-      <div className="hidden lg:block">
-        <Logo variant="desktop" />
-        <div className="border-t border-black">
-          <div className="mx-auto flex max-w-container items-center justify-between px-6 py-5">
-            <div className="w-8" /> {/* Spacer to center nav */}
+    <nav
+      className={`fixed top-0 z-50 mx-auto w-full transition-all duration-300 ${
+        scrolled ? "bg-white py-2 shadow-md" : "bg-white py-3 shadow-sm"
+      }`}
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0">
+        <div className="flex items-center justify-between">
+          <Link className="flex-shrink-0" href={`/${locale}/`}>
+            <Logo />
+          </Link>
 
-            <nav aria-label="Primary" className="flex-1">
-              <ul className="flex items-center justify-center gap-7">
-                {nav.map((item) => {
-                  const isHome = item.label === "Home";
-                  if (isHome) {
-                    return (
-                      <NavItemWithDropdown
-                        key={item.label}
-                        label={item.label}
-                        href={item.href}
-                        dropdownItems={homeDropdownItems}
-                      />
-                    );
-                  }
-                  return (
-                    <NavItem
-                      key={item.label}
-                      label={item.label}
-                      href={item.href}
-                    />
-                  );
-                })}
-              </ul>
-            </nav>
+          <div className="hidden items-center space-x-4 md:flex">
+            <div className="relative">
+              <select
+                value={locale}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="focus:ring-primary focus:ring-opacity-50 appearance-none rounded-md bg-gray-100 px-3 py-2 pr-8 text-sm font-medium text-gray-700 focus:outline-none"
+              >
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
 
-            <SearchButton size="md" />
+          <div className="flex items-center md:hidden">
+            <button
+              type="button"
+              className="hover:text-primary text-gray-700 focus:outline-none"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              <span className="sr-only">Open main menu</span>
+              {isMenuOpen ? "✕" : "☰"}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile/Tablet (<lg) */}
-      <MobileNavbar
-        onMenuClick={() => setSidebarOpen(true)}
-        onSearchClick={() => {
-          // Handle search click
-        }}
-        sidebarOpen={sidebarOpen}
-      />
-
-      <Sidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        items={nav}
-      />
-    </header>
+      {isMenuOpen && (
+        <div className="md:hidden">
+          <div className="space-y-1 border-t bg-white px-2 pt-2 pb-3">
+            <div className="flex items-center justify-between px-3 py-3">
+              <select
+                value={locale}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="mr-2 rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none"
+              >
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+    </nav>
   );
-}
+};
+
+export default Navbar;

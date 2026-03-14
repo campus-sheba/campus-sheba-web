@@ -1,10 +1,10 @@
 import { PageContentWrapper } from "@/components/wrappers";
-import LandingPage from "./components/LandingPage";
+import HomePage from "@/modules/home/HomePage";
 
-export default function HomePage() {
+export default function LandingHomeRoute() {
   return (
     <PageContentWrapper>
-      <LandingPage />
+      <HomePage />
     </PageContentWrapper>
   );
 }

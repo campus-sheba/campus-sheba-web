@@ -44,10 +44,10 @@ export default async function RootLayout({
       <body className={`${robotoCondensed.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <Suspense fallback={<Loading />}>
-            <Navbar />
+            <Navbar locale={locale}  />
 
             {children}
-            <Footer />
+            <Footer locale={locale} />
           </Suspense>
           <Toaster position="top-right" richColors closeButton />
         </NextIntlClientProvider>

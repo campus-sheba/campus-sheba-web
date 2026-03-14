@@ -24,7 +24,7 @@ export default function MobileNavbar({
 
           <div className="flex-1 px-3">
             <div className="mx-auto max-w-[260px]">
-              <Logo variant="mobile" />
+              <Logo  />
             </div>
           </div>
 
