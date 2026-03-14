@@ -53,7 +53,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
   const handleImageLoad = () => setImagesLoaded((prev) => prev + 1);
 
   const renderSkeleton = () => (
-    <div className="relative h-[65vh] w-full animate-pulse bg-gray-100">
+    <div className="relative h-[55vh] w-full animate-pulse bg-gray-100">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
     </div>
   );

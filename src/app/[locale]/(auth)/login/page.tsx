@@ -1,44 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
-import { Mail, Lock } from "lucide-react";
-import Image from "next/image";
+import { Phone, Lock } from "lucide-react";
+import { loginAction } from "./actions";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
+    phone: "",
+    pin: "",
+    role: "User",
   });
 
   const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
+    phone?: string;
+    pin?: string;
+    general?: string;
   }>({});
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.password) newErrors.password = "Password is required";
+    if (!formData.phone) newErrors.phone = "Phone number is required";
+    if (!formData.pin) newErrors.pin = "PIN is required";
+    if (formData.pin && formData.pin.length < 4) newErrors.pin = "PIN must be at least 4 digits";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    startTransition(async () => {
+      const result = await loginAction({
+        phone: formData.phone,
+        pin: formData.pin,
+        role: formData.role,
+      });
+
+      console.log("Login result:", result);
+
+      if (!result.success) {
+        setErrors((prev) => ({ ...prev, general: result.message }));
+        return;
+      }
+
       router.push("/profile");
-    }, 1500);
+    });
   };
 
   return (
@@ -52,60 +64,67 @@ export default function LoginPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Work Email
+                Phone Number
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  type="email"
+                  type="tel"
+                  placeholder="+8801712345678"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm"
-                  value={formData.email}
+                  value={formData.phone}
                   onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
+                    setFormData({ ...formData, phone: e.target.value })
                   }
                 />
               </div>
-              {errors.email && (
-                <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+              {errors.phone && (
+                <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
               )}
             </div>
 
-            {/* Password */}
+            {/* PIN */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                PIN
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="password"
+                  placeholder="****"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm"
-                  value={formData.password}
+                  value={formData.pin}
                   onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
+                    setFormData({ ...formData, pin: e.target.value })
                   }
                 />
               </div>
-              {errors.password && (
-                <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+              {errors.pin && (
+                <p className="text-xs text-red-500 mt-1">{errors.pin}</p>
               )}
             </div>
 
+           
+            {errors.general && (
+              <p className="text-xs text-red-500">{errors.general}</p>
+            )}
+
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isPending}
               className="w-full py-3.5 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition disabled:opacity-60"
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isPending ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           <p className="mt-6 text-sm text-center text-gray-500">
             Don’t have an account?{" "}
-            <Link href="/auth/signup" className="text-emerald-600 underline">
+            <Link href="/signup" className="text-emerald-600 underline">
               Create one
             </Link>
           </p>
