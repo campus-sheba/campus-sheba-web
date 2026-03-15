@@ -913,7 +913,7 @@ export function CTASection({ locale }: { locale: string }) {
 
 export function HomeModulesOverlay({ locale }: { locale: string }) {
   return (
-    <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-8">
       {MODULES.slice(0, 7).map((module) => (
         <ModuleButton key={module.id} {...module} locale={locale} />
       ))}

@@ -91,7 +91,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
         >
           {banners.map((banner) => (
             <SwiperSlide key={banner._id}>
-              <div className="relative h-[30vh] md:h-[55vh] mx-4 rounded-lg md:rounded-none md:w-full">
+              <div className="relative h-[20vh] md:h-[55vh] mx-4 rounded-lg md:rounded-none md:w-full">
                 <Image
                   src={banner.photo?.url || "/placeholder.jpg"}
                   alt={banner.title}
