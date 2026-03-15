@@ -1,0 +1,34 @@
+# name: Deploy to VPS
+
+# on:
+#   push:
+#     branches:
+#       - dev
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v3
+
+#       - name: Setup SSH
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519_cicd
+#           chmod 600 ~/.ssh/id_ed25519_cicd
+#           ssh-keyscan -H 31.220.22.111 >> ~/.ssh/known_hosts
+
+#       - name: Deploy to VPS
+#         run: |
+#           ssh -i ~/.ssh/id_ed25519_cicd root@31.220.22.111 << 'EOF'
+#             cd /var/www/campus-sheba-frontend
+#             git fetch origin
+#             git checkout dev
+#             git pull origin dev
+#             npm install
+#             npm run build
+#             pm2 reload dev-cs
+#             pm2 save
+#           EOF
