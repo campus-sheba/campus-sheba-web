@@ -3,13 +3,19 @@
 import Link from "next/link";
 import React from "react";
 import { ChevronDown, Droplets, MapPin } from "lucide-react";
-import { CAMPUS_LOCATION_GROUPS, CAMPUSES, CampusLocationGroup, DEFAULT_CAMPUS_LOCATION_GROUPS } from "./navbar.constants";
+import {
+  CAMPUS_LOCATION_GROUPS,
+  CAMPUSES,
+  CampusLocationGroup,
+  DEFAULT_CAMPUS_LOCATION_GROUPS,
+} from "./navbar.constants";
 
 type CampusTopbarProps = {
   locale: string;
   campusRef: React.RefObject<HTMLDivElement | null>;
   campusOpen: boolean;
   selectedCampusSummary: string | null;
+  selectedCampusShort: string | null;
   draftCampus: string | null;
   draftCampusLocation: string | null;
   onToggleCampusPicker: () => void;
@@ -24,6 +30,7 @@ export default function CampusTopbar({
   campusRef,
   campusOpen,
   selectedCampusSummary,
+  selectedCampusShort,
   draftCampus,
   draftCampusLocation,
   onToggleCampusPicker,
@@ -32,10 +39,17 @@ export default function CampusTopbar({
   onSaveCampus,
   onLanguageChange,
 }: CampusTopbarProps) {
-  const activeCampusId = CAMPUSES.find((campus) => campus.name === draftCampus)?.id;
+  const activeCampusId = CAMPUSES.find(
+    (campus) => campus.name === draftCampus,
+  )?.id;
   const activeLocationGroups: CampusLocationGroup[] = activeCampusId
     ? (CAMPUS_LOCATION_GROUPS[activeCampusId] ?? DEFAULT_CAMPUS_LOCATION_GROUPS)
     : [];
+
+  // Derive short name from draftCampus when prop is missing (e.g. from localStorage)
+  const displayShort =
+    selectedCampusShort ??
+    (draftCampus ? CAMPUSES.find((c) => c.name === draftCampus)?.short : null);
 
   return (
     <div
@@ -51,11 +65,19 @@ export default function CampusTopbar({
             aria-label="Select campus"
             aria-expanded={campusOpen}
           >
-            <MapPin className="w-3 h-3 text-[#00A651] flex-shrink-0" strokeWidth={2.5} />
+            <MapPin
+              className="w-3 h-3 text-[#00A651] flex-shrink-0"
+              strokeWidth={2.5}
+            />
             {selectedCampusSummary ? (
-              <span className="max-w-[180px] sm:max-w-[320px] truncate text-brand-navy-DEFAULT font-semibold">
-                {selectedCampusSummary}
-              </span>
+              <>
+                <span className="min-w-0 md:hidden inline-block max-w-[100px] truncate text-brand-navy-DEFAULT font-semibold">
+                  {displayShort ?? selectedCampusSummary}
+                </span>
+                <span className="hidden md:inline min-w-0 max-w-[180px] lg:max-w-[320px] truncate text-brand-navy-DEFAULT font-semibold">
+                  {selectedCampusSummary}
+                </span>
+              </>
             ) : (
               <span className="flex items-center gap-1.5 text-amber-400 font-semibold">
                 Select Your Campus
@@ -71,8 +93,12 @@ export default function CampusTopbar({
             <div className="absolute top-full left-0 mt-2 w-[92vw] max-w-4xl rounded-2xl border border-neutral-100 bg-white shadow-2xl overflow-hidden z-[60]">
               <div className="grid lg:grid-cols-[280px,1fr]">
                 <div className="border-b lg:border-b-0 lg:border-r border-neutral-100 bg-neutral-50/80 p-4">
-                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.18em]">University</p>
-                  <p className="text-xs text-neutral-500 mt-1 mb-3">Select your university first.</p>
+                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.18em]">
+                    University
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-1 mb-3">
+                    Select your university first.
+                  </p>
                   <div className="space-y-2">
                     {CAMPUSES.map((campus) => (
                       <button
@@ -89,8 +115,12 @@ export default function CampusTopbar({
                             {campus.short}
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-brand-navy-DEFAULT">{campus.name}</p>
-                            <p className="text-[11px] text-neutral-500">{campus.location}</p>
+                            <p className="truncate text-sm font-semibold text-brand-navy-DEFAULT">
+                              {campus.name}
+                            </p>
+                            <p className="text-[11px] text-neutral-500">
+                              {campus.location}
+                            </p>
                           </div>
                         </div>
                       </button>
@@ -101,8 +131,12 @@ export default function CampusTopbar({
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
-                      <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.18em]">Campus Location</p>
-                      <p className="text-xs text-neutral-500 mt-1">Pick your hall, landmark, or student zone inside campus.</p>
+                      <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.18em]">
+                        Campus Location
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Pick your hall, landmark, or student zone inside campus.
+                      </p>
                     </div>
                     <button
                       onClick={onSaveCampus}
@@ -117,7 +151,9 @@ export default function CampusTopbar({
                     <div className="max-h-[420px] overflow-y-auto pr-1 space-y-4">
                       {activeLocationGroups.map((group) => (
                         <div key={group.title}>
-                          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">{group.title}</p>
+                          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">
+                            {group.title}
+                          </p>
                           <div className="flex flex-wrap gap-2">
                             {group.items.map((item) => (
                               <button
@@ -139,8 +175,12 @@ export default function CampusTopbar({
                   ) : (
                     <div className="flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 text-center">
                       <div>
-                        <p className="text-sm font-semibold text-brand-navy-DEFAULT">Choose a university first</p>
-                        <p className="mt-1 text-xs text-neutral-500">Then we will show the relevant campus locations.</p>
+                        <p className="text-sm font-semibold text-brand-navy-DEFAULT">
+                          Choose a university first
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-500">
+                          Then we will show the relevant campus locations.
+                        </p>
                       </div>
                     </div>
                   )}
@@ -158,15 +198,19 @@ export default function CampusTopbar({
             aria-label="Select language"
             id="topbar-language-select"
           >
-            <option value="en" className="bg-white text-neutral-900">EN</option>
-            <option value="bn" className="bg-white text-neutral-900">বাং</option>
+            <option value="en" className="bg-white text-neutral-900">
+              EN
+            </option>
+            <option value="bn" className="bg-white text-neutral-900">
+              বাং
+            </option>
           </select>
           <div className="w-px h-3.5 bg-neutral-200" />
           <Link
             href={`/${locale}/login?redirect=/marketplace/shop/create`}
             className="rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-medium text-[#E30A13] transition-colors hover:bg-red-100 hover:text-red-700"
           >
-            Become a Provider
+            Be a Provider
           </Link>
           <Link
             href={`/${locale}/blood-bank`}
