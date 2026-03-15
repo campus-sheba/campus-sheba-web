@@ -91,7 +91,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
         >
           {banners.map((banner) => (
             <SwiperSlide key={banner._id}>
-              <div className="relative h-[20vh] md:h-[55vh] mx-4 rounded-lg md:rounded-none md:w-full">
+              <div className="relative h-[30vh] md:h-[55vh] mx-4 rounded-lg md:rounded-none md:w-full">
                 <Image
                   src={banner.photo?.url || "/placeholder.jpg"}
                   alt={banner.title}
@@ -102,7 +102,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
                   onLoad={handleImageLoad}
                 />
                 {/* Subtle bottom gradient for overlay legibility */}
-                <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/50 to-transparent rounded-b-lg md:rounded-b-none" />
               </div>
             </SwiperSlide>
           ))}
