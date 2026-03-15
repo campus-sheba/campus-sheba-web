@@ -21,6 +21,8 @@ import {
   User,
   Wallet,
   ShoppingCart,
+  Home,
+  LayoutGrid,
 } from "lucide-react";
 import Logo from "./Logo";
 import CampusSetupModal from "./CampusSetupModal";
@@ -42,6 +44,7 @@ const Navbar = ({ locale }: { locale: string }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [selectedCampus, setSelectedCampus] = useState<string | null>(null);
+  // const [selectedCampusShort, setSelectedCampusShort] = useState<string | null>(null);
   const [selectedCampusLocation, setSelectedCampusLocation] = useState<string | null>(null);
   const [campusOpen, setCampusOpen] = useState(false);
   const [campusModalOpen, setCampusModalOpen] = useState(false);
@@ -150,6 +153,9 @@ useEffect(() => {
       ? `${selectedCampus} • ${selectedCampusLocation}`
       : selectedCampus
     : null;
+  const selectedCampusShort = selectedCampus
+    ? CAMPUSES.find((campus) => campus.name === selectedCampus)?.short
+    : null;
 
   return (
     <>
@@ -167,6 +173,7 @@ useEffect(() => {
         campusRef={campusRef}
         campusOpen={campusOpen}
         selectedCampusSummary={selectedCampusSummary}
+        selectedCampusShort={selectedCampusShort ?? null}
         draftCampus={draftCampus}
         draftCampusLocation={draftCampusLocation}
         onToggleCampusPicker={toggleCampusPicker}
@@ -371,25 +378,8 @@ useEffect(() => {
             )}
           </div>
 
-          {/* ─── Mobile Right ─── */}
+          {/* ─── Mobile Right: logo + bar icon only ─── */}
           <div className="flex lg:hidden items-center gap-2">
-            <button
-              id="mobile-nav-search"
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-neutral-200 text-neutral-600"
-              aria-label="Search"
-            >
-              <Search className="w-4.5 h-4.5" />
-            </button>
-            <Link
-              href={`/${locale}/cart`}
-              id="mobile-nav-cart"
-              className="relative w-9 h-9 flex items-center justify-center rounded-lg border border-neutral-200 text-neutral-600"
-            >
-              <ShoppingCart className="w-4.5 h-4.5" />
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E30A13] px-1 text-[9px] font-bold leading-none text-white">
-                0
-              </span>
-            </Link>
             <button
               id="mobile-nav-toggle"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -415,6 +405,64 @@ useEffect(() => {
           aria-hidden="true"
         />
       )}
+
+      {/* ─── Mobile Bottom Navbar (small devices only) ─── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/60 backdrop-blur-md border-t border-white/20 pb-[env(safe-area-inset-bottom)]"
+        aria-label="Bottom navigation"
+      >
+        <div className="flex items-center justify-around h-14">
+          <Link
+            href={`/${locale}`}
+            id="bottom-nav-home"
+            className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
+              pathname === `/${locale}` || pathname === `/${locale}/`
+                ? "text-[#E30A13]"
+                : "text-neutral-600"
+            }`}
+          >
+            <Home className="w-5 h-5" strokeWidth={2} />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+          <Link
+            href={`/${locale}/marketplace`}
+            id="bottom-nav-service"
+            className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
+              pathname?.includes("/marketplace") ? "text-[#E30A13]" : "text-neutral-600"
+            }`}
+          >
+            <LayoutGrid className="w-5 h-5" strokeWidth={2} />
+            <span className="text-[10px] font-medium">Service</span>
+          </Link>
+          <Link
+            href={`/${locale}/cart`}
+            id="bottom-nav-cart"
+            className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
+              pathname?.includes("/cart") ? "text-[#E30A13]" : "text-neutral-600"
+            }`}
+          >
+            <span className="relative inline-flex">
+              <ShoppingCart className="w-5 h-5" strokeWidth={2} />
+              <span className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#E30A13] px-0.5 text-[9px] font-bold leading-none text-white">
+                0
+              </span>
+            </span>
+            <span className="text-[10px] font-medium">Cart</span>
+          </Link>
+          <Link
+            href={isLoggedIn ? `/${locale}/profile` : `/${locale}/login`}
+            id="bottom-nav-profile"
+            className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
+              pathname?.includes("/profile") || pathname?.includes("/login")
+                ? "text-[#E30A13]"
+                : "text-neutral-600"
+            }`}
+          >
+            <User className="w-5 h-5" strokeWidth={2} />
+            <span className="text-[10px] font-medium">Profile</span>
+          </Link>
+        </div>
+      </nav>
 
       {/* ─── Mobile Menu Drawer ─── */}
       <div
