@@ -69,7 +69,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
   if (isLoading || banners.length === 0) return renderSkeleton();
 
   return (
-    <div className="relative mb-24 w-full overflow-visible md:mb-28">
+    <div className="relative mb-20 w-full overflow-visible md:mb-28">
       {/* Hidden pre-loader */}
       {!allImagesLoaded && renderSkeleton()}
 
@@ -91,14 +91,14 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
         >
           {banners.map((banner) => (
             <SwiperSlide key={banner._id}>
-              <div className="relative h-[55vh] w-full">
+              <div className="relative h-[30vh] md:h-[55vh] mx-4 rounded-lg md:rounded-none md:w-full">
                 <Image
                   src={banner.photo?.url || "/placeholder.jpg"}
                   alt={banner.title}
                   fill
                   sizes="100vw"
                   priority
-                  className="object-cover"
+                  className="object-cover rounded-lg md:rounded-none"
                   onLoad={handleImageLoad}
                 />
                 {/* Subtle bottom gradient for overlay legibility */}
@@ -114,7 +114,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
 
       {/* Bottom overlay — 50% inside banner, 50% outside banner */}
       {bottomOverlay && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 translate-y-1/2 px-4 md:px-8">
+        <div className="pointer-events-none relative md:absolute inset-x-0 bottom-0 z-20 mt-12 lg:mt-0 md:translate-y-1/2 px-4 md:px-8">
           <div className="mx-auto max-w-7xl">
             <div className="pointer-events-auto bg-transparent px-0 py-0">
               {bottomOverlay}
