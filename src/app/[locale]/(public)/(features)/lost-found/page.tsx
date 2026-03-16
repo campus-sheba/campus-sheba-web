@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoInfinite, IoKeySharp } from "react-icons/io5";
 import {
@@ -157,6 +158,8 @@ type ReportForm = {
 };
 
 export default function LostFoundPage() {
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? "";
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "lost" | "found">("all");
   const [category, setCategory] = useState("All");
@@ -268,7 +271,7 @@ export default function LostFoundPage() {
           {filtered.map((item) => (
             <Link
               key={item.id}
-              href={`/lost-found/${item.id}`}
+              href={`/${locale}/lost-found/${item.id}`}
               className="bg-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow overflow-hidden group flex flex-row md:flex-col"
             >
               <div
@@ -396,8 +399,8 @@ export default function LostFoundPage() {
                 >
                   <option value="">Select Category</option>
                   {CATEGORIES.slice(1).map((c) => (
-                    <option key={c} value={c}>
-                      {c}
+                    <option key={c.value} value={c.title}>
+                      {c.title}
                     </option>
                   ))}
                 </select>
