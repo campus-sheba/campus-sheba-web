@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
 import { Tag, Wallet } from "lucide-react";
 import { FaMap, FaClock, FaPhone } from "react-icons/fa6";
+import { ITEMS } from "../../page";
 
 type Item = (typeof ITEMS)[number];
 type Params = { id: string; locale: string };
@@ -151,17 +153,17 @@ export default function LostFoundDetailsPage(props: {
               <div className="space-y-3">
                 <div className="bg-gray-50 p-3 rounded-xl">
                   <p className="text-xs text-gray-400">Name</p>
-                  <p className="font-medium">{item.contactName}</p>
+                  <p className="font-medium">{item.contact}</p>
                 </div>
 
                 <div className="bg-gray-50 p-3 rounded-xl flex justify-between items-center">
                   <div>
                     <p className="text-xs text-gray-400">Phone</p>
-                    <p className="font-medium">{item.contactPhone}</p>
+                    <p className="font-medium">{item.contact}</p>
                   </div>
 
                   <Link
-                    href={`tel:${item.contactPhone}`}
+                    href={`tel:${item.contact}`}
                     className="bg-black text-white px-3 py-1 rounded-full text-sm flex items-center gap-1"
                   >
                     <FaPhone />
@@ -178,7 +180,7 @@ export default function LostFoundDetailsPage(props: {
       <div className="fixed bottom-0 left-0 right-0 border-t bg-white">
         <div className="cs-container py-3">
           <Link
-            href={`tel:${item.contactPhone}`}
+            href={`tel:${item.contact}`}
             className={`flex justify-center py-3 rounded-xl text-white font-semibold ${
               isLost
                 ? "bg-red-600 hover:bg-red-700"
