@@ -1,170 +1,344 @@
 "use client";
 
 import { useState } from "react";
-import { Package, MapPin, Phone, Weight, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Weight,
+  CheckCircle2,
+  ArrowRight,
+  Shield,
+  Package,
+  User,
+  History,
+  Send,
+} from "lucide-react";
+import { useParcelNavigation } from "./utils";
 
 const SIZES = [
-  { id: "small", label: "Small", desc: "Up to 2 kg", price: 30, icon: "📦" },
-  { id: "medium", label: "Medium", desc: "2–5 kg", price: 60, icon: "📦" },
-  { id: "large", label: "Large", desc: "5–15 kg", price: 100, icon: "📦" },
-  { id: "xl", label: "Extra Large", desc: "15+ kg", price: 150, icon: "📦" },
+  { id: "small", label: "Small", desc: "Up to 2 kg", price: 30 },
+  { id: "medium", label: "Medium", desc: "2–5 kg", price: 60 },
+  { id: "large", label: "Large", desc: "5–15 kg", price: 100 },
+];
+
+const HISTORY = [
+  { id: "PKG101", status: "delivered" },
+  { id: "PKG102", status: "delivered" },
+  { id: "PKG103", status: "cancelled" },
+];
+const ACTIVE = [
+  { id: "PKG001", status: "inTransit" },
+  { id: "PKG002", status: "pickedUp" },
+  { id: "PKG003", status: "pending" },
 ];
 
 export default function ParcelPage() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [size, setSize] = useState("");
-  const [senderPhone, setSenderPhone] = useState("");
-  const [senderAddress, setSenderAddress] = useState("");
-  const [receiverName, setReceiverName] = useState("");
-  const [receiverPhone, setReceiverPhone] = useState("");
-  const [receiverAddress, setReceiverAddress] = useState("");
-  const [note, setNote] = useState("");
+  const { goToParcel } = useParcelNavigation();
+  const [tab, setTab] = useState<"send" | "active" | "history">("send");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [deliveryLocation, setDeliveryLocation] = useState("");
+  const LOCATIONS = [
+    "Al Beruni Hall",
+    "Rokeya Hall",
+    "TSC",
+    "Central Library",
+    "Faculty of Science",
+    "Faculty of Arts",
+    "Admin Building",
+    "Cafeteria",
+    "Playground",
+    "Other",
+  ];
+  const [parcelSize, setParcelSize] = useState("");
+  const [weight, setWeight] = useState("");
+  const [description, setDescription] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const selectedSize = SIZES.find((s) => s.id === size);
-
+  // Responsive container
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-br from-violet-600 to-violet-800 text-white">
-        <div className="cs-container py-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Package className="w-5 h-5" />
-            </div>
-            <span className="text-violet-200 text-sm font-medium">Parcel Delivery</span>
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Send Parcels on Campus</h1>
-          <p className="text-violet-200 text-sm max-w-lg">Send any package to any dormitory, faculty area, or location on campus. Fast, reliable, campus-verified delivery.</p>
-          <div className="mt-5 grid grid-cols-3 gap-3 max-w-sm">
-            {[{ label: "Delivered Today", value: "120+" }, { label: "On-Time Rate", value: "98%" }, { label: "Max Delivery", value: "60 min" }].map((s) => (
-              <div key={s.label} className="bg-white/15 rounded-xl p-3 text-center">
-                <p className="text-lg font-bold">{s.value}</p>
-                <p className="text-xs text-violet-200">{s.label}</p>
-              </div>
-            ))}
-          </div>
+      {/* Header & Tabs */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+        <div className="cs-container flex items-center gap-3 py-4">
+          <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl text-red-600">
+            <ArrowRight className="rotate-180 w-5 h-5" />
+          </button>
+          <h1 className="text-xl font-bold text-gray-900">Parcel</h1>
+        </div>
+        <div className="cs-container flex gap-2 pb-2">
+          <button
+            className={`flex-1 py-2 rounded-xl font-semibold text-sm ${
+              tab === "send"
+                ? "bg-red-600 text-white"
+                : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setTab("send")}
+          >
+            Send
+          </button>
+          <button
+            className={`flex-1 py-2 rounded-xl font-semibold text-sm ${
+              tab === "active"
+                ? "bg-red-600 text-white"
+                : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setTab("active")}
+          >
+            Active
+          </button>
+          <button
+            className={`flex-1 py-2 rounded-xl font-semibold text-sm ${
+              tab === "history"
+                ? "bg-red-600 text-white"
+                : "bg-gray-100 text-gray-600"
+            }`}
+            onClick={() => setTab("history")}
+          >
+            History
+          </button>
         </div>
       </div>
 
-      <div className="cs-container py-8 max-w-xl">
-        {submitted ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
+      {/* Promo Card */}
+      {tab === "send" && (
+        <div className="cs-container mt-4">
+          <div className="bg-red-600 rounded-2xl p-4 text-white mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">✨</span>
+              <span className="font-semibold">Save Big on Campus Travel!</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Parcel Booked!</h2>
-            <p className="text-gray-500 text-sm mb-1">Your parcel delivery has been confirmed.</p>
-            <p className="text-gray-400 text-sm mb-1">From: <strong>{senderAddress}</strong></p>
-            <p className="text-gray-400 text-sm mb-6">To: <strong>{receiverAddress}</strong></p>
-            <div className="inline-block bg-violet-50 border border-violet-200 rounded-xl px-6 py-3 mb-6">
-              <p className="text-xs text-violet-500">Total Charge</p>
-              <p className="text-2xl font-bold text-violet-700">৳{selectedSize?.price}</p>
-            </div>
-            <br />
-            <button onClick={() => { setSubmitted(false); setStep(1); setSize(""); setSenderPhone(""); setSenderAddress(""); setReceiverName(""); setReceiverPhone(""); setReceiverAddress(""); setNote(""); }} className="px-6 py-3 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700">
-              Send Another Parcel
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Step Indicator */}
-            <div className="flex items-center gap-2 mb-8">
-              {[1, 2, 3].map((s) => (
-                <div key={s} className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors ${step >= s ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-gray-200 text-gray-400"}`}>{s}</div>
-                  {s < 3 && <div className={`h-0.5 w-10 transition-colors ${step > s ? "bg-violet-600" : "bg-gray-200"}`} />}
-                </div>
-              ))}
-              <span className="ml-2 text-sm text-gray-500">
-                {step === 1 ? "Parcel Size" : step === 2 ? "Sender & Receiver" : "Review Order"}
+            <p className="text-sm mb-2">
+              Inter-campus delivery starting at just ৳20. Skip the costly
+              rickshaw fare!
+            </p>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1">
+                <span className="text-lg">⚡</span>30-45 min
+              </span>
+              <span className="flex items-center gap-1">
+                <Shield className="w-4 h-4" />
+                Secure delivery
               </span>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-              {step === 1 && (
-                <>
-                  <h2 className="text-lg font-bold text-gray-900">Select Parcel Size</h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    {SIZES.map((s) => (
-                      <button key={s.id} onClick={() => setSize(s.id)} className={`p-4 rounded-xl border-2 text-left transition-colors ${size === s.id ? "border-violet-600 bg-violet-50" : "border-gray-200 hover:border-violet-300"}`}>
-                        <span className="text-2xl">{s.icon}</span>
-                        <p className="font-semibold text-gray-900 mt-1">{s.label}</p>
-                        <p className="text-xs text-gray-500">{s.desc}</p>
-                        <p className="text-violet-600 font-bold mt-1">৳{s.price}</p>
-                      </button>
+      {/* Main Content */}
+      <div className="cs-container py-4  max-w-5xl mx-auto">
+        {tab === "send" && (
+          <form
+            className="space-y-6"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmitted(true);
+            }}
+          >
+            {/* Delivery Route */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+              <h2 className="font-bold text-lg mb-3">Delivery Route</h2>
+              <div className="space-y-3">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <select
+                    value={pickupLocation}
+                    onChange={(e) => setPickupLocation(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded-md border border-gray-200 text-sm outline-none focus:border-red-400 bg-white"
+                  >
+                    <option value="">Pickup Location</option>
+                    {LOCATIONS.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
                     ))}
-                  </div>
-                  <button disabled={!size} onClick={() => setStep(2)} className="w-full py-3 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
-                    Next <ArrowRight className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-
-              {step === 2 && (
-                <>
-                  <h2 className="text-lg font-bold text-gray-900">Sender & Receiver Details</h2>
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-gray-700">Sender (You)</p>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input value={senderPhone} onChange={(e) => setSenderPhone(e.target.value)} placeholder="Your phone number" className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400" />
-                    </div>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input value={senderAddress} onChange={(e) => setSenderAddress(e.target.value)} placeholder="Your pickup location (e.g. Al Beruni Hall, Room 204)" className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-700 mt-2">Receiver</p>
-                    <input value={receiverName} onChange={(e) => setReceiverName(e.target.value)} placeholder="Receiver's name" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400" />
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input value={receiverPhone} onChange={(e) => setReceiverPhone(e.target.value)} placeholder="Receiver's phone" className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400" />
-                    </div>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input value={receiverAddress} onChange={(e) => setReceiverAddress(e.target.value)} placeholder="Delivery location (e.g. Rokeya Hall, Room 118)" className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400" />
-                    </div>
-                    <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Special instructions (optional)" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-violet-400" />
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">Back</button>
-                    <button disabled={!senderPhone || !senderAddress || !receiverName || !receiverPhone || !receiverAddress} onClick={() => setStep(3)} className="flex-1 py-3 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 disabled:opacity-50 transition-colors">
-                      Review Order
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {step === 3 && (
-                <>
-                  <h2 className="text-lg font-bold text-gray-900">Review Your Order</h2>
-                  <div className="space-y-3">
-                    {[
-                      { label: "Package Size", value: `${selectedSize?.label} (${selectedSize?.desc})` },
-                      { label: "Pickup From", value: senderAddress },
-                      { label: "Sender Phone", value: senderPhone },
-                      { label: "Deliver To", value: receiverAddress },
-                      { label: "Receiver", value: `${receiverName} · ${receiverPhone}` },
-                      { label: "Note", value: note || "None" },
-                    ].map((item) => (
-                      <div key={item.label} className="flex justify-between gap-3 text-sm">
-                        <span className="text-gray-500">{item.label}</span>
-                        <span className="font-medium text-gray-900 text-right">{item.value}</span>
-                      </div>
+                  </select>
+                </div>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <select
+                    value={deliveryLocation}
+                    onChange={(e) => setDeliveryLocation(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 rounded-md border border-gray-200 text-sm outline-none focus:border-red-400 bg-white"
+                  >
+                    <option value="">Delivery Location</option>
+                    {LOCATIONS.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
                     ))}
-                    <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-bold">
-                      <span>Total</span><span className="text-violet-600">৳{selectedSize?.price}</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">Back</button>
-                    <button onClick={() => setSubmitted(true)} className="flex-1 py-3 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors">
-                      Place Order — ৳{selectedSize?.price}
-                    </button>
-                  </div>
-                </>
-              )}
+                  </select>
+                </div>
+              </div>
             </div>
-          </>
+
+            {/* Recipient Details */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+              <h2 className="font-bold text-lg mb-3">Recipient Details</h2>
+              <div className="space-y-3">
+                <div className="relative">
+                  <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <input
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Full Name"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-md border border-gray-200 text-sm outline-none focus:border-red-400"
+                  />
+                </div>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <input
+                    value={recipientPhone}
+                    onChange={(e) => setRecipientPhone(e.target.value)}
+                    placeholder="Phone Number"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-md border border-gray-200 text-sm outline-none focus:border-red-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Parcel Size */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+              <h2 className="font-bold text-lg mb-3">Parcel Size</h2>
+              <div className="flex gap-2 mb-3">
+                {SIZES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setParcelSize(s.id)}
+                    className={`flex-1 py-2 rounded-md border text-sm font-medium ${
+                      parcelSize === s.id
+                        ? "bg-red-600 text-white border-red-600"
+                        : "bg-white text-gray-700 border-gray-200"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <div className="relative mb-3">
+                <Weight className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <input
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="Estimated Weight (e.g., 2kg)"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-md border border-gray-200 text-sm outline-none focus:border-red-400"
+                />
+              </div>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={7}
+                placeholder="Description (Optional)"
+                className="w-full px-3 py-2.5 rounded-md border border-gray-200 text-sm outline-none focus:border-red-400 resize-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={
+                !recipientName ||
+                !recipientPhone ||
+                !pickupLocation ||
+                !deliveryLocation ||
+                !parcelSize
+              }
+              className="w-full py-3 rounded-md bg-red-600 text-white font-semibold text-base hover:bg-red-700 disabled:opacity-50 mt-2"
+            >
+              Create Parcel
+            </button>
+          </form>
+        )}
+
+        {tab === "active" && (
+          <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {ACTIVE.map((pkg) => (
+              <div
+                key={pkg.id}
+                className="bg-white rounded-xl border border-gray-100 flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition"
+                onClick={() => goToParcel(pkg.id)}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <Package className="w-6 h-6 text-red-600" />
+                  <div>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      {pkg.id}
+                    </div>
+                    <div className="text-xs text-gray-500">{pkg.status}</div>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-400" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "history" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {HISTORY.map((pkg) => (
+              <div
+                key={pkg.id}
+                className="bg-white rounded-xl border border-gray-100 flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition"
+                onClick={() => goToParcel(pkg.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <Package className="w-6 h-6 text-red-600" />
+                  <div>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      {pkg.id}
+                    </div>
+                    <div className="text-xs text-gray-500">{pkg.status}</div>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-400" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Confirmation Dialog */}
+        {submitted && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center max-w-xs w-full">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Parcel Booked!
+              </h2>
+              <p className="text-gray-500 text-sm mb-1">
+                Your parcel delivery has been confirmed.
+              </p>
+              <p className="text-gray-400 text-sm mb-1">
+                From: <strong>{pickupLocation}</strong>
+              </p>
+              <p className="text-gray-400 text-sm mb-6">
+                To: <strong>{deliveryLocation}</strong>
+              </p>
+              <div className="inline-block bg-red-50 border border-red-200 rounded-xl px-6 py-3 mb-6">
+                <p className="text-xs text-red-500">Total Charge</p>
+                <p className="text-2xl font-bold text-red-700">
+                  ৳{SIZES.find((s) => s.id === parcelSize)?.price}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSubmitted(false);
+                  setRecipientName("");
+                  setRecipientPhone("");
+                  setPickupLocation("");
+                  setDeliveryLocation("");
+                  setParcelSize("");
+                  setWeight("");
+                  setDescription("");
+                }}
+                className="px-6 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700"
+              >
+                Send Another Parcel
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
