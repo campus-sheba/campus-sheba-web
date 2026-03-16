@@ -23,7 +23,7 @@ import {
 } from "react-icons/md";
 import { SiBookstack } from "react-icons/si";
 
-const ITEMS = [
+export const ITEMS = [
   {
     id: "1",
     type: "lost",
@@ -37,6 +37,7 @@ const ITEMS = [
     reward: "500",
     image: "💻",
     urgent: true,
+    
   },
   {
     id: "2",
