@@ -133,9 +133,7 @@ const REQUESTS = [
 ];
 
 export default function BloodBankPage() {
-  const [tab, setTab] = useState<
-    "donors" | "requests" | "register" | "request"
-  >("donors");
+  const [tab, setTab] = useState<"donors" | "be-donor" | "emergency">("donors");
   const [bloodFilter, setBloodFilter] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -157,7 +155,7 @@ export default function BloodBankPage() {
     (d) =>
       (bloodFilter === "All" || d.bloodGroup === bloodFilter) &&
       (d.name.toLowerCase().includes(search.toLowerCase()) ||
-        d.campus.toLowerCase().includes(search.toLowerCase()))
+        d.campus.toLowerCase().includes(search.toLowerCase())),
   );
 
   return (
@@ -177,26 +175,9 @@ export default function BloodBankPage() {
         </div>
       </div>
 
-      <div className="md:cs-container p-3 md:p-6 rounded-xl bg-gradient-to-r from-red-600 to-pink-500 text-white mx-3 md:mx-auto">
-        <div className="cs-container py-6">
-          <div className=" gap-3 flex items-center ">
-            <div className="w-10 h-10 rounded-xl bg-white/20  flex items-center justify-center">
-              <MdBloodtype className="w-5 h-5" />
-            </div>
-            <div>
-              <span className=" text- font-medium">Find Blood Donors</span>
-              <p className="text-red-200 text-sm max-w-lg">
-                Connect with verified student donors on campus. Every donation
-                saves lives!
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="cs-container py-8">
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 md:gap-4 mb-6 overflow-x-auto no-scrollbar">
           {[
             { id: "donors", label: "Find Donor", icon: <IoSearchSharp /> },
             { id: "be-donor", label: "Be Donor", icon: <IoMdHeart /> },
@@ -205,12 +186,13 @@ export default function BloodBankPage() {
             <button
               key={t.id}
               onClick={() => setTab(t.id as typeof tab)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 flex flex-col items-center gap-1 px-6 md:px-10 py-2.5 rounded-xl text-sm transition-colors text-center ${
                 tab === t.id
                   ? "bg-red-600 text-white"
                   : "bg-white text-gray-600 border border-gray-200 hover:border-red-300"
               }`}
             >
+              {t.icon}
               {t.label}
             </button>
           ))}
@@ -219,6 +201,24 @@ export default function BloodBankPage() {
         {tab === "donors" && (
           <>
             <div className="flex gap-5 mb-4 flex-col">
+              <div className="md:cs-container p-3 md:p-6 rounded-xl bg-gradient-to-r from-red-600 to-pink-500 text-white mx-3 md:mx-auto">
+                <div className="cs-container py-6">
+                  <div className=" gap-3 flex items-center ">
+                    <div className="w-10 h-10 rounded-xl bg-white/20  flex items-center justify-center">
+                      <MdBloodtype className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className=" text- font-medium">
+                        Find Blood Donors
+                      </span>
+                      <p className="text-red-200 text-sm max-w-lg">
+                        Connect with verified student donors on campus. Every
+                        donation saves lives!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-5 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -336,226 +336,394 @@ export default function BloodBankPage() {
           </>
         )}
 
-        {tab === "requests" && (
-          <div className="space-y-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-              <p className="text-sm text-amber-800 font-medium">
-                Active blood requests — please reach out if you can help.
-              </p>
-            </div>
-            {REQUESTS.map((r) => (
-              <div
-                key={r.id}
-                className="bg-white rounded-2xl border border-gray-100 p-5 flex items-start gap-4"
-              >
-                <div className="w-14 h-14 rounded-xl bg-red-100 flex items-center justify-center font-bold text-red-700">
-                  {r.bloodGroup}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-gray-900">
-                      {r.units} unit{r.units > 1 ? "s" : ""} needed
+        {tab === "be-donor" && (
+          <div className="space-y-5">
+            <div className="md:cs-container p-3 md:p-6 rounded-xl bg-gradient-to-r from-pink-600 to-red-500 text-white mx-3 md:mx-auto">
+              <div className="cs-container py-6">
+                <div className=" gap-3 flex items-center ">
+                  <div className="w-10 h-10 rounded-xl bg-white/20  flex items-center justify-center">
+                    <MdBloodtype className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-lg font-semibold">
+                      Be a Life Saver
+                    </span>
+                    <p className="text-red-200 text-sm max-w-lg">
+                      Register as a blood donor and help your fellow students in
+                      need.
                     </p>
-                    {r.date.startsWith("Urgent") && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                        URGENT
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mt-0.5">{r.hospital}</p>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {r.date}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      By {r.postedBy}
-                    </span>
                   </div>
                 </div>
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 flex-shrink-0">
-                  <Heart className="w-3.5 h-3.5" /> Help
-                </button>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {tab === "register" && (
-          <div className="max-w-md">
-            {regSubmitted ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-                <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Registered as Donor!
-                </h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  Thank you for registering as a blood donor. You will be
-                  notified when someone in your area needs blood.
-                </p>
-                <button
-                  onClick={() => setTab("donors")}
-                  className="btn-primary"
-                >
-                  View All Donors
-                </button>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Register as Blood Donor
-                </h2>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 mx-3 md:mx-auto max-w-2xl">
+              <h3 className="text-lg text-gray-900 mb-4">
+                Personal Information
+              </h3>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    Your Full Name
+                  <label className="block text-xs text-gray-500 mb-2">
+                    Full Name
                   </label>
-                  <input
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
-                  />
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
+                    <User className="w-5 h-5 text-gray-500" />
+                    <input
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-900"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                  <label className="block text-xs text-gray-500 mb-2">
                     Blood Group
                   </label>
-                  <select
-                    value={regBlood}
-                    onChange={(e) => setRegBlood(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400 bg-white"
-                  >
-                    <option value="">Select blood group</option>
+                  <div className="flex flex-wrap gap-3">
                     {BLOOD_GROUPS.slice(1).map((g) => (
-                      <option key={g} value={g}>
+                      <button
+                        key={g}
+                        onClick={() => setRegBlood(g)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                          regBlood === g
+                            ? "bg-red-600 text-white border-red-600"
+                            : "bg-gray-100 placeholder:text-gray-900 border-transparent"
+                        }`}
+                      >
                         {g}
-                      </option>
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                  <label className="block text-xs text-gray-500 mb-2">
                     Phone Number
                   </label>
-                  <input
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                    placeholder="01XXXXXXXXX"
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
-                  />
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
+                    <MdCall className="w-5 h-5 text-gray-500" />
+                    <input
+                      value={regPhone}
+                      onChange={(e) => setRegPhone(e.target.value)}
+                      placeholder="+880 1XXX-XXXXXXX"
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-900"
+                    />
+                  </div>
                 </div>
+
+                <div>
+                  <label className="block text-xs text-gray-500 mb-2">
+                    Email (Optional)
+                  </label>
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
+                    <IoMail className="w-5 h-5 text-gray-500" />
+                    <input
+                      placeholder="your.email@student.edu.bd"
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-500 mb-2">
+                    Campus Location
+                  </label>
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
+                    <FaLocationPin className="w-5 h-5 text-gray-500" />
+                    <input
+                      placeholder="e.g., Dormitory A, Off Campus"
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-500 mb-2">
+                    Department
+                  </label>
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
+                    <FaUserFriends className="w-5 h-5 text-gray-500" />
+                    <input
+                      placeholder="e.g., Computer Science"
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-500 mb-2">
+                    Last Donation Date (Optional)
+                  </label>
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3">
+                    <Clock className="w-5 h-5 text-gray-500" />
+                    <input
+                      type="date"
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-900"
+                    />
+                  </div>
+                </div>
+
                 <button
                   disabled={!regName || !regBlood || !regPhone}
                   onClick={() => setRegSubmitted(true)}
                   className="w-full py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 disabled:opacity-50 transition-colors"
                 >
-                  Register as Donor
+                  <span className="inline-flex items-center gap-2 justify-center">
+                    <IoMdHeart className="w-4 h-4" /> Register as Donor
+                  </span>
                 </button>
+
+                <div className="bg-white border border-gray-100 rounded-xl p-4">
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Donation Guidelines
+                  </h4>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600">✔</span> Must be 18-60
+                      years old
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600">✔</span> Weight must be
+                      at least 50 kg
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600">✔</span> Can donate every
+                      3-4 months
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600">✔</span> Must be in good
+                      health
+                    </li>
+                  </ul>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        {tab === "request" && (
-          <div className="max-w-md">
-            {reqSubmitted ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-                <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Request Posted!
-                </h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  Your blood request has been posted. Matching donors will be
-                  notified immediately. We hope you find help soon.
-                </p>
-                <button
-                  onClick={() => setTab("donors")}
-                  className="btn-primary"
-                >
-                  Find Donors Now
-                </button>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Post a Blood Request
-                </h2>
-                <div className="grid grid-cols-2 gap-3">
+        {tab === "emergency" && (
+          <div className="space-y-5">
+            <div className="md:cs-container p-3 md:p-6 rounded-xl bg-gradient-to-r from-red-600 to-pink-500 text-white mx-3 md:mx-auto">
+              <div className="cs-container py-6">
+                <div className=" gap-3 flex items-center ">
+                  <div className="w-10 h-10 rounded-xl bg-white/20  flex items-center justify-center">
+                    <RiAlertFill className="w-5 h-5" />
+                  </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      Blood Group *
-                    </label>
-                    <select
-                      value={reqBlood}
-                      onChange={(e) => setReqBlood(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400 bg-white"
+                    <span className="text-lg font-semibold">
+                      Emergency Contacts
+                    </span>
+                    <p className="text-red-200 text-sm max-w-lg">
+                      Quick access to campus security, hospitals, police, and
+                      emergency services.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mx-3 md:mx-auto max-w-3xl space-y-4">
+              <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-gray-900">
+                    National Emergency
+                  </h4>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                    24/7
+                  </span>
+                </div>
+                <div className="rounded-xl overflow-hidden">
+                  <div className="bg-red-600 text-white px-5 py-6 rounded-xl ">
+                    <div className="font-bold flex items-center gap-3 mb-2">
+                      <RiAlertFill className="w-6 h-6 " />
+                      <p className="">National Emergency</p>
+                    </div>
+                    <div className="flex items-center justify-between w-full bg-white/10 p-2 rounded-md">
+                      <div className="flex items-center gap-3">
+                        <MdCall className="w-5 h-5" />
+                        <span className="font-semibold text-lg">999</span>
+                      </div>
+                      <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        24/7
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Campus contacts */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center">
+                    <FaMapMarkerAlt className="w-4 h-4 text-blue-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900">Campus</h4>
+                </div>
+                <div className="space-y-3 ">
+                  {[
+                    {
+                      title: "Campus Security Control Room",
+                      location: "Main Gate, Campus",
+                      primary: "+880 2-9876543",
+                      secondary: "+880 1700-000001",
+                    },
+                    {
+                      title: "Campus Medical Center",
+                      location: "Building 5, Ground Floor",
+                      primary: "+880 2-9876544",
+                      secondary: "",
+                    },
+                    {
+                      title: "Proctor Office",
+                      location: "Administration Building",
+                      primary: "+880 2-9876545",
+                      secondary: "+880 1700-000002",
+                    },
+                  ].map((c) => (
+                    <div key={c.title} className="bg-gray-50 rounded-xl p-4">
+                      <p className="font-medium text-gray-800">{c.title}</p>
+                      <p className="text-xs text-gray-400 mb-4">{c.location}</p>
+                      <div className="flex gap-3 text-[11px] md:text-base">
+                        <a
+                          href={`tel:${c.primary}`}
+                          className="flex-1 bg-red-600 text-white rounded-xl py-3 flex items-center justify-center gap-2"
+                        >
+                          <MdCall className="w-4 h-4" /> {c.primary}
+                        </a>
+                        {c.secondary ? (
+                          <a
+                            href={`tel:${c.secondary}`}
+                            className="flex-1 bg-white border border-gray-200 rounded-xl py-3 flex items-center justify-center gap-2"
+                          >
+                            <MdCall className="w-4 h-4 placeholder:text-gray-900" />{" "}
+                            {c.secondary}
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hospital / Police / Fire / Ambulance grouped quickly */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">Hospital</h4>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      24/7
+                    </span>
+                  </div>
+                  {[
+                    {
+                      title: "Dhaka Medical College Hospital",
+                      location: "Secretariat Road, Dhaka",
+                      primary: "+880 2-8626812",
+                      secondary: "999",
+                    },
+                    {
+                      title: "Square Hospital",
+                      location: "Birdem Road, Dhaka",
+                      primary: "+880 2-8159457",
+                      secondary: "+880 1713-033190",
+                    },
+                    {
+                      title: "United Hospital",
+                      location: "Gulshan",
+                      primary: "+880 2-8836000",
+                      secondary: "10666",
+                    },
+                  ].map((h) => (
+                    <div
+                      key={h.title}
+                      className="bg-gray-50 rounded-xl p-4 mb-3"
                     >
-                      <option value="">Select</option>
-                      {BLOOD_GROUPS.slice(1).map((g) => (
-                        <option key={g} value={g}>
-                          {g}
-                        </option>
-                      ))}
-                    </select>
+                      <p className="font-medium text-gray-800">{h.title}</p>
+                      <p className="text-xs text-gray-400 mb-2">{h.location}</p>
+                      <div className="flex gap-3 text-[11px] md:text-base">
+                        <a
+                          href={`tel:${h.primary}`}
+                          className="flex-1 bg-red-600 text-white rounded-xl py-3 flex items-center justify-center gap-2"
+                        >
+                          <MdCall className="w-4 h-4" /> {h.primary}
+                        </a>
+                        <a
+                          href={`tel:${h.secondary}`}
+                          className="flex-1 bg-white border border-gray-200 rounded-xl py-3 flex items-center justify-center gap-2"
+                        >
+                          <MdCall className="w-4 h-4 placeholder:text-gray-900" />{" "}
+                          {h.secondary}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">Police</h4>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      24/7
+                    </span>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      Units Needed *
-                    </label>
-                    <input
-                      value={reqUnits}
-                      onChange={(e) => setReqUnits(e.target.value)}
-                      type="number"
-                      min="1"
-                      max="10"
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
-                    />
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="font-medium">National Emergency (Police)</p>
+                    <div className="mt-3 text-[11px] md:text-base">
+                      <a
+                        href={`tel:999`}
+                        className="w-full bg-red-600 text-white rounded-xl py-3 flex items-center justify-center gap-2"
+                      >
+                        <MdCall className="w-4 h-4" /> 999
+                      </a>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    Hospital Name *
-                  </label>
-                  <input
-                    value={reqHospital}
-                    onChange={(e) => setReqHospital(e.target.value)}
-                    placeholder="e.g. JU Medical Centre"
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
-                  />
+
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">
+                      Fire Service
+                    </h4>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      24/7
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="font-medium">Fire Service & Civil Defence</p>
+                    <div className="mt-3 text-[11px] md:text-base">
+                      <a
+                        href={`tel:999`}
+                        className="w-full bg-red-600 text-white rounded-xl py-3 flex items-center justify-center gap-2"
+                      >
+                        <MdCall className="w-4 h-4" /> 999
+                      </a>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    Date Needed *
-                  </label>
-                  <input
-                    value={reqDate}
-                    onChange={(e) => setReqDate(e.target.value)}
-                    type="date"
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
-                  />
+
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">Ambulance</h4>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      24/7
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="font-medium">National Ambulance Service</p>
+                    <div className="mt-3 text-[11px] md:text-base">
+                      <a
+                        href={`tel:999`}
+                        className="w-full bg-red-600 text-white rounded-xl py-3 flex items-center justify-center gap-2"
+                      >
+                        <MdCall className="w-4 h-4" /> 999
+                      </a>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    Contact Phone *
-                  </label>
-                  <input
-                    value={reqPhone}
-                    onChange={(e) => setReqPhone(e.target.value)}
-                    placeholder="01XXXXXXXXX"
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
-                  />
-                </div>
-                <button
-                  disabled={!reqBlood || !reqHospital || !reqPhone || !reqDate}
-                  onClick={() => setReqSubmitted(true)}
-                  className="w-full py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 disabled:opacity-50 transition-colors"
-                >
-                  Post Blood Request
-                </button>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
