@@ -42,7 +42,7 @@ export default function HomeTemplate({ locale = "en" }: { locale?: string }) {
       <EntrepreneurshipSection />
 
       {/* Food & Dining */}
-      <FoodExploreSection />
+      <FoodExploreSection locale={locale} />
       <TrendingShopsSection />
 
       {/* Books */}
