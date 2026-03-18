@@ -2,7 +2,11 @@ import Link from "next/link";
 import React from "react";
 import { foods, shops } from "../../data";
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const food = foods.find((f) => f.id === id);
   if (!food) return <div className="p-4">Food not found</div>;
@@ -48,11 +52,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </Link>
       </div>
 
-      <div className="fixed left-4 right-4 bottom-6">
+      {/* <div className="fixed left-4 right-4 bottom-6">
         <button className="w-full bg-red-600 text-white py-3 rounded-xl">
           🛒 Add to Cart
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }
