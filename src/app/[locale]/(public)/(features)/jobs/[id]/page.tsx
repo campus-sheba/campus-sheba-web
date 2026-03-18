@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { Briefcase, ChevronLeft, MapPin, Clock, DollarSign, CheckCircle2, X, User, Mail, BookOpen, Send } from "lucide-react";
+import { ChevronLeft, MapPin, Clock, DollarSign, CheckCircle2, X, User, Mail, BookOpen, Send } from "lucide-react";
 
 const JOBS: Record<string, {
   id: string; title: string; company: string; type: string; location: string;
@@ -32,8 +32,8 @@ const TYPE_COLORS: Record<string, string> = {
   "Freelance": "bg-purple-100 text-purple-700", "Internship": "bg-amber-100 text-amber-700",
 };
 
-export default function JobDetailPage({ params }: { params: { id: string; locale: string } }) {
-  const { id, locale } = params as { id: string; locale: string };
+export default function JobDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = use(params);
   const job = JOBS[id] || JOBS["j1"];
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState("");

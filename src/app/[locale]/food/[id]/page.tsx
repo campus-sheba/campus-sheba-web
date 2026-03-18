@@ -11,12 +11,12 @@ function slugify(s: string) {
     .replace(/^-|-$/g, "");
 }
 
-export default function Page({
+export default async function Page({
   params,
 }: {
-  params: { id: string; locale: string };
+  params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id, locale } = params;
+  const { id, locale } = await params;
   const food = foods.find(
     (f) =>
       f.id === id || slugify(f.name) === id || f.id === decodeURIComponent(id),

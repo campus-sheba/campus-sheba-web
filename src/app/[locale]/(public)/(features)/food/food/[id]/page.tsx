@@ -2,8 +2,8 @@ import Link from "next/link";
 import React from "react";
 import { foods, shops } from "../../data";
 
-export default function Page({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const food = foods.find((f) => f.id === id);
   if (!food) return <div className="p-4">Food not found</div>;
   const shop = shops.find((s) => s.id === food.shopId);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { GraduationCap, ChevronLeft, Star, MapPin, Clock, BookOpen, CheckCircle2, X, Phone, Calendar } from "lucide-react";
 
@@ -14,8 +14,8 @@ const TUTORS: Record<string, {
   t4: { id: "t4", name: "Tanvir Ahmed", subject: "Computer Science", level: "Undergraduate", rating: 4.6, reviews: 29, fee: 600, campus: "JU", experience: "2 years", available: ["Wednesday", "Friday", "Saturday"], accent: "from-blue-400 to-blue-600", bio: "Software Engineering student. Teaches Data Structures, Algorithms, Python, C++, Web Development basics.", sessions: 74 },
 };
 
-export default function TutorDetailPage({ params }: { params: { id: string; locale: string } }) {
-  const { id, locale } = params as { id: string; locale: string };
+export default function TutorDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = use(params);
   const tutor = TUTORS[id] || TUTORS["t1"];
   const [showModal, setShowModal] = useState(false);
   const [phone, setPhone] = useState("");

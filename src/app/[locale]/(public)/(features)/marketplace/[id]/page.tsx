@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Star, MapPin, Phone, MessageCircle, Shield, ChevronLeft, CheckCircle2, X } from "lucide-react";
+import { ShoppingBag, Star, MapPin, Phone, Shield, ChevronLeft, CheckCircle2, X } from "lucide-react";
 
 const PRODUCTS: Record<string, {
   id: string; name: string; price: number; rating: number; category: string;
@@ -13,8 +13,8 @@ const PRODUCTS: Record<string, {
   p2: { id: "p2", name: "HP Laptop Bag 15.6\"", price: 650, rating: 4.5, category: "Electronics", seller: "Sadia Islam", sellerPhone: "01XXXXXXXXX", campus: "JU", accent: "from-gray-400 to-gray-600", condition: "Like New", description: "HP laptop bag for up to 15.6 inch laptops. Multiple compartments. Used only a few times, excellent condition.", negotiable: true, postedDate: "5 days ago" },
 };
 
-export default function MarketplaceDetailPage({ params }: { params: { id: string; locale: string } }) {
-  const { id, locale } = params as { id: string; locale: string };
+export default function MarketplaceDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = use(params);
   const product = PRODUCTS[id] || PRODUCTS["p1"];
   const [ordered, setOrdered] = useState(false);
   const [showModal, setShowModal] = useState(false);

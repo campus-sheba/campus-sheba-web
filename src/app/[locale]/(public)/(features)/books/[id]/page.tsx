@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { BookOpen, ChevronLeft, Phone, CheckCircle2, X, Star, MapPin } from "lucide-react";
 
@@ -23,8 +23,8 @@ const ACTION_LABELS: Record<string, string> = {
   Buy: "Send Buy Request", Sell: "Buy This Book", Loan: "Request Loan", Swap: "Propose Swap",
 };
 
-export default function BookDetailPage({ params }: { params: { id: string; locale: string } }) {
-  const { id, locale } = params as { id: string; locale: string };
+export default function BookDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = use(params);
   const book = BOOKS[id] || BOOKS["b1"];
   const [showModal, setShowModal] = useState(false);
   const [phone, setPhone] = useState("");

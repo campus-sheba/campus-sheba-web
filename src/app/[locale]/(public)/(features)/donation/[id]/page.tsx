@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { Heart, ChevronLeft, Users, Calendar, Target, CheckCircle2, X } from "lucide-react";
 
@@ -16,8 +16,8 @@ const CAMPAIGNS: Record<string, {
 
 const PRESET_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
 
-export default function DonationDetailPage({ params }: { params: { id: string; locale: string } }) {
-  const { id, locale } = params as { id: string; locale: string };
+export default function DonationDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = use(params);
   const campaign = CAMPAIGNS[id] || CAMPAIGNS["c1"];
   const progress = Math.round((campaign.raised / campaign.goal) * 100);
 
