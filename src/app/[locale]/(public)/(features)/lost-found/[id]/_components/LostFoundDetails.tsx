@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Tag, Wallet } from "lucide-react";
 import { FaMap, FaClock, FaPhone } from "react-icons/fa6";
+import { ITEMS } from "../../data";
 
 type Item = (typeof ITEMS)[number];
 type Params = { id: string; locale: string };
