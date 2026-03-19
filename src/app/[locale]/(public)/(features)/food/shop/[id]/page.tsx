@@ -38,7 +38,7 @@ export default async function Page({
       </div>
 
       <div className="mt-6">
-        {/* <h3 className="font-semibold mb-2">Menu Items ({menu.length})</h3> */}
+        <h3 className="font-semibold mb-2">Menu Items ({menu.length})</h3>
         <div>
           <div className="flex justify-center text-red-600 text-6xl min-h-[200px] items-center">
             <MdOutlineRestaurant className="text-red-600" />
@@ -54,7 +54,6 @@ export default async function Page({
                         {shop.tag || "No Tag"}
                       </span>
                     )} */}
-                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold">৳40</div>

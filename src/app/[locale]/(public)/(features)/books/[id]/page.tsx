@@ -2,132 +2,375 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
-import { BookOpen, ChevronLeft, Phone, CheckCircle2, X, Star, MapPin } from "lucide-react";
+import { BookOpen, Phone, MapPin, Mail, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { HiOutlineBars3BottomLeft } from "react-icons/hi2";
 
-const BOOKS: Record<string, {
-  id: string; title: string; author: string; subject: string; type: string;
-  price: number; rating: number; condition: string; poster: string; campus: string;
-  accent: string; description: string; edition: string; buyerPhone?: string;
-}> = {
-  b1: { id: "b1", title: "Data Structures and Algorithms", author: "Thomas H. Cormen", subject: "Engineering", type: "Sell", price: 450, rating: 4.9, condition: "Good", poster: "Shahriar Ahmed", campus: "JU", accent: "from-blue-500 to-blue-700", description: "Classic algorithms textbook used in CSE departments. Covers sorting, trees, graphs, dynamic programming and more. Some light pencil marks on first 50 pages, otherwise excellent.", edition: "3rd Edition" },
-  b2: { id: "b2", title: "Fundamentals of Physics", author: "Halliday & Resnick", subject: "Science", type: "Loan", price: 0, rating: 4.7, condition: "Like New", poster: "Nafisa Khanam", campus: "JU", accent: "from-indigo-500 to-indigo-700", description: "Available for loan for up to 1 semester. Book is in like-new condition, no marks or folds. Please return in same condition.", edition: "10th Edition" },
-  b3: { id: "b3", title: "Principles of Economics", author: "N. Gregory Mankiw", subject: "Business", type: "Swap", price: 0, rating: 4.6, condition: "Good", poster: "Raihan Islam", campus: "JU", accent: "from-green-500 to-green-700", description: "Looking to swap for any Marketing or Management textbook of equal value. Book is in good condition with minor highlighting on key chapters.", edition: "8th Edition" },
+interface BookDetail {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  condition: string;
+  listingType: "Sell" | "Rent";
+  sellingPrice?: number;
+  originalPrice?: number;
+  savingsPercent?: number;
+  rentalPrice?: number;
+  department: string;
+  semester: string;
+  location: string;
+  postedTime: string;
+  description: string;
+  subject: string;
+  seller: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    rating: number;
+    totalListings: number;
+  };
+}
+
+const BOOKS: Record<string, BookDetail> = {
+  "1": {
+    id: "1",
+    title: "Data Structures and Algorithms in C++",
+    author: "Michael T. Goodrich",
+    category: "Textbook",
+    condition: "Good",
+    listingType: "Sell",
+    sellingPrice: 800,
+    originalPrice: 1500,
+    savingsPercent: 47,
+    department: "Computer Science & Engineering",
+    semester: "3rd Semester",
+    location: "Dhaka University",
+    postedTime: "2h ago",
+    description:
+      "Complete textbook with all chapters. Minimal highlighting, no missing pages.",
+    subject: "Data Structures",
+    seller: {
+      id: "1",
+      name: "Ahmed Hassan",
+      phone: "+880 1712-345678",
+      email: "ahmed@email.com",
+      rating: 4.8,
+      totalListings: 12,
+    },
+  },
+  "2": {
+    id: "2",
+    title: "Database Management Systems",
+    author: "Raghu Ramakrishnan",
+    category: "Textbook",
+    condition: "Like New",
+    listingType: "Rent",
+    rentalPrice: 150,
+    department: "Computer Science & Engineering",
+    semester: "3rd Semester",
+    location: "BUET Campus",
+    postedTime: "5h ago",
+    description:
+      "Available for rental. Book in like-new condition. Return within 1 month.",
+    subject: "Database Systems",
+    seller: {
+      id: "2",
+      name: "Priya Roy",
+      phone: "+880 1823-456789",
+      email: "priya@email.com",
+      rating: 4.9,
+      totalListings: 8,
+    },
+  },
+  "3": {
+    id: "3",
+    title: "Engineering Mathematics - Complete Notes",
+    author: "Dr. H.K. Dass",
+    category: "Study Guide",
+    condition: "New",
+    listingType: "Sell",
+    sellingPrice: 300,
+    originalPrice: 500,
+    savingsPercent: 40,
+    department: "Computer Science & Engineering",
+    semester: "1st Semester",
+    location: "Dhaka University",
+    postedTime: "1d ago",
+    description: "Complete study guide with solved problems and notes.",
+    subject: "Mathematics",
+    seller: {
+      id: "3",
+      name: "Fatima Khan",
+      phone: "+880 1934-567890",
+      email: "fatima@email.com",
+      rating: 5.0,
+      totalListings: 5,
+    },
+  },
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  Buy: "bg-blue-100 text-blue-700", Sell: "bg-green-100 text-green-700",
-  Loan: "bg-amber-100 text-amber-700", Swap: "bg-purple-100 text-purple-700",
-};
-
-const ACTION_LABELS: Record<string, string> = {
-  Buy: "Send Buy Request", Sell: "Buy This Book", Loan: "Request Loan", Swap: "Propose Swap",
-};
-
-export default function BookDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default function BookDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
+  const router = useRouter();
   const { id, locale } = use(params);
-  const book = BOOKS[id] || BOOKS["b1"];
-  const [showModal, setShowModal] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [note, setNote] = useState("");
+  const book = BOOKS[id];
+  const [isContactVisible, setIsContactVisible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  if (!book) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900">Book Not Found</h2>
+          <p className="text-gray-500 text-sm mt-2 mb-6">
+            This book listing doesn&apos;t exist
+          </p>
+          <Link
+            href={`/${locale}/books`}
+            className="text-red-600 font-semibold"
+          >
+            ← Back to Books
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="cs-container py-8 max-w-3xl">
-        <Link href={`/${locale}/books`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
-          <ChevronLeft className="w-4 h-4" /> Back to Books
-        </Link>
-
-        {submitted ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h2>
-            <p className="text-gray-500 text-sm mb-6">{book.poster} will contact you at <strong>{phone}</strong> to arrange the {book.type === "Sell" ? "purchase" : book.type === "Loan" ? "loan pickup" : "swap"}.</p>
-            <Link href={`/${locale}/books`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-700 text-white font-semibold text-sm hover:bg-blue-800">
-              Browse More Books
-            </Link>
+    <div className="min-h-screen px-4 md:px-8 lg:px-0">
+      {/* Header */}
+      <div className="bg-white ">
+        <div className="max-w-3xl mx-auto pb-4 flex items-center justify-between border-b border-gray-200 mb-6">
+          <div className="flex items-center gap-5">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-center text-lg flex-1 font-semibold">
+              Book Details
+            </h1>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className={`h-64 sm:h-auto min-h-[280px] bg-gradient-to-br ${book.accent} rounded-2xl flex flex-col items-center justify-center gap-3`}>
-              <BookOpen className="w-16 h-16 text-white/60" />
-              <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${TYPE_COLORS[book.type]}`}>{book.type}</span>
-            </div>
+          <span
+            className={`text-xs px-3 py-1 rounded-full ${book.listingType === "Sell" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}
+          >
+            {book.listingType === "Sell" ? "For Sale" : "For Rent"}
+          </span>
+        </div>
+      </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
-              <div>
-                <span className="text-xs text-gray-400">{book.subject} · {book.edition}</span>
-                <h1 className="text-xl font-bold text-gray-900 mt-1">{book.title}</h1>
-                <p className="text-sm text-gray-500 mt-0.5">{book.author}</p>
-                <p className="text-2xl font-bold text-blue-700 mt-2">
-                  {book.price > 0 ? `৳${book.price}` : book.type === "Loan" ? "Free Loan" : "Swap"}
-                </p>
-              </div>
-
-              <p className="text-sm text-gray-600 leading-relaxed">{book.description}</p>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span>Condition: {book.condition}</span>
+      {!submitted ? (
+        <div className="max-w-3xl mx-auto ">
+          <div>
+            <div className="border border-gray-100 p-4 rounded-lg">
+              {/* Book Cover */}
+              <div className="flex items-start gap-3 mb-12">
+                <div className="relative h-16 min-w-16 rounded-md bg-red-100 flex items-center justify-center">
+                  <BookOpen className="w-8 h-8 text-red-400 opacity-50" />
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <span>{book.campus} Campus</span>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-xs text-gray-500 mb-1">Posted by</p>
-                <p className="font-semibold text-gray-900">{book.poster}</p>
-              </div>
-
-              <div className="flex gap-2">
-                <button onClick={() => setShowModal(true)} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-700 text-white font-semibold text-sm hover:bg-blue-800 transition-colors">
-                  <BookOpen className="w-4 h-4" />
-                  {ACTION_LABELS[book.type]}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showModal && (
-          <>
-            <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowModal(false)} />
-            <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white rounded-2xl p-6 z-[51] shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">{ACTION_LABELS[book.type]}</h3>
-                <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3 mb-4">
-                <p className="font-medium text-gray-900 text-sm">{book.title}</p>
-                <p className="text-blue-700 font-bold text-sm">{book.price > 0 ? `৳${book.price}` : book.type}</p>
-              </div>
-              <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Your Phone Number</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                    <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-500" />
+                  <h2 className="text-md md:text-xl font-bold text-gray-900">
+                    {book.title}
+                  </h2>
+                  <p className="text-gray-500 text-sm mt-1">by {book.author}</p>
+                </div>
+              </div>
+
+              {/* Book Info Card */}
+              <div className="">
+                {/* Price */}
+                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-300">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        Selling Price
+                      </p>
+                      <p className="text-xl md:text-3xl font-bold text-gray-900">
+                        ৳{book.sellingPrice || book.rentalPrice}
+                      </p>
+                    </div>
+                    {book.originalPrice && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-600 mb-1">
+                          Original Price
+                        </p>
+                        <p className="text-sm md:text-lg line-through text-gray-400">
+                          ৳{book.originalPrice}
+                        </p>
+                      </div>
+                    )}
+                    {book.listingType === "Rent" && (
+                      <div className="text-right text-xs text-gray-600">
+                        /month
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Message (optional)</label>
-                  <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder={book.type === "Swap" ? "What book are you offering to swap?" : "Any specific message to the poster?"} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-500 resize-none" />
+
+                {/* Description */}
+                <div className="mt-6 bg-gray-100 p-4 rounded-lg">
+                  <h3 className=" text-gray-900 mb-2 text-xs md:text-base">
+                    Description
+                  </h3>
+                  <p className="leading-[1.5] text-sm leading-relaxed">
+                    {book.description}
+                  </p>
                 </div>
-                <button disabled={!phone} onClick={() => { setShowModal(false); setSubmitted(true); }} className="w-full py-3 rounded-xl bg-blue-700 text-white font-semibold text-sm hover:bg-blue-800 disabled:opacity-50 transition-colors">
-                  Send Request
+              </div>
+            </div>
+
+            {/* Book Information */}
+            <div className="mt-4 border border-gray-100 rounded-xl p-4">
+              <h3 className="text-xs md:text-base font-semibold text-gray-900 mb-4">
+                Book Information
+              </h3>
+              <div className="space-y-3 ">
+                <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="text-gray-600">
+                    <HiOutlineBars3BottomLeft />
+                  </span>
+                  <div>
+                    <p className="text-xs text-gray-600">Subject/Department</p>
+                    <p className="font-semibold text-gray-900">
+                      {book.subject}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="text-gray-600">🎓</span>
+                  <div>
+                    <p className="text-xs text-gray-600">Department</p>
+                    <p className="font-semibold text-gray-900">
+                      {book.department}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="text-gray-600">📅</span>
+                  <div>
+                    <p className="text-xs text-gray-600">Semester</p>
+                    <p className="font-semibold text-gray-900">
+                      {book.semester}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-lg">
+                  <MapPin className="w-4 h-4 text-gray-600" />
+                  <div>
+                    <p className="text-xs text-gray-600">Location</p>
+                    <p className="font-semibold text-gray-900">
+                      {book.location}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="text-gray-600">🕒</span>
+                  <div>
+                    <p className="text-xs text-gray-600">Posted</p>
+                    <p className="font-semibold text-gray-900">
+                      {book.postedTime}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Seller Information */}
+            <div className="mt-6 border border-gray-100 rounded-xl p-4">
+              <h3 className="font-semibold text-gray-900 mb-4">
+                Seller Information
+              </h3>
+              <div className="flex items-center gap-3 mb-4 bg-gray-100 px-4 py-2 rounded-lg">
+                <div className="w-12 h-12 rounded-full bg-red-200 flex items-center justify-center">
+                  <span className="text-lg">👤</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    {book.seller.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    ⭐ {book.seller.rating} • {book.seller.totalListings}{" "}
+                    listings
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 ">
+                <button
+                  onClick={() => setIsContactVisible(!isContactVisible)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg bg-red-100 hover:border-red-300 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <Phone className="w-5 h-5 text-red-600" />
+                    <div className="flex flex-col ">
+                      <span className="font-semibold text-gray-500">Phone</span>
+                      <p className="text-red-600 text-xs md:text-base font-semibold -mt-1">
+                        {book.seller.phone}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-red-600">{`>`}</span>
+                </button>
+
+                <button
+                  onClick={() => setIsContactVisible(!isContactVisible)}
+                  className="w-full flex items-center justify-between p-3 bg-red-100 rounded-lg  hover:border-red-300 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <Mail className="w-5 h-5 text-red-600 text-lg" />
+                    <div className="flex flex-col ">
+                      <span className=" text-gray-500">Email</span>
+                      <p className="text-red-600 font-semibold text-xs md:text-base -mt-1">
+                        {book.seller.email}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-red-600">{`>`}</span>
                 </button>
               </div>
             </div>
-          </>
-        )}
-      </div>
+
+            {/* Contact Seller Button */}
+            <button
+              onClick={() => setSubmitted(true)}
+              className="w-full mt-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Phone className="w-5 h-5" />
+              Contact Seller
+            </button>
+          </div>
+
+          <div className="h-6"></div>
+        </div>
+      ) : (
+        /* Success State */
+        <div className="max-w-2xl mx-auto p-4 mt-12">
+          <div className="bg-white rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">✓</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Contact Details Shared!
+            </h2>
+            <p className="text-gray-600 text-sm mb-6">
+              You can now contact the seller at their phone number or email.
+            </p>
+            <Link
+              href={`/${locale}/books`}
+              className="inline-block bg-red-600 text-white rounded-xl px-8 py-3 font-semibold hover:bg-red-700 transition-colors"
+            >
+              Back to Books
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
