@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingCart, X, Plus, Minus, Trash2 } from "lucide-react";
 import React, { useMemo, useState } from "react";
+import { useAppState } from "@/contexts/AppStateContext";
 
 type CartButtonProps = {
   locale: string;
@@ -58,6 +59,7 @@ function getCookieValue(name: string): string | null {
 
 export default function CartButton({ locale }: CartButtonProps) {
   const pathname = usePathname();
+  const { dispatch } = useAppState();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [items, setItems] = useState<MockCartItem[]>(MOCK_CART_ITEMS);
@@ -261,13 +263,16 @@ export default function CartButton({ locale }: CartButtonProps) {
               >
                 Cancel
               </button>
-              <Link
-                href={`/${locale}/login`}
+              <button
+                type="button"
                 className="rounded-xl bg-[#E30A13] px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-red-700"
-                onClick={() => setShowAuthModal(false)}
+                onClick={() => {
+                  setShowAuthModal(false);
+                  dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
+                }}
               >
-                Go to Login
-              </Link>
+                Log In
+              </button>
             </div>
           </div>
         </div>

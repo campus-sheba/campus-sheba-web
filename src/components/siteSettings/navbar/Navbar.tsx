@@ -400,15 +400,7 @@ useEffect(() => {
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#E30A13] flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-white" strokeWidth={2.5} />
-            </div>
-            <span className="font-display font-bold text-base text-neutral-900">
-              <span className="text-[#E30A13]">Campus</span>
-              <span className="text-brand-green-DEFAULT">Sheba</span>
-            </span>
-          </div>
+          <Logo />
           <button
             onClick={() => setMobileOpen(false)}
             id="mobile-nav-close"

@@ -344,7 +344,7 @@ export function HeroSection({ locale }: { locale: string }) {
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href={`/${locale}/login`}
+                href={`/${locale}?auth=signup`}
                 id="hero-get-started-btn"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-base text-white shadow-lg transition-all duration-200 hover:shadow-glow-lg hover:-translate-y-0.5 active:scale-[0.97]"
                 style={{
@@ -582,7 +582,7 @@ export function HowItWorksSection() {
 
         <div className="text-center mt-14">
           <Link
-            href="/login"
+            href="/?auth=signup"
             id="hiw-cta-btn"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-base text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]"
             style={{ background: "linear-gradient(135deg, #00A651, #00c460)" }}
@@ -869,7 +869,7 @@ export function CTASection({ locale }: { locale: string }) {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
-                href={`/${locale}/login`}
+                href={`/${locale}?auth=signup`}
                 id="cta-main-btn"
                 className="inline-flex items-center gap-2 px-9 py-4 rounded-xl font-bold text-base text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow-lg"
                 style={{

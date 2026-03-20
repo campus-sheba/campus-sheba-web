@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronDown, Droplets, MapPin } from "lucide-react";
 import { useAppState } from "@/contexts/AppStateContext";
 
@@ -13,12 +14,24 @@ export default function CampusTopbar({
   locale,
   onLanguageChange,
 }: CampusTopbarProps) {
+  const router = useRouter();
   const { state, dispatch } = useAppState();
 
   const selectedUniversity = state.university.selected;
+  const isLoggedIn = state.auth.isAuthenticated;
 
   const handleChangeUniversity = () => {
+    if (isLoggedIn) return;
     dispatch({ type: "OPEN_UNIVERSITY_SELECTOR" });
+  };
+
+  const handleProviderClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (isLoggedIn) {
+      router.push(`/${locale}/marketplace/shop/create`);
+      return;
+    }
+    dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
   };
 
   return (
@@ -31,8 +44,13 @@ export default function CampusTopbar({
         {/* University Selector */}
         <button
           onClick={handleChangeUniversity}
-          className="flex items-center gap-2 text-sm font-medium hover:text-emerald-600 transition-colors"
-          title="Change university"
+          disabled={isLoggedIn}
+          className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+            isLoggedIn
+              ? "cursor-not-allowed text-neutral-400"
+              : "hover:text-emerald-600"
+          }`}
+          title={isLoggedIn ? "University change is disabled after login" : "Change university"}
         >
           <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span className="text-neutral-700 font-semibold">
@@ -60,17 +78,18 @@ export default function CampusTopbar({
 
           <div className="w-px h-3.5 bg-neutral-200" />
 
-          <Link
-            href={`/${locale}/login?redirect=/marketplace/shop/create`}
-            className="rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
+          <button
+            type="button"
+            onClick={handleProviderClick}
+            className="hidden lg:block rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
           >
             Be a Provider
-          </Link>
+          </button>
 
           <Link
             href={`/${locale}/blood-bank`}
             id="topbar-sos-btn"
-            className="flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
+            className="hidden lg:flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
             title="Emergency Blood Request"
           >
             <Droplets className="w-3 h-3" />

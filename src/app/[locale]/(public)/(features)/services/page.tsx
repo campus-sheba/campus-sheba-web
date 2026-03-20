@@ -103,7 +103,7 @@ export default async function ServicesPage({
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href={`/${locale}/signup`}
+                href={`/${locale}?auth=signup`}
                 className="inline-flex items-center justify-center rounded-2xl bg-[#E30A13] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#c40912]"
               >
                 Create free account
@@ -276,7 +276,7 @@ export default async function ServicesPage({
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={`/${locale}/signup`}
+                  href={`/${locale}?auth=signup`}
                   className="inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-[#E30A13] transition hover:bg-rose-50"
                 >
                   Join Campus Sheba

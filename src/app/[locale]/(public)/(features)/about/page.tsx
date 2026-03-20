@@ -145,7 +145,7 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold mb-3">Ready to Get Started?</h2>
           <p className="text-rose-100 mb-6">Join thousands of students already using Campus Sheba every day.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/signup" className="px-6 py-3 rounded-xl bg-white text-[#E30A13] font-semibold text-sm hover:bg-gray-100 transition-colors">Create Free Account</Link>
+            <Link href="/?auth=signup" className="px-6 py-3 rounded-xl bg-white text-[#E30A13] font-semibold text-sm hover:bg-gray-100 transition-colors">Create Free Account</Link>
             <Link href="/delivery" className="px-6 py-3 rounded-xl border border-white/40 text-white font-semibold text-sm hover:bg-white/10 transition-colors">Explore Services</Link>
           </div>
         </div>

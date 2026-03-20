@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AppStateProvider, useAppState } from "@/contexts/AppStateContext";
 import { AppInitializer } from "@/components/AppInitializer";
 import AuthModal from "@/components/modals/AuthModal";
@@ -15,6 +16,21 @@ import UniversitySelectorModal from "@/components/modals/UniversitySelectorModal
  */
 function LayoutContent({ children, locale }: { children: ReactNode; locale: string }) {
   const { state, dispatch } = useAppState();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const authParam = searchParams.get("auth");
+    if (authParam !== "login" && authParam !== "signup") return;
+
+    dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: authParam } });
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("auth");
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [dispatch, pathname, router, searchParams]);
 
   return (
     <>

@@ -39,7 +39,7 @@ export const HERO_ROLES = [
     label: "Provider",
     subtitle: "List products, run your shop, and manage campus orders.",
     primary: { label: "Open Shop", href: "/marketplace", icon: ShoppingBag },
-    secondary: { label: "Manage Listings", href: "/login", icon: Package },
+    secondary: { label: "Manage Listings", href: "/?auth=login", icon: Package },
   },
   {
     id: "delivery-hero",
@@ -52,8 +52,8 @@ export const HERO_ROLES = [
     id: "admin",
     label: "Admin",
     subtitle: "Moderate modules, monitor activity, and keep trust high.",
-    primary: { label: "Admin Login", href: "/login", icon: Shield },
-    secondary: { label: "View Reports", href: "/login", icon: TrendingUp },
+    primary: { label: "Admin Login", href: "/?auth=login", icon: Shield },
+    secondary: { label: "View Reports", href: "/?auth=login", icon: TrendingUp },
   },
 ];
 
