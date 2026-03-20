@@ -243,6 +243,16 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
               payload: userProfile,
             });
           }
+        } else if (userProfile) {
+          // Tokens are httpOnly and may be unreadable on client; user cookie indicates an active session.
+          dispatch({
+            type: "SET_AUTH_TOKEN",
+            payload: { token: "session", refreshToken: "session" },
+          });
+          dispatch({
+            type: "SET_USER_PROFILE",
+            payload: userProfile,
+          });
         }
 
         if (university) {
@@ -281,8 +291,9 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   );
 
   const logout = useCallback(() => {
-    CookieHelper.clearAuth();
-    dispatch({ type: "CLEAR_AUTH" });
+    CookieHelper.clearAll();
+    dispatch({ type: "RESET_STATE" });
+    dispatch({ type: "SET_AUTH_LOADING", payload: false });
     StorageHelper.clearAll();
   }, []);
 

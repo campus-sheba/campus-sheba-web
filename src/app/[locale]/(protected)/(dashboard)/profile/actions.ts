@@ -5,5 +5,5 @@ import { logout } from "@/services/auth";
 
 export async function logoutAction(locale: string) {
   await logout();
-  redirect({ href: "/login", locale });
+  redirect({ href: "/", locale });
 }

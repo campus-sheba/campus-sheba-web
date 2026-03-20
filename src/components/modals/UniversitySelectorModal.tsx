@@ -69,6 +69,7 @@ export default function UniversitySelectorModal({
     if (!isOpen) return;
     const cookieUniversity = CookieHelper.getUniversity();
     const initialId = state.university.selected?._id ?? cookieUniversity?._id ?? null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedId(initialId);
   }, [isOpen, state.university.selected?._id]);
 

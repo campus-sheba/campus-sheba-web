@@ -46,6 +46,8 @@ export type AuthMe = {
   _id: string;
   email?: string;
   phone: string;
+  role?: UserRole;
+  photo?: string | null;
   password?: string;
   fcmToken?: string;
   birthDate?: string;

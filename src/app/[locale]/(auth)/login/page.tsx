@@ -42,8 +42,6 @@ export default function LoginPage() {
         role: formData.role,
       });
 
-      console.log("Login result:", result);
-
       if (!result.success) {
         setErrors((prev) => ({ ...prev, general: result.message }));
         return;

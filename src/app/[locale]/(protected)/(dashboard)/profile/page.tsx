@@ -1,6 +1,6 @@
 import { getMe } from "@/services/auth";
-import { logoutAction } from "./actions";
 import Link from "next/link";
+import ProfileLogoutButton from "./ProfileLogoutButton";
 import {
   Package,
   Wallet,
@@ -217,11 +217,7 @@ export default async function ProfilePage({
       </div>
 
       <div className="flex justify-end">
-        <form action={logoutAction.bind(null, locale)}>
-          <button type="submit" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-50 border border-red-100 text-sm font-semibold text-[#E30A13] hover:bg-red-100 transition-colors">
-            Log Out
-          </button>
-        </form>
+        <ProfileLogoutButton locale={locale} />
       </div>
     </div>
   );

@@ -41,7 +41,16 @@ async function setAuthCookies(tokens: AuthTokens) {
 async function setUserCookie(profile: AuthMe) {
   const cookieStore = await cookies();
 
-  cookieStore.set("user", JSON.stringify(profile), {
+  const minimalProfile: AuthMe = {
+    _id: profile._id,
+    name: profile.name,
+    phone: profile.phone,
+    email: profile.email,
+    photo: profile.photo,
+    role: profile.role,
+  };
+
+  cookieStore.set("user", JSON.stringify(minimalProfile), {
     httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -55,6 +64,8 @@ export async function clearAuthCookies() {
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
   cookieStore.delete("user");
+  cookieStore.delete("university");
+  cookieStore.delete("addressId");
 }
 
 export async function signupSendOtp(payload: SignupSendOtpPayload) {
@@ -72,10 +83,14 @@ export async function signupVerifyOtp(payload: SignupVerifyOtpPayload) {
 }
 
 export async function signupComplete(payload: SignupCompletePayload) {
-  return postPublic<ApiEnvelope<GenericMessageResponseData>>(
+  const response = await postPublic<ApiEnvelope<AuthTokens>>(
     authenticationEndpoints.signupComplete,
     payload,
   );
+
+  await setAuthCookies(response.data);
+
+  return response;
 }
 
 export async function login(payload: LoginPayload) {

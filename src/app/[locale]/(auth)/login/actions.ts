@@ -16,9 +16,9 @@ export async function loginAction(payload: LoginActionPayload) {
       role: payload.role || "User",
     });
 
-    await getMe({ persistUserCookie: true });
+    const me = await getMe({ persistUserCookie: true });
 
-    return { success: true as const };
+    return { success: true as const, profile: me.data };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Login failed";
     return { success: false as const, message };

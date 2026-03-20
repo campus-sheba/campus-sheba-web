@@ -517,23 +517,29 @@ useEffect(() => {
             </Link>
           ) : (
             <>
-              <Link
-                href={`/${locale}/login`}
+              <button
+                type="button"
                 id="mobile-nav-login"
-                onClick={() => setMobileOpen(false)}
+                onClick={() => {
+                  setMobileOpen(false);
+                  appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
+                }}
                 className="btn-secondary-lg w-full justify-center"
               >
                 <User className="w-4 h-4" />
                 Log In
-              </Link>
-              <Link
-                href={`/${locale}/signup`}
+              </button>
+              <button
+                type="button"
                 id="mobile-nav-signup"
-                onClick={() => setMobileOpen(false)}
+                onClick={() => {
+                  setMobileOpen(false);
+                  appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "signup" } });
+                }}
                 className="w-full justify-center inline-flex items-center rounded-xl bg-[#E30A13] px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
               >
                 Get Started Free
-              </Link>
+              </button>
             </>
           )}
         </div>
