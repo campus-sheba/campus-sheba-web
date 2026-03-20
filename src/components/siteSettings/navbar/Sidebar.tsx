@@ -22,6 +22,10 @@ export default function Sidebar({ open, onClose, items }: SidebarProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (document.body.dataset.modalScrollLock === "university-required") {
+      return;
+    }
+
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
@@ -29,7 +33,9 @@ export default function Sidebar({ open, onClose, items }: SidebarProps) {
     }
 
     return () => {
-      document.body.style.overflow = "";
+      if (document.body.dataset.modalScrollLock !== "university-required") {
+        document.body.style.overflow = "";
+      }
     };
   }, [open]);
 

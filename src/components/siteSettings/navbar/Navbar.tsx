@@ -25,34 +25,23 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import Logo from "./Logo";
-import CampusSetupModal from "./CampusSetupModal";
 import CampusTopbar from "./CampusTopbar";
-import {
-  CAMPUSES,
-  CAMPUS_LOCATION_GROUPS,
-  DEFAULT_CAMPUS_LOCATION_GROUPS,
-  navLinks,
-  servicesMenu,
-} from "./navbar.constants";
+import { navLinks, servicesMenu } from "./navbar.constants";
+import { useAppState } from "@/contexts/AppStateContext";
 
 // ─── Navbar Component ─────────────────────────────────────────
 const Navbar = ({ locale }: { locale: string }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { state: appState, dispatch: appDispatch } = useAppState();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Use global auth state instead of local state
+  const isLoggedIn = appState.auth.isAuthenticated;
+  const userProfile = appState.user.profile;
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [selectedCampus, setSelectedCampus] = useState<string | null>(null);
-  // const [selectedCampusShort, setSelectedCampusShort] = useState<string | null>(null);
-  const [selectedCampusLocation, setSelectedCampusLocation] = useState<string | null>(null);
-  const [campusOpen, setCampusOpen] = useState(false);
-  const [campusModalOpen, setCampusModalOpen] = useState(false);
-  const [draftCampus, setDraftCampus] = useState<string | null>(null);
   const [walletPoints, setWalletPoints] = useState(120);
-  const [draftCampusLocation, setDraftCampusLocation] = useState<string | null>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const campusRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -70,116 +59,35 @@ useEffect(() => {
       if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
         setServicesOpen(false);
       }
-      if (campusRef.current && !campusRef.current.contains(e.target as Node)) {
-        setCampusOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen || campusModalOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [campusModalOpen, mobileOpen]);
-
-  useEffect(() => {
-    const userCookie = document.cookie
-      .split(";")
-      .map((item) => item.trim())
-      .find((item) => item.startsWith("user="));
-
-    setIsLoggedIn(Boolean(userCookie));
-  }, []);
-
-  useEffect(() => {
-    const savedCampus = localStorage.getItem("cs-selected-campus");
-    const savedLocation = localStorage.getItem("cs-selected-campus-location");
-
-    if (savedCampus) {
-      setSelectedCampus(savedCampus);
-      setDraftCampus(savedCampus);
+    if (document.body.dataset.modalScrollLock === "university-required") {
+      return;
     }
 
-    if (savedLocation) {
-      setSelectedCampusLocation(savedLocation);
-      setDraftCampusLocation(savedLocation);
-    }
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      if (document.body.dataset.modalScrollLock !== "university-required") {
+        document.body.style.overflow = "";
+      }
+    };
+  }, [mobileOpen]);
 
-    if (!savedCampus || !savedLocation) {
-      setCampusModalOpen(true);
-    }
-  }, []);
+  // Now using global auth state from AppStateContext
 
   const handleLanguageChange = (newLocale: string) => {
     const path = pathname ? pathname.split("/").slice(2).join("/") : "";
     router.push(`/${newLocale}/${path}`);
   };
 
-  const handleCampusDraftSelect = (campusName: string) => {
-    setDraftCampus(campusName);
-    setDraftCampusLocation(null);
-  };
-
-  const handleCampusLocationDraftSelect = (location: string) => {
-    setDraftCampusLocation(location);
-  };
-
-  const saveCampusSelection = () => {
-    if (!draftCampus || !draftCampusLocation) return;
-
-    setSelectedCampus(draftCampus);
-    setSelectedCampusLocation(draftCampusLocation);
-    localStorage.setItem("cs-selected-campus", draftCampus);
-    localStorage.setItem("cs-selected-campus-location", draftCampusLocation);
-    setCampusOpen(false);
-    setCampusModalOpen(false);
-  };
-
-  const toggleCampusPicker = () => {
-    if (!campusOpen) {
-      setDraftCampus(selectedCampus);
-      setDraftCampusLocation(selectedCampusLocation);
-    }
-    setCampusOpen((prev) => !prev);
-  };
-
-  const activeCampusId = CAMPUSES.find((campus) => campus.name === draftCampus)?.id;
-  const activeLocationGroups = activeCampusId
-    ? (CAMPUS_LOCATION_GROUPS[activeCampusId] ?? DEFAULT_CAMPUS_LOCATION_GROUPS)
-    : [];
-  const selectedCampusSummary = selectedCampus
-    ? selectedCampusLocation
-      ? `${selectedCampus} • ${selectedCampusLocation}`
-      : selectedCampus
-    : null;
-  const selectedCampusShort = selectedCampus
-    ? CAMPUSES.find((campus) => campus.name === selectedCampus)?.short
-    : null;
-
   return (
     <>
-      <CampusSetupModal
-        open={campusModalOpen}
-        draftCampus={draftCampus}
-        draftCampusLocation={draftCampusLocation}
-        onSelectCampus={handleCampusDraftSelect}
-        onSelectLocation={handleCampusLocationDraftSelect}
-        onSave={saveCampusSelection}
-      />
-
       <CampusTopbar
         locale={locale}
-        campusRef={campusRef}
-        campusOpen={campusOpen}
-        selectedCampusSummary={selectedCampusSummary}
-        selectedCampusShort={selectedCampusShort ?? null}
-        draftCampus={draftCampus}
-        draftCampusLocation={draftCampusLocation}
-        onToggleCampusPicker={toggleCampusPicker}
-        onSelectCampus={handleCampusDraftSelect}
-        onSelectLocation={handleCampusLocationDraftSelect}
-        onSaveCampus={saveCampusSelection}
         onLanguageChange={handleLanguageChange}
       />
 
@@ -284,11 +192,17 @@ useEffect(() => {
                       </p>
                       <Link
                         href={
-                          isLoggedIn ? `/${locale}/profile` : `/${locale}/login`
+                          isLoggedIn ? `/${locale}/profile` : "#"
                         }
+                        onClick={(e) => {
+                          if (!isLoggedIn) {
+                            e.preventDefault();
+                            appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
+                          }
+                          setServicesOpen(false);
+                        }}
                         className="btn-primary text-xs px-4 py-2"
                         id="nav-services-cta"
-                        onClick={() => setServicesOpen(false)}
                       >
                         {isLoggedIn ? "Go to Profile" : "Get Started Free"}
                       </Link>
@@ -359,21 +273,21 @@ useEffect(() => {
               </Link>
             ) : (
               <>
-                <Link
-                  href={`/${locale}/login`}
+                <button
+                  onClick={() => appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } })}
                   id="nav-login-btn"
                   className="inline-flex items-center justify-center rounded-xl border border-brand-green-DEFAULT/30 px-4 py-2 text-sm font-semibold text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
                 >
                   Log In
-                </Link>
+                </button>
 
-                <Link
-                  href={`/${locale}/signup`}
+                <button
+                  onClick={() => appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "signup" } })}
                   id="nav-signup-btn"
                   className="inline-flex items-center justify-center rounded-xl bg-[#E30A13] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
                 >
                   Get Started
-                </Link>
+                </button>
               </>
             )}
           </div>
@@ -449,18 +363,29 @@ useEffect(() => {
             </span>
             <span className="text-[10px] font-medium">Cart</span>
           </Link>
-          <Link
-            href={isLoggedIn ? `/${locale}/profile` : `/${locale}/login`}
-            id="bottom-nav-profile"
-            className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
-              pathname?.includes("/profile") || pathname?.includes("/login")
-                ? "text-[#E30A13]"
-                : "text-neutral-600"
-            }`}
-          >
-            <User className="w-5 h-5" strokeWidth={2} />
-            <span className="text-[10px] font-medium">Profile</span>
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href={`/${locale}/profile`}
+              id="bottom-nav-profile"
+              className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
+                pathname?.includes("/profile")
+                  ? "text-[#E30A13]"
+                  : "text-neutral-600"
+              }`}
+            >
+              <User className="w-5 h-5" strokeWidth={2} />
+              <span className="text-[10px] font-medium">Profile</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } })}
+              id="bottom-nav-profile"
+              className="flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors text-neutral-600 hover:text-[#E30A13]"
+            >
+              <User className="w-5 h-5" strokeWidth={2} />
+              <span className="text-[10px] font-medium">Sign In</span>
+            </button>
+          )}
         </div>
       </nav>
 
@@ -506,15 +431,13 @@ useEffect(() => {
               <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider leading-none mb-0.5">
                 Your Campus
               </p>
-              {selectedCampus ? (
+              {appState.university.selected ? (
                 <p className="text-xs font-semibold text-neutral-800 truncate">
-                  {selectedCampusLocation
-                    ? `${selectedCampus} • ${selectedCampusLocation}`
-                    : selectedCampus}
+                  {appState.university.selected.name}
                 </p>
               ) : (
                 <p className="text-xs font-semibold text-amber-500">
-                  No campus selected yet
+                  No university selected yet
                 </p>
               )}
             </div>
