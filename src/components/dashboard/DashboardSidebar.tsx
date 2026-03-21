@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 "use client";
 
 import Link from "next/link";
@@ -85,7 +86,7 @@ export default function DashboardSidebar({ locale, user }: Props) {
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
         {navItems.map((item) => (
           <Link
-            key={item.href}
+            key={item.href+item.label}
             href={`/${locale}${item.href}`}
             onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${

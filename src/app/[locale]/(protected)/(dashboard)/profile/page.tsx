@@ -1,4 +1,5 @@
 import { getMe } from "@/services/auth";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import ProfileLogoutButton from "./ProfileLogoutButton";
 import {
@@ -53,7 +54,13 @@ export default async function ProfilePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const response = await getMe();
+  let response;
+  try {
+    response = await getMe();
+  } catch {
+    redirect(`/api/auth/clear?locale=${locale}`);
+  }
+  if (!response) return null;
   const user = response.data;
 
   const initials = user?.name

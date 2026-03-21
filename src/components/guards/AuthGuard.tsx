@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { redirect } from "@/i18n/navigation";
-import { isAuthenticated, refreshAuth } from "@/services/auth";
+import { redirect } from "next/navigation";
+import { getMe, isAuthenticated, refreshAuth } from "@/services/auth";
 
 type AuthGuardProps = {
 	children: ReactNode;
@@ -13,15 +13,25 @@ export default async function AuthGuard({ children, locale }: AuthGuardProps) {
 	if (!authenticated) {
 		try {
 			await refreshAuth();
+			authenticated = await isAuthenticated();
 		} catch {
-			// Ignore refresh failures and redirect below.
+			authenticated = false;
 		}
-
-		authenticated = await isAuthenticated();
 	}
 
-	if (!authenticated) {
-		redirect({ href: "/login", locale });
+	if (authenticated) {
+		try {
+			await getMe();
+		} catch {
+			try {
+				await refreshAuth();
+				await getMe();
+			} catch {
+				redirect(`/api/auth/clear?locale=${locale}`);
+			}
+		}
+	} else {
+			redirect(`/api/auth/clear?locale=${locale}`);
 	}
 
 	return <>{children}</>;
