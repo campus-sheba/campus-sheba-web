@@ -1,44 +1,55 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, X, Plus, Minus, Trash2 } from "lucide-react";
+import {
+  ShoppingCart,
+  X,
+  Plus,
+  Minus,
+  Trash2,
+  ArrowRight,
+  Package,
+} from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useAppState } from "@/contexts/AppStateContext";
 
-type CartButtonProps = {
-  locale: string;
-};
+/* ─────────────────────────── types ─────────────────────────── */
+type CartButtonProps = { locale: string };
 
 type MockCartItem = {
   id: string;
   name: string;
   price: number;
   qty: number;
-  accent: string;
+  bg: string;
+  emoji: string;
 };
 
+/* ─────────────────────────── mock data ─────────────────────── */
 const MOCK_CART_ITEMS: MockCartItem[] = [
   {
     id: "item-1",
     name: "Chicken Burger Combo",
     price: 290,
     qty: 1,
-    accent: "from-red-100 to-orange-100",
+    bg: "#FFF0ED",
+    emoji: "🍔",
   },
   {
     id: "item-2",
     name: "Cold Coffee",
     price: 140,
     qty: 2,
-    accent: "from-amber-100 to-yellow-100",
+    bg: "#FFF8E7",
+    emoji: "☕",
   },
   {
     id: "item-3",
     name: "Notebook A4",
     price: 90,
     qty: 1,
-    accent: "from-emerald-100 to-cyan-100",
+    bg: "#EDF9F2",
+    emoji: "📓",
   },
 ];
 
@@ -46,232 +57,458 @@ const DELIVERY_FEE = 50;
 
 function getCookieValue(name: string): string | null {
   if (typeof document === "undefined") return null;
-
   const entry = document.cookie
     .split(";")
-    .map((item) => item.trim())
-    .find((item) => item.startsWith(`${name}=`));
-
-  if (!entry) return null;
-
-  return decodeURIComponent(entry.slice(name.length + 1));
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${name}=`));
+  return entry ? decodeURIComponent(entry.slice(name.length + 1)) : null;
 }
 
+/* ── brand tokens ── */
+const B = {
+  primary: "#00A651",
+  primaryDark: "#008C44",
+  primaryLight: "#E8F7EF",
+  primaryBorder: "#C3E8D5",
+  danger: "#E63946",
+};
+
+/* ═══════════════════════════ component ══════════════════════ */
 export default function CartButton({ locale }: CartButtonProps) {
   const pathname = usePathname();
   const { dispatch } = useAppState();
+
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [items, setItems] = useState<MockCartItem[]>(MOCK_CART_ITEMS);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isLoggedIn = Boolean(getCookieValue("user"));
-
-  const hiddenOnCartPages = pathname?.includes("/cart") || pathname?.includes("/checkout");
+  const hidden = pathname?.includes("/cart") || pathname?.includes("/checkout");
 
   const totalItems = useMemo(
-    () => items.reduce((acc, item) => acc + item.qty, 0),
+    () => items.reduce((s, i) => s + i.qty, 0),
     [items],
   );
-
   const subtotal = useMemo(
-    () => items.reduce((acc, item) => acc + item.qty * item.price, 0),
+    () => items.reduce((s, i) => s + i.qty * i.price, 0),
     [items],
   );
-
   const total = subtotal + DELIVERY_FEE;
 
-  const updateItemQty = (itemId: string, nextQty: number) => {
-    if (nextQty <= 0) {
-      setItems((prev) => prev.filter((item) => item.id !== itemId));
-      return;
-    }
-
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              qty: nextQty,
-            }
-          : item,
-      ),
-    );
+  const removeItem = (id: string) => {
+    setRemovingId(id);
+    setTimeout(() => {
+      setItems((p) => p.filter((i) => i.id !== id));
+      setRemovingId(null);
+    }, 260);
   };
 
-  if (hiddenOnCartPages) {
-    return null;
-  }
+  const updateQty = (id: string, next: number) => {
+    if (next <= 0) {
+      removeItem(id);
+      return;
+    }
+    setItems((p) => p.map((i) => (i.id === id ? { ...i, qty: next } : i)));
+  };
+
+  if (hidden) return null;
 
   return (
     <>
-      <button
-        onClick={() => {
-          if (!isLoggedIn) {
-            setShowAuthModal(true);
-            return;
-          }
-
-          setIsDrawerOpen(true);
-        }}
-        className="fixed bottom-6 right-6 z-[71] rounded-2xl border border-[#33C2DF]/40 bg-[#EAF8FB] p-2 shadow-lg transition-transform hover:scale-105"
+      {/* ════════════ FLOATING TRIGGER ════════════ */}
+      <div
+        role="button"
+        tabIndex={0}
         aria-label="Open cart"
-        id="global-cart-button"
+        onClick={() =>
+          isLoggedIn ? setIsDrawerOpen(true) : setShowAuthModal(true)
+        }
+        onKeyDown={(e) =>
+          e.key === "Enter" &&
+          (isLoggedIn ? setIsDrawerOpen(true) : setShowAuthModal(true))
+        }
+        className="fixed right-0 bottom-[48%] z-20 translate-y-1/2 cursor-pointer"
       >
-        <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#E30A13] px-1 text-xs font-semibold text-white">
-          {totalItems}
-        </span>
-        <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2">
-          <ShoppingCart className="h-4.5 w-4.5 text-[#00A651]" />
-          <span className="text-xs font-semibold text-neutral-700">{total} BDT</span>
-        </div>
-      </button>
+        <div
+          className="
+            group relative flex flex-col items-center select-none
+            rounded-l-2xl overflow-hidden
+            transition-all duration-200 ease-out
+            hover:-translate-x-[2px]
+            hover:shadow-[0_6px_24px_rgba(0,166,81,0.24)]
+          "
+          style={{
+            background: "#fff",
+            border: `1.5px solid ${B.primaryBorder}`,
+            borderRight: "none",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.09)",
+          }}
+        >
+          {/* cart icon */}
+          <div className="flex flex-col items-center gap-1 px-[14px] pt-3.5 pb-2.5">
+            <div
+              className="relative w-[38px] h-[38px] rounded-xl flex items-center justify-center"
+              style={{ background: B.primaryLight }}
+            >
+              <ShoppingCart
+                className="w-[17px] h-[17px] transition-transform duration-200 group-hover:scale-110"
+                style={{ color: B.primary }}
+                strokeWidth={2.2}
+              />
+              {totalItems > 0 && (
+                <span
+                  className="
+                    absolute -top-[5px] -right-[5px]
+                    min-w-[17px] h-[17px] px-[3px]
+                    rounded-full flex items-center justify-center
+                    text-[9px] font-bold text-white leading-none
+                  "
+                  style={{
+                    background: B.danger,
+                    boxShadow: "0 1px 5px rgba(230,57,70,0.40)",
+                  }}
+                >
+                  {totalItems > 9 ? "9+" : totalItems}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-semibold text-gray-400 tracking-wide">
+              {totalItems} {totalItems === 1 ? "item" : "items"}
+            </span>
+          </div>
 
+          {/* price band */}
+          <div
+            className="w-full py-[7px] flex items-center justify-center"
+            style={{ background: B.primary }}
+          >
+            <span className="text-[11px] font-bold text-white tracking-wide">
+              ৳{total}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════ BACKDROP ════════════ */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 z-[72] bg-black/40"
+          className="fixed inset-0 z-[72] transition-opacity duration-300"
+          style={{
+            background: "rgba(17,24,39,0.38)",
+            backdropFilter: "blur(2px)",
+          }}
           onClick={() => setIsDrawerOpen(false)}
           aria-hidden="true"
         />
       )}
 
+      {/* ════════════ SLIDE-IN DRAWER ════════════ */}
       <aside
-        className={`fixed right-0 top-0 z-[73] h-full w-full max-w-[430px] bg-white shadow-2xl transition-transform duration-300 ${
-          isDrawerOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`
+          fixed right-0 top-0 z-[73] h-full w-full max-w-[400px]
+          flex flex-col
+          transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]
+          ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}
+        `}
+        style={{
+          background: "#F8F9FA",
+          boxShadow: "-2px 0 28px rgba(0,0,0,0.10)",
+        }}
         role="dialog"
         aria-modal="true"
-        aria-label="Cart drawer"
+        aria-label="Shopping cart"
       >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
-            <h3 className="text-base font-semibold text-neutral-900">Your Cart</h3>
-            <button
-              onClick={() => setIsDrawerOpen(false)}
-              className="rounded-lg p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100"
-              aria-label="Close cart drawer"
+        {/* ── header ── */}
+        <div
+          className="flex items-center justify-between px-5 h-[60px] flex-shrink-0"
+          style={{ background: "#fff", borderBottom: "1px solid #EAECEF" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center"
+              style={{ background: B.primaryLight }}
             >
-              <X className="h-4.5 w-4.5" />
-            </button>
+              <ShoppingCart
+                className="w-4 h-4"
+                style={{ color: B.primary }}
+                strokeWidth={2.2}
+              />
+            </div>
+            <div>
+              <p className="text-[14px] font-semibold text-gray-800 leading-tight">
+                Your Cart
+              </p>
+              <p className="text-[11px] text-gray-400 mt-px">
+                {totalItems} {totalItems === 1 ? "item" : "items"}
+              </p>
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5">
-            {items.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 p-8 text-center">
-                <p className="text-sm font-semibold text-neutral-800">Your cart is empty</p>
-                <p className="mt-1 text-xs text-neutral-500">Add items from modules and they will appear here.</p>
+          <button
+            onClick={() => setIsDrawerOpen(false)}
+            className="
+              w-[32px] h-[32px] rounded-lg flex items-center justify-center
+              text-gray-400 hover:text-gray-700 hover:bg-gray-100
+              transition-colors duration-150
+            "
+            aria-label="Close cart"
+          >
+            <X className="w-4 h-4" strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* ── item list ── */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+          {items.length === 0 ? (
+            <div
+              className="mt-8 rounded-2xl flex flex-col items-center text-center py-10 px-6"
+              style={{ background: "#fff", border: "1.5px dashed #E0E3E7" }}
+            >
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                style={{ background: B.primaryLight }}
+              >
+                <Package
+                  className="w-6 h-6"
+                  style={{ color: B.primary }}
+                  strokeWidth={1.8}
+                />
               </div>
-            ) : (
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex gap-3 rounded-2xl border border-neutral-100 p-3"
-                  >
-                    <div className={`grid h-16 w-16 place-items-center rounded-xl bg-gradient-to-br ${item.accent}`}>
-                      <span className="text-xs font-bold text-neutral-700">
-                        {item.name
-                          .split(" ")
-                          .slice(0, 2)
-                          .map((word) => word[0])
-                          .join("")}
+              <p className="text-[13px] font-semibold text-gray-700">
+                Your cart is empty
+              </p>
+              <p className="text-[12px] text-gray-400 mt-1 max-w-[180px] leading-relaxed">
+                Add items from the menu to get started.
+              </p>
+            </div>
+          ) : (
+            items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-xl p-3 transition-all duration-[260ms]"
+                style={{
+                  background: "#fff",
+                  border: "1px solid #EAECEF",
+                  opacity: removingId === item.id ? 0 : 1,
+                  transform:
+                    removingId === item.id
+                      ? "translateX(14px)"
+                      : "translateX(0)",
+                }}
+              >
+                {/* emoji avatar */}
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ background: item.bg }}
+                >
+                  {item.emoji}
+                </div>
+
+                {/* details */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold text-gray-800 truncate">
+                    {item.name}
+                  </p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    ৳{item.price} each
+                  </p>
+
+                  <div className="mt-2 flex items-center justify-between">
+                    {/* qty stepper */}
+                    <div
+                      className="flex items-center gap-1 rounded-lg px-1 py-[3px]"
+                      style={{
+                        background: "#F3F4F6",
+                        border: "1px solid #E5E7EB",
+                      }}
+                    >
+                      <button
+                        onClick={() => updateQty(item.id, item.qty - 1)}
+                        className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="w-3 h-3" strokeWidth={2.5} />
+                      </button>
+                      <span className="w-5 text-center text-[12px] font-bold text-gray-800 tabular-nums">
+                        {item.qty}
                       </span>
+                      <button
+                        onClick={() => updateQty(item.id, item.qty + 1)}
+                        className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="w-3 h-3" strokeWidth={2.5} />
+                      </button>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-neutral-800">{item.name}</p>
-                      <p className="mt-0.5 text-xs text-neutral-500">{item.price} BDT each</p>
 
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-2 rounded-lg border border-neutral-200 px-2 py-1">
-                          <button
-                            onClick={() => updateItemQty(item.id, item.qty - 1)}
-                            className="rounded p-0.5 text-neutral-600 transition-colors hover:bg-neutral-100"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="w-4 text-center text-xs font-semibold text-neutral-800">{item.qty}</span>
-                          <button
-                            onClick={() => updateItemQty(item.id, item.qty + 1)}
-                            className="rounded p-0.5 text-neutral-600 transition-colors hover:bg-neutral-100"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-
-                        <button
-                          onClick={() => updateItemQty(item.id, 0)}
-                          className="rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-50"
-                          aria-label="Remove item"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13px] font-bold text-gray-800 tabular-nums">
+                        ৳{item.price * item.qty}
+                      </span>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="
+                          w-7 h-7 rounded-lg flex items-center justify-center
+                          text-gray-300 hover:text-red-500 hover:bg-red-50
+                          transition-all duration-150
+                        "
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
-            )}
+            ))
+          )}
+        </div>
+
+        {/* ── footer ── */}
+        <div
+          className="px-4 pt-3 pb-4 flex-shrink-0"
+          style={{ background: "#fff", borderTop: "1px solid #EAECEF" }}
+        >
+          {/* order summary */}
+          <div
+            className="rounded-xl px-4 py-3 mb-3 space-y-1.5"
+            style={{
+              background: B.primaryLight,
+              border: `1px solid ${B.primaryBorder}`,
+            }}
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-[12px] text-gray-500">Subtotal</span>
+              <span className="text-[12px] font-medium text-gray-700 tabular-nums">
+                ৳{subtotal}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[12px] text-gray-500">Delivery fee</span>
+              <span className="text-[12px] font-medium text-gray-700 tabular-nums">
+                ৳{DELIVERY_FEE}
+              </span>
+            </div>
+            <div
+              className="flex justify-between items-center pt-2"
+              style={{ borderTop: `1px solid ${B.primaryBorder}` }}
+            >
+              <span className="text-[13px] font-semibold text-gray-800">
+                Total
+              </span>
+              <span
+                className="text-[14px] font-bold tabular-nums"
+                style={{ color: B.primary }}
+              >
+                ৳{total}
+              </span>
+            </div>
           </div>
 
-          <div className="border-t border-neutral-100 p-5">
-            <div className="mb-3 space-y-1.5 text-sm">
-              <div className="flex items-center justify-between text-neutral-600">
-                <span>Subtotal</span>
-                <span>{subtotal} BDT</span>
-              </div>
-              <div className="flex items-center justify-between text-neutral-600">
-                <span>Delivery</span>
-                <span>{DELIVERY_FEE} BDT</span>
-              </div>
-              <div className="flex items-center justify-between font-semibold text-neutral-900">
-                <span>Total</span>
-                <span>{total} BDT</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setItems([])}
-                className="rounded-xl border border-red-200 px-3 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
-                disabled={items.length === 0}
-              >
-                Clear Cart
-              </button>
-              <button
-                className="rounded-xl bg-[#00A651] px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00934a] disabled:bg-neutral-300"
-                disabled={items.length === 0}
-              >
-                Checkout
-              </button>
-            </div>
+          {/* cta row */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setItems([])}
+              disabled={items.length === 0}
+              className="
+                h-[42px] rounded-xl text-[13px] font-semibold
+                text-red-500 border border-red-100 bg-white
+                hover:bg-red-50 active:bg-red-100
+                transition-colors duration-150
+                disabled:opacity-40 disabled:cursor-not-allowed
+              "
+            >
+              Clear Cart
+            </button>
+            <button
+              disabled={items.length === 0}
+              className="
+                h-[42px] rounded-xl text-[13px] font-bold text-white
+                flex items-center justify-center gap-1.5
+                transition-all duration-150 active:brightness-95
+                disabled:cursor-not-allowed
+              "
+              style={{
+                background: items.length > 0 ? B.primary : "#D1D5DB",
+                boxShadow:
+                  items.length > 0 ? `0 3px 12px rgba(0,166,81,0.28)` : "none",
+              }}
+            >
+              Checkout
+              <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+            </button>
           </div>
         </div>
       </aside>
 
+      {/* ════════════ AUTH MODAL ════════════ */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-[74] grid place-items-center bg-black/45 px-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h4 className="text-lg font-bold text-neutral-900">Authentication Required</h4>
-            <p className="mt-2 text-sm text-neutral-600">
-              Please log in first to access your cart and continue checkout.
+        <div
+          className="fixed inset-0 z-[74] grid place-items-center px-4"
+          style={{
+            background: "rgba(17,24,39,0.48)",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          <div
+            className="w-full max-w-[340px] rounded-2xl p-6"
+            style={{
+              background: "#fff",
+              boxShadow: "0 16px 48px rgba(0,0,0,0.16)",
+              border: "1px solid #F3F4F6",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-[11px] flex items-center justify-center mb-4"
+              style={{ background: B.primaryLight }}
+            >
+              <ShoppingCart
+                className="w-5 h-5"
+                style={{ color: B.primary }}
+                strokeWidth={2.2}
+              />
+            </div>
+
+            <h4 className="text-[16px] font-bold text-gray-900">
+              Sign in required
+            </h4>
+            <p className="mt-1.5 text-[13px] text-gray-500 leading-relaxed">
+              Please log in to view your cart and proceed to checkout.
             </p>
-            <div className="mt-6 grid grid-cols-2 gap-2">
+
+            <div className="mt-5 grid grid-cols-2 gap-2">
               <button
                 onClick={() => setShowAuthModal(false)}
-                className="rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                className="
+                  h-[40px] rounded-xl text-[13px] font-semibold text-gray-600
+                  border border-gray-200 bg-white hover:bg-gray-50
+                  transition-colors duration-150
+                "
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="rounded-xl bg-[#E30A13] px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                className="
+                  h-[40px] rounded-xl text-[13px] font-bold text-white
+                  flex items-center justify-center gap-1.5
+                  transition-all duration-150 active:brightness-95
+                "
+                style={{
+                  background: B.danger,
+                  boxShadow: "0 3px 12px rgba(230,57,70,0.28)",
+                }}
                 onClick={() => {
                   setShowAuthModal(false);
-                  dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
+                  dispatch({
+                    type: "OPEN_AUTH_MODAL",
+                    payload: { defaultTab: "login" },
+                  });
                 }}
               >
                 Log In
+                <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
               </button>
             </div>
           </div>

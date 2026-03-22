@@ -228,6 +228,7 @@ export async function getLostFoundItemsAction(params: {
   category?: string;
   type?: "Lost" | "Found";
   status?: string;
+universityId?: string;
 }) {
   try {
     const search = new URLSearchParams();
@@ -250,9 +251,18 @@ export async function getLostFoundItemsAction(params: {
       search.set("status", params.status.trim());
     }
 
-    const response = await getPublic<PaginatedResponse<LostFoundItem> | ApiEnvelope<PaginatedResponse<LostFoundItem>>>(
+    if (params.universityId) {
+      search.set("university", params.universityId);
+    }
+    
+    console.log("search params:", search.toString());
+
+
+    const response = await getPrivate<PaginatedResponse<LostFoundItem> | ApiEnvelope<PaginatedResponse<LostFoundItem>>>(
       `${userEndpoints.lostAndFound}?${search.toString()}`,
     );
+
+    console.log("Raw items response:", response);
 
     const parsed = extractMaybeWrappedObject<PaginatedResponse<LostFoundItem>>(response);
 

@@ -210,6 +210,7 @@ export default function LostFoundPage() {
         category: category !== "all" ? category : undefined,
         type: filter === "all" ? undefined : filter === "lost" ? "Lost" : "Found",
         status: "approved",
+        universityId: selectedUniversityId || undefined,
       });
 
       console.log("Load items result:", result);

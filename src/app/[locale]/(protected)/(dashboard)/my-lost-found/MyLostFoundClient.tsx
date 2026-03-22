@@ -7,6 +7,10 @@ import { useParams } from "next/navigation";
 import { Clock3, Eye, Plus } from "lucide-react";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import {
+  StandardDataTable,
+  type StandardDataTableColumn,
+} from "@/components/ui";
+import {
   getMyLostFoundPostsAction,
   type LostFoundItem,
 } from "@/app/[locale]/(public)/(features)/lost-found/actions";
@@ -44,6 +48,62 @@ export default function MyLostFoundClient() {
     loadMyPosts();
   }, []);
 
+  const tableColumns: StandardDataTableColumn<LostFoundItem>[] = [
+    {
+      key: "title",
+      header: "Title",
+      render: (post) => (
+        <div>
+          <p className="font-semibold text-gray-900">{getItemTitle(post)}</p>
+          <p className="text-xs text-gray-500 mt-0.5">ID: {post._id.slice(-8).toUpperCase()}</p>
+        </div>
+      ),
+    },
+    {
+      key: "type",
+      header: "Type",
+      render: (post) => (
+        <span
+          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${post.type === "Lost" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}
+        >
+          {post.type}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (post) => (
+        <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 capitalize">
+          {post.status || "pending"}
+        </span>
+      ),
+    },
+    {
+      key: "created",
+      header: "Created",
+      render: (post) => (
+        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+          <Clock3 className="w-3.5 h-3.5" /> {formatDate(post.createdAt)}
+        </span>
+      ),
+    },
+    {
+      key: "action",
+      header: "Action",
+      headerClassName: "text-right",
+      cellClassName: "text-right",
+      render: (post) => (
+        <Link
+          href={`/${locale}/my-lost-found/${post._id}`}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[#E30A13]/20 px-2.5 py-1.5 text-xs font-semibold text-[#E30A13] hover:bg-[#E30A13]/5"
+        >
+          <Eye className="w-3.5 h-3.5" /> View
+        </Link>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-5">
       <AppBreadcrumb
@@ -72,51 +132,11 @@ export default function MyLostFoundClient() {
         ) : myPosts.length === 0 ? (
           <p className="text-sm text-gray-500">No posts yet. Create your first Lost or Found report.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-200">
-                  <th className="py-2 pr-4 font-semibold">Title</th>
-                  <th className="py-2 pr-4 font-semibold">Type</th>
-                  <th className="py-2 pr-4 font-semibold">Status</th>
-                  <th className="py-2 pr-4 font-semibold">Created</th>
-                  <th className="py-2 pr-1 font-semibold text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-            {myPosts.map((post) => (
-              <tr key={post._id} className="border-b border-gray-100 hover:bg-gray-50/80">
-                <td className="py-3 pr-4">
-                  <p className="font-semibold text-gray-900">{getItemTitle(post)}</p>
-                </td>
-                <td className="py-3 pr-4">
-                  <span
-                    className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${post.type === "Lost" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}
-                  >
-                    {post.type}
-                  </span>
-                </td>
-                <td className="py-3 pr-4">
-                  <span className="text-xs text-gray-700">{post.status || "pending"}</span>
-                </td>
-                <td className="py-3 pr-4 text-xs text-gray-500">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock3 className="w-3.5 h-3.5" /> {formatDate(post.createdAt)}
-                  </span>
-                </td>
-                <td className="py-3 pr-1 text-right">
-                  <Link
-                    href={`/${locale}/my-lost-found/${post._id}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#E30A13] hover:underline"
-              >
-                    <Eye className="w-3.5 h-3.5" /> View
-                  </Link>
-                </td>
-              </tr>
-            ))}
-              </tbody>
-            </table>
-          </div>
+          <StandardDataTable
+            columns={tableColumns}
+            rows={myPosts}
+            getRowKey={(row) => row._id}
+          />
         )}
       </div>
     </div>

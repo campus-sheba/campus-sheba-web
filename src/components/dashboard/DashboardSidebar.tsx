@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Package,
   ShoppingBag,
   BookOpen,
   Droplets,
@@ -20,7 +19,6 @@ import {
   LogOut,
   X,
   Menu,
-  Plus,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -120,8 +118,6 @@ export default function DashboardSidebar({ locale, user }: Props) {
             {serviceItems.map(renderNavItem)}
           </div>
         </div>
-
-      
       </nav>
 
       {/* Logout */}
@@ -174,7 +170,7 @@ export default function DashboardSidebar({ locale, user }: Props) {
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm sticky top-6 self-start max-h-[calc(100vh-6rem)] overflow-hidden">
+      <aside className="hidden lg:flex flex-col w-60 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm sticky top-0 h-full overflow-hidden">
         <SidebarContent />
       </aside>
     </>
