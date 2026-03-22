@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/utils/utils";
-import Breadcrumb from "../siteSettings/breadcrumb/Breadcrumb";
+import AppBreadcrumb, { type AppBreadcrumbItem } from "../common/AppBreadcrumb";
 
 export interface PageContentWrapperProps {
   children: React.ReactNode;
@@ -24,7 +24,14 @@ export default function PageContentWrapper({
 
   return (
     <div className={cn(spacingClasses[spacing], className)}>
-      {directions && <Breadcrumb directions={directions} />}
+      {directions ? (
+        <AppBreadcrumb
+          items={directions.map((direction) => ({
+            label: direction.label,
+            href: direction.link,
+          })) as AppBreadcrumbItem[]}
+        />
+      ) : null}
       {children}
     </div>
   );

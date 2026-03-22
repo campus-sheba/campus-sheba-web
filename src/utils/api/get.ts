@@ -42,6 +42,8 @@ export async function getPrivate<T = unknown>(
     options.headers,
   );
 
+  console.log('GET Request to:', url, 'with headers:', headers);
+
   return get<T>(url, { ...options, headers });
 }
 

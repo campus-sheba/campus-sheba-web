@@ -16,12 +16,12 @@ import {
   MapPin,
   Wallet,
   Settings,
-  User,
   Bike,
-  FileText,
   LogOut,
   X,
   Menu,
+  Plus,
+  type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { logoutAction } from "@/app/[locale]/(protected)/(dashboard)/profile/actions";
@@ -37,21 +37,29 @@ interface Props {
   user: SidebarUser | null;
 }
 
-const navItems = [
+type NavItem = {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  color: string;
+};
+
+const primaryItems: NavItem[] = [
   { label: "Dashboard", href: "/profile", icon: LayoutDashboard, color: "text-gray-600" },
-  { label: "My Orders", href: "/orders", icon: Package, color: "text-purple-600" },
-  { label: "My Uploads & Requests", href: "/orders?tab=lostfound", icon: FileText, color: "text-amber-600" },
-  { label: "Delivery", href: "/orders?tab=delivery", icon: Bike, color: "text-purple-600" },
-  { label: "Marketplace", href: "/orders?tab=marketplace", icon: ShoppingBag, color: "text-emerald-600" },
-  { label: "Books", href: "/orders?tab=books", icon: BookOpen, color: "text-blue-600" },
-  { label: "Blood Requests", href: "/orders?tab=blood", icon: Droplets, color: "text-red-600" },
-  { label: "Tuition", href: "/orders?tab=tuition", icon: GraduationCap, color: "text-amber-600" },
-  { label: "Job Applications", href: "/orders?tab=jobs", icon: Briefcase, color: "text-sky-600" },
-  { label: "Donations", href: "/orders?tab=donations", icon: Heart, color: "text-green-600" },
-  { label: "Parcels", href: "/orders?tab=parcels", icon: Archive, color: "text-violet-600" },
-  { label: "Lost & Found", href: "/orders?tab=lostfound", icon: MapPin, color: "text-yellow-600" },
   { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
-  { label: "Settings", href: "/profile?tab=settings", icon: Settings, color: "text-gray-500" },
+  { label: "Settings", href: "/settings", icon: Settings, color: "text-gray-500" },
+];
+
+const serviceItems: NavItem[] = [
+  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
+  { label: "Delivery", href: "/my-delivery", icon: Bike, color: "text-purple-600" },
+  { label: "Marketplace", href: "/my-marketplace", icon: ShoppingBag, color: "text-emerald-600" },
+  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
+  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
+  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
+  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
+  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
+  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
 ];
 
 export default function DashboardSidebar({ locale, user }: Props) {
@@ -59,9 +67,25 @@ export default function DashboardSidebar({ locale, user }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
-    const fullHref = `/${locale}${href.split("?")[0]}`;
+    const fullHref = `/${locale}${href}`;
     return pathname === fullHref || pathname.startsWith(fullHref + "/");
   };
+
+  const renderNavItem = (item: NavItem) => (
+    <Link
+      key={item.href + item.label}
+      href={`/${locale}${item.href}`}
+      onClick={() => setMobileOpen(false)}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+        isActive(item.href)
+          ? "bg-[#E30A13]/8 text-[#E30A13]"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+      }`}
+    >
+      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive(item.href) ? "text-[#E30A13]" : item.color}`} />
+      {item.label}
+    </Link>
+  );
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
@@ -83,22 +107,21 @@ export default function DashboardSidebar({ locale, user }: Props) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-        {navItems.map((item) => (
-          <Link
-            key={item.href+item.label}
-            href={`/${locale}${item.href}`}
-            onClick={() => setMobileOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-              isActive(item.href)
-                ? "bg-[#E30A13]/8 text-[#E30A13]"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-          >
-            <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive(item.href) ? "text-[#E30A13]" : item.color}`} />
-            {item.label}
-          </Link>
-        ))}
+      <nav className="flex-1 overflow-y-auto p-3">
+        <div className="space-y-0.5">
+          {primaryItems.map(renderNavItem)}
+        </div>
+
+        <div className="pt-3 mt-3 border-t border-gray-100">
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
+            Service Centers
+          </p>
+          <div className="space-y-0.5">
+            {serviceItems.map(renderNavItem)}
+          </div>
+        </div>
+
+      
       </nav>
 
       {/* Logout */}

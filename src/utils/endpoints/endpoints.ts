@@ -8,6 +8,7 @@ export const landingPageEndpoints = {
 // careers page endpoints
 export const careersEndpoints = {
     universities: `${baseURL}/universities`,
+    universityLocations: `${baseURL}/university-locations`,
     sendApplication: `${baseURL}/career/send-cv`,
 };
 
@@ -22,4 +23,11 @@ export const authenticationEndpoints = {
 
 export const userEndpoints = {
     me: `${baseURL}/user/me`,
+    categories: `${baseURL}/user/categories`,
+    lostAndFound: `${baseURL}/user/lost-and-found`,
+};
+
+export const mediaEndpoints = {
+    upload: `${baseURL}/media2/upload`,
+    delete: `${baseURL}/media2`,
 };
