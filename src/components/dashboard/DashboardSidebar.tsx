@@ -55,6 +55,12 @@ const primaryItems: NavItem[] = [
   },
   { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
   {
+    label: "My Shop",
+    href: "/my-shop",
+    icon: ShoppingBag,
+    color: "text-pink-600",
+  },
+  {
     label: "Settings",
     href: "/settings",
     icon: Settings,

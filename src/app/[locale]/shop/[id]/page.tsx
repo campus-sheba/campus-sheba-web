@@ -17,7 +17,7 @@ export default async function Page({
 }: {
   params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id, locale } = await params;
+  const { id } = await params;
   const shop = shops.find(
     (s) =>
       s.id === id || slugify(s.name) === id || s.id === decodeURIComponent(id),

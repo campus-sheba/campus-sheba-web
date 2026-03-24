@@ -84,7 +84,6 @@ export default function CartButton({ locale }: CartButtonProps) {
   useEffect(() => {
     (async () => {
       const res = await getCartAction();
-      console.log("Fetched cart:", res);
       if (res?.data?.items) setItems(res.data.items);
     })();
   }, []);
