@@ -2,8 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import { CheckCircle2, Clock3, Edit3, MapPin, XCircle } from "lucide-react";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import {
@@ -14,6 +13,7 @@ import {
   type IncomingResolveRequest,
   type LostFoundItem,
 } from "@/app/[locale]/(public)/(features)/lost-found/actions";
+import { useParams } from "next/navigation";
 
 const getItemTitle = (item?: LostFoundItem | null) => item?.title || item?.items?.[0]?.name || "Untitled";
 const getItemDescription = (item?: LostFoundItem | null) =>
@@ -51,8 +51,7 @@ const formatDate = (value?: string) => {
 };
 
 export default function MyLostFoundDetailsClient() {
-  const params = useParams<{ locale: string; id: string }>();
-  const locale = params?.locale || "en";
+  const params = useParams<{id: string }>();
   const id = params?.id || "";
 
   const [item, setItem] = useState<LostFoundItem | null>(null);
@@ -143,8 +142,8 @@ export default function MyLostFoundDetailsClient() {
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Dashboard", href: `/${locale}/profile` },
-          { label: "Lost & Found", href: `/${locale}/my-lost-found` },
+          { label: "Dashboard", href: "/profile" },
+          { label: "Lost & Found", href: "/my-lost-found" },
           { label: getItemTitle(item) },
         ]}
       />
@@ -160,7 +159,7 @@ export default function MyLostFoundDetailsClient() {
               {item.status || "pending"}
             </span>
             <Link
-              href={`/${locale}/my-lost-found/${item._id}/edit`}
+              href={`/my-lost-found/${item._id}/edit`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:border-[#E30A13] hover:text-[#E30A13]"
             >
               <Edit3 className="w-3.5 h-3.5" /> Edit Post

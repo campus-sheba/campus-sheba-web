@@ -28,7 +28,7 @@ export default async function Page({
 
   return (
     <div className="p-4 bg-gray-100 max-w-7xl mx-auto">
-      <Link href={`/${locale}`} className="text-red-600">
+      <Link href={`/shop`} className="text-red-600">
         ← Back
       </Link>
       <h1 className="text-lg md:text-2xl font-semibold mt-3">Shop Details</h1>

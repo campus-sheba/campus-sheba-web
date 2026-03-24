@@ -102,7 +102,7 @@ export default async function ProfilePage({
 
           <div className="flex items-center gap-2">
             <Link
-              href={`/${locale}/settings`}
+              href={`/settings`}
               className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:border-[#E30A13] hover:text-[#E30A13] transition-colors"
             >
               Manage Settings
@@ -125,7 +125,7 @@ export default async function ProfilePage({
             <p className="mt-1 text-sm font-semibold text-gray-900">{user?.phone || "Not set"}</p>
           </div>
           <Link
-            href={`/${locale}/orders`}
+            href={`/orders`}
             className="rounded-xl border border-gray-200 p-4 hover:border-[#E30A13] transition-colors"
           >
             <p className="text-xs text-gray-500 flex items-center gap-1"><Package className="w-3.5 h-3.5" /> Orders</p>
@@ -139,7 +139,7 @@ export default async function ProfilePage({
       <div className="rounded-2xl bg-white border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Service Centers</h2>
-          <Link href={`/${locale}/wallet`} className="text-sm font-medium text-[#E30A13] inline-flex items-center gap-1 hover:underline">
+          <Link href={`/wallet`} className="text-sm font-medium text-[#E30A13] inline-flex items-center gap-1 hover:underline">
             Wallet <Wallet className="w-4 h-4" />
           </Link>
         </div>
@@ -148,7 +148,7 @@ export default async function ProfilePage({
           {DASHBOARD_CENTERS.map((center) => (
             <Link
               key={center.href}
-              href={`/${locale}${center.href}`}
+              href={`/${center.href}`}
               className="rounded-xl border border-gray-200 p-4 hover:border-[#E30A13] transition-colors"
             >
               <p className="text-sm font-semibold text-gray-900 flex items-center justify-between gap-3">

@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/static-components */
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -31,7 +30,6 @@ interface SidebarUser {
 }
 
 interface Props {
-  locale: string;
   user: SidebarUser | null;
 }
 
@@ -43,9 +41,25 @@ type NavItem = {
 };
 
 const primaryItems: NavItem[] = [
-  { label: "Dashboard", href: "/profile", icon: LayoutDashboard, color: "text-gray-600" },
+  {
+    label: "Dashboard",
+    href: "/profile",
+    icon: LayoutDashboard,
+    color: "text-gray-600",
+  },
+  {
+    label: "Addresses",
+    href: "/my-addresses",
+    icon: MapPin,
+    color: "text-blue-500",
+  },
   { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
-  { label: "Settings", href: "/settings", icon: Settings, color: "text-gray-500" },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    color: "text-gray-500",
+  },
 ];
 
 const serviceItems: NavItem[] = [
@@ -60,19 +74,22 @@ const serviceItems: NavItem[] = [
   { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
 ];
 
-export default function DashboardSidebar({ locale, user }: Props) {
+
+export default function DashboardSidebar({ user }: Props) {
   const pathname = usePathname();
+  // Extract locale from pathname (e.g. /en/..., /bn/...)
+  const locale = pathname.split("/")[1] || "en";
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
-    const fullHref = `/${locale}${href}`;
-    return pathname === fullHref || pathname.startsWith(fullHref + "/");
+    // next-intl's usePathname returns the locale-prefixed path
+    return pathname === href || pathname.startsWith(href + "/");
   };
 
   const renderNavItem = (item: NavItem) => (
     <Link
       key={item.href + item.label}
-      href={`/${locale}${item.href}`}
+      href={`${item.href}`}
       onClick={() => setMobileOpen(false)}
       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
         isActive(item.href)
@@ -86,7 +103,7 @@ export default function DashboardSidebar({ locale, user }: Props) {
   );
 
   const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+    ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
     : "U";
 
   const SidebarContent = () => (
@@ -122,7 +139,7 @@ export default function DashboardSidebar({ locale, user }: Props) {
 
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
-        <form action={logoutAction.bind(null, locale)}>
+        <form action={logoutAction.bind(null, locale)} method="POST">
           <button
             type="submit"
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"

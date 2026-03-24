@@ -197,7 +197,7 @@ export function FoodExploreSection({ locale = "en" }: { locale?: string }) {
           }
           subtitle="Explore trending restaurants and hidden gems near your university."
           linkAction="View All Restaurants"
-          linkHref={`/${locale}/food`}
+          linkHref={`/food`}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {MOCK_FOODS.map((food, i) => (

@@ -10,48 +10,14 @@ import {
   ArrowRight,
   Package,
 } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useAppState } from "@/contexts/AppStateContext";
+import { getCartAction, CartItem } from "@/app/[locale]/(protected)/(dashboard)/cart/actions";
 
 /* ─────────────────────────── types ─────────────────────────── */
 type CartButtonProps = { locale: string };
 
-type MockCartItem = {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  bg: string;
-  emoji: string;
-};
 
-/* ─────────────────────────── mock data ─────────────────────── */
-const MOCK_CART_ITEMS: MockCartItem[] = [
-  {
-    id: "item-1",
-    name: "Chicken Burger Combo",
-    price: 290,
-    qty: 1,
-    bg: "#FFF0ED",
-    emoji: "🍔",
-  },
-  {
-    id: "item-2",
-    name: "Cold Coffee",
-    price: 140,
-    qty: 2,
-    bg: "#FFF8E7",
-    emoji: "☕",
-  },
-  {
-    id: "item-3",
-    name: "Notebook A4",
-    price: 90,
-    qty: 1,
-    bg: "#EDF9F2",
-    emoji: "📓",
-  },
-];
 
 const DELIVERY_FEE = 50;
 
@@ -80,26 +46,28 @@ export default function CartButton({ locale }: CartButtonProps) {
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [items, setItems] = useState<MockCartItem[]>(MOCK_CART_ITEMS);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isLoggedIn = Boolean(getCookieValue("user"));
   const hidden = pathname?.includes("/cart") || pathname?.includes("/checkout");
 
   const totalItems = useMemo(
-    () => items.reduce((s, i) => s + i.qty, 0),
+    () => items.reduce((s, i) => s + i.quantity, 0),
     [items],
   );
   const subtotal = useMemo(
-    () => items.reduce((s, i) => s + i.qty * i.price, 0),
+    () => items.reduce((s, i) => s + i.quantity * (i.content.discountPrice || i.content.price), 0),
     [items],
   );
   const total = subtotal + DELIVERY_FEE;
 
+  // Placeholder for remove and updateQty actions (to be implemented with API)
   const removeItem = (id: string) => {
     setRemovingId(id);
+    // TODO: Call remove from cart API
     setTimeout(() => {
-      setItems((p) => p.filter((i) => i.id !== id));
+      setItems((p) => p.filter((i) => i._id !== id));
       setRemovingId(null);
     }, 260);
   };
@@ -109,8 +77,17 @@ export default function CartButton({ locale }: CartButtonProps) {
       removeItem(id);
       return;
     }
-    setItems((p) => p.map((i) => (i.id === id ? { ...i, qty: next } : i)));
+    // TODO: Call update quantity API
+    setItems((p) => p.map((i) => (i._id === id ? { ...i, quantity: next } : i)));
   };
+
+  useEffect(() => {
+    (async () => {
+      const res = await getCartAction();
+      console.log("Fetched cart:", res);
+      if (res?.data?.items) setItems(res.data.items);
+    })();
+  }, []);
 
   if (hidden) return null;
 
@@ -285,33 +262,36 @@ export default function CartButton({ locale }: CartButtonProps) {
           ) : (
             items.map((item) => (
               <div
-                key={item.id}
+                key={item._id}
                 className="flex items-center gap-3 rounded-xl p-3 transition-all duration-[260ms]"
                 style={{
                   background: "#fff",
                   border: "1px solid #EAECEF",
-                  opacity: removingId === item.id ? 0 : 1,
+                  opacity: removingId === item._id ? 0 : 1,
                   transform:
-                    removingId === item.id
+                    removingId === item._id
                       ? "translateX(14px)"
                       : "translateX(0)",
                 }}
               >
-                {/* emoji avatar */}
+                {/* product image */}
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: item.bg }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 bg-gray-100 overflow-hidden"
                 >
-                  {item.emoji}
+                  {item.content.photos?.[0]?.url ? (
+                    <img src={item.content.photos[0].url} alt={item.content.title} className="w-full h-full object-cover rounded-xl" />
+                  ) : (
+                    <span className="text-2xl">🛒</span>
+                  )}
                 </div>
 
                 {/* details */}
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-semibold text-gray-800 truncate">
-                    {item.name}
+                    {item.content.title}
                   </p>
                   <p className="text-[11px] text-gray-400 mt-0.5">
-                    ৳{item.price} each
+                    ৳{item.content.discountPrice || item.content.price} each
                   </p>
 
                   <div className="mt-2 flex items-center justify-between">
@@ -324,17 +304,17 @@ export default function CartButton({ locale }: CartButtonProps) {
                       }}
                     >
                       <button
-                        onClick={() => updateQty(item.id, item.qty - 1)}
+                        onClick={() => updateQty(item._id, item.quantity - 1)}
                         className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="w-3 h-3" strokeWidth={2.5} />
                       </button>
                       <span className="w-5 text-center text-[12px] font-bold text-gray-800 tabular-nums">
-                        {item.qty}
+                        {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQty(item.id, item.qty + 1)}
+                        onClick={() => updateQty(item._id, item.quantity + 1)}
                         className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
                         aria-label="Increase quantity"
                       >
@@ -344,10 +324,10 @@ export default function CartButton({ locale }: CartButtonProps) {
 
                     <div className="flex items-center gap-1.5">
                       <span className="text-[13px] font-bold text-gray-800 tabular-nums">
-                        ৳{item.price * item.qty}
+                        ৳{(item.content.discountPrice || item.content.price) * item.quantity}
                       </span>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item._id)}
                         className="
                           w-7 h-7 rounded-lg flex items-center justify-center
                           text-gray-300 hover:text-red-500 hover:bg-red-50

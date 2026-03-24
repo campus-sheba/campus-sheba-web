@@ -24,7 +24,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="cs-container py-8 max-w-3xl">
-        <Link href={`/${locale}/marketplace`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
+        <Link href={`/marketplace`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Marketplace
         </Link>
 
@@ -36,7 +36,7 @@ export default function MarketplaceDetailPage({ params }: { params: Promise<{ id
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h2>
             <p className="text-gray-500 text-sm mb-1">Your purchase request has been sent to {product.seller}.</p>
             <p className="text-gray-400 text-sm mb-6">They will contact you at <strong>{buyerPhone}</strong> to arrange the meetup.</p>
-            <Link href={`/${locale}/marketplace`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700">
+            <Link href={`/marketplace`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700">
               Browse More Items
             </Link>
           </div>

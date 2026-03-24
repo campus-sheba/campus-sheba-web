@@ -161,7 +161,7 @@ export function ModuleButton({
 }) {
   return (
     <Link
-      href={`/${locale}${href}`}
+      href={`/${href}`}
       className="module-card group border border-gray-200 rounded-xl pz-1 py-3 md:p-4 flex flex-col items-center gap-3 text-center transition hover:shadow-lg justify-center"
     >
       <div
@@ -299,7 +299,7 @@ export function HeroSection({ locale }: { locale: string }) {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={`/${locale}${selectedRole.primary.href}`}
+                  href={`/${selectedRole.primary.href}`}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
                   style={{
                     background: "linear-gradient(135deg, #00A651, #00c460)",
@@ -309,7 +309,7 @@ export function HeroSection({ locale }: { locale: string }) {
                   {selectedRole.primary.label}
                 </Link>
                 <Link
-                  href={`/${locale}${selectedRole.secondary.href}`}
+                  href={`/${selectedRole.secondary.href}`}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white border border-white/15 hover:bg-white/10 transition-all duration-200"
                 >
                   <selectedRole.secondary.icon className="w-4 h-4" />
@@ -344,7 +344,7 @@ export function HeroSection({ locale }: { locale: string }) {
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href={`/${locale}?auth=signup`}
+                href={`/?auth=signup`}
                 id="hero-get-started-btn"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-base text-white shadow-lg transition-all duration-200 hover:shadow-glow-lg hover:-translate-y-0.5 active:scale-[0.97]"
                 style={{
@@ -355,7 +355,7 @@ export function HeroSection({ locale }: { locale: string }) {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href={`/${locale}/features`}
+                href={`/features`}
                 id="hero-explore-features-btn"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-base text-white border border-white/15 hover:bg-white/10 transition-all duration-200 active:scale-[0.97]"
               >
@@ -670,14 +670,14 @@ export function BloodWidget({ locale }: { locale: string }) {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={`/${locale}/blood-bank`}
+                  href={`/blood-bank`}
                   id="blood-register-btn"
                   className="btn-primary"
                 >
                   Register as Donor
                 </Link>
                 <Link
-                  href={`/${locale}/blood-bank`}
+                  href={`/blood-bank`}
                   id="blood-request-btn"
                   className="btn-secondary"
                 >
@@ -869,7 +869,7 @@ export function CTASection({ locale }: { locale: string }) {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
-                href={`/${locale}?auth=signup`}
+                href={`/?auth=signup`}
                 id="cta-main-btn"
                 className="inline-flex items-center gap-2 px-9 py-4 rounded-xl font-bold text-base text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow-lg"
                 style={{
@@ -880,7 +880,7 @@ export function CTASection({ locale }: { locale: string }) {
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
-                href={`/${locale}/about`}
+                href={`/about`}
                 id="cta-learn-btn"
                 className="inline-flex items-center gap-2 px-9 py-4 rounded-xl font-bold text-base text-white border border-white/15 hover:bg-white/10 transition-all duration-200"
               >
@@ -918,7 +918,7 @@ export function HomeModulesOverlay({ locale }: { locale: string }) {
         <ModuleButton key={module.id} {...module} locale={locale} />
       ))}
       <Link
-        href={`/${locale}/services`}
+        href={`/services`}
         className="module-card group border border-dashed border-[#00A651]/40 rounded-xl p-1 py-3 md:p-4 flex flex-col items-center gap-3 text-center transition hover:border-[#00A651] hover:shadow-lg justify-center"
       >
         <div

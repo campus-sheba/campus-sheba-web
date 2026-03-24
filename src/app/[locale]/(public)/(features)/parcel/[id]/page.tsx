@@ -119,7 +119,7 @@ export default async function ParcelDetailsPage({
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
-        <Link href={`/${locale}/parcel`} className="">
+        <Link href={`/parcel`} className="">
           <div className="cs-container flex items-center gap-3 py-4 w-10 h-10 rounded-full bg-gray-100 justify-center text-xl text-red-600 hover:bg-gray-200 cursor-pointer">
             <ArrowRight className="rotate-180 w-5 h-5" />
             <h1 className="text-xl font-bold text-gray-900">Parcel</h1>

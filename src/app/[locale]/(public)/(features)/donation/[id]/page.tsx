@@ -34,7 +34,7 @@ export default function DonationDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="cs-container py-8 max-w-2xl">
-        <Link href={`/${locale}/donation`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
+        <Link href={`/donation`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Campaigns
         </Link>
 
@@ -46,7 +46,7 @@ export default function DonationDetailPage({ params }: { params: Promise<{ id: s
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
             <p className="text-green-600 font-bold text-xl mb-2">৳{finalAmount.toLocaleString()} donated</p>
             <p className="text-gray-500 text-sm mb-6">Your generous contribution to <strong>{campaign.title}</strong> has been recorded. You are making a real difference!</p>
-            <Link href={`/${locale}/donation`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-600 text-white font-semibold text-sm hover:bg-green-700">
+            <Link href={`/donation`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-600 text-white font-semibold text-sm hover:bg-green-700">
               Browse More Campaigns
             </Link>
           </div>

@@ -254,7 +254,7 @@ export default function BooksPage() {
             {filtered.map((book) => (
               <Link
                 key={book.id}
-                href={`/${locale}/books/${book.id}`}
+                href={`/books/${book.id}`}
                 className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md transition-shadow flex gap-2 md:gap-4"
               >
                 <div className="w-14 md:w-16 h-14 md:h-16 rounded-md bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center flex-shrink-0">
@@ -317,7 +317,7 @@ export default function BooksPage() {
           {/* List Your Book FAB */}
           <div className="fixed bottom-6 right-6">
             <Link
-              href={`/${locale}/books/list`}
+              href={`/books/list`}
               className="bg-red-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-red-700 font-bold text-xl"
             >
               +
@@ -338,7 +338,7 @@ export default function BooksPage() {
               Start by listing your books for sale or rent
             </p>
             <Link
-              href={`/${locale}/books/list`}
+              href={`/books/list`}
               className="bg-red-600 text-white rounded-xl px-6 py-3 font-semibold text-sm hover:bg-red-700 transition-colors w-full md:min-w-[300px] md:w-auto flex items-center justify-center gap-2 max-w-xs mx-auto"
             >
               + List Your First Book
@@ -348,7 +348,7 @@ export default function BooksPage() {
           {/* List Your Book FAB */}
           <div className="fixed bottom-6 right-6">
             <Link
-              href={`/${locale}/books/list`}
+              href={`/books/list`}
               className="bg-red-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-red-700 font-bold text-xl"
             >
               +

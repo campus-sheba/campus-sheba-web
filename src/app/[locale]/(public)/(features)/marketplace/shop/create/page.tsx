@@ -29,7 +29,7 @@ export default function CreateShopPage({ params }: { params: { locale: string } 
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Shop Created!</h2>
           <p className="text-gray-500 text-sm mb-6">Your shop <strong>{shopName}</strong> is under review. It will go live within 24 hours after approval.</p>
-          <Link href={`/${locale}/marketplace`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#E30A13] text-white font-semibold text-sm hover:bg-red-700">
+          <Link href={`/marketplace`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#E30A13] text-white font-semibold text-sm hover:bg-red-700">
             Go to Marketplace
           </Link>
         </div>

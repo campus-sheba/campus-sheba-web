@@ -26,7 +26,7 @@ export default function TutorDetailPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="cs-container py-8 max-w-2xl">
-        <Link href={`/${locale}/tuition`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
+        <Link href={`/tuition`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Tutors
         </Link>
 
@@ -38,7 +38,7 @@ export default function TutorDetailPage({ params }: { params: Promise<{ id: stri
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Session Booked!</h2>
             <p className="text-gray-500 text-sm mb-1">{tutor.name} will contact you at <strong>{phone}</strong>.</p>
             <p className="text-gray-400 text-sm mb-6">Selected day: <strong>{selectedDay}</strong></p>
-            <Link href={`/${locale}/tuition`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600">
+            <Link href={`/tuition`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600">
               Browse More Tutors
             </Link>
           </div>

@@ -59,7 +59,7 @@ const SOCIAL = [
 const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
   const currentYear = new Date().getFullYear();
 
-  const href = (path: string) => `/${locale}${path}`;
+  const href = (path: string) => `/${path}`;
 
   return (
     <footer className="bg-brand-navy-DEFAULT text-white" aria-label="Site footer">

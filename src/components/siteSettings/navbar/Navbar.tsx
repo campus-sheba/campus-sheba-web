@@ -105,7 +105,7 @@ useEffect(() => {
           <div className="flex items-center gap-4">
             {/* ─── Logo ─── */}
             <Link
-              href={`/${locale}`}
+              href={`/`}
               className="flex items-center gap-2.5 flex-shrink-0 group border-red-700"
               aria-label="Campus Sheba Home"
               id="navbar-logo"
@@ -160,7 +160,7 @@ useEffect(() => {
                     {servicesMenu.map((item) => (
                       <Link
                         key={item.label}
-                        href={`/${locale}${item.href}`}
+                        href={`${item.href}`}
                         role="menuitem"
                         id={`nav-service-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setServicesOpen(false)}
@@ -192,7 +192,7 @@ useEffect(() => {
                       </p>
                       <Link
                         href={
-                          isLoggedIn ? `/${locale}/profile` : "#"
+                          isLoggedIn ? `/profile` : "#"
                         }
                         onClick={(e) => {
                           if (!isLoggedIn) {
@@ -218,7 +218,7 @@ useEffect(() => {
                     href={
                       link.href.startsWith("#")
                         ? link.href
-                        : `/${locale}${link.href}`
+                        : `/${link.href}`
                     }
                     id={`mobile-nav-${link.label.toLowerCase()}`}
                     onClick={() => setMobileOpen(false)}
@@ -234,7 +234,7 @@ useEffect(() => {
           <div className="hidden lg:flex items-center gap-3">
             {isLoggedIn && (
               <Link
-                href={`/${locale}/wallet`}
+                href={`/wallet`}
                 id="nav-wallet-btn"
                 className="relative flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-colors hover:border-[#00A651]/40 hover:text-[#00A651]"
                 title="Wallet"
@@ -249,7 +249,7 @@ useEffect(() => {
               </Link>
             )}
             <Link
-              href={`/${locale}/cart`}
+              href={`/cart`}
               id="nav-cart-btn"
               className="relative flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-colors hover:border-[#E30A13]/40 hover:text-[#E30A13]"
               title="Cart"
@@ -264,7 +264,7 @@ useEffect(() => {
 
             {isLoggedIn ? (
               <Link
-                href={`/${locale}/profile`}
+                href={`/profile`}
                 id="nav-profile-btn"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-green-DEFAULT/30 text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
                 title="Profile"
@@ -327,10 +327,10 @@ useEffect(() => {
       >
         <div className="flex items-center justify-around h-14">
           <Link
-            href={`/${locale}`}
+            href={`/`}
             id="bottom-nav-home"
             className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
-              pathname === `/${locale}` || pathname === `/${locale}/`
+              pathname === `/` || pathname === `/`
                 ? "text-[#E30A13]"
                 : "text-neutral-600"
             }`}
@@ -339,7 +339,7 @@ useEffect(() => {
             <span className="text-[10px] font-medium">Home</span>
           </Link>
           <Link
-            href={`/${locale}/marketplace`}
+            href={`/marketplace`}
             id="bottom-nav-service"
             className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
               pathname?.includes("/marketplace") ? "text-[#E30A13]" : "text-neutral-600"
@@ -349,7 +349,7 @@ useEffect(() => {
             <span className="text-[10px] font-medium">Service</span>
           </Link>
           <Link
-            href={`/${locale}/cart`}
+            href={`/cart`}
             id="bottom-nav-cart"
             className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
               pathname?.includes("/cart") ? "text-[#E30A13]" : "text-neutral-600"
@@ -365,7 +365,7 @@ useEffect(() => {
           </Link>
           {isLoggedIn ? (
             <Link
-              href={`/${locale}/profile`}
+              href={`/profile`}
               id="bottom-nav-profile"
               className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
                 pathname?.includes("/profile")
@@ -453,7 +453,7 @@ useEffect(() => {
                 href={
                   link.href.startsWith("#")
                     ? link.href
-                    : `/${locale}${link.href}`
+                    : `/${link.href}`
                 }
                 id={`mobile-nav-${link.label.toLowerCase()}`}
                 onClick={() => setMobileOpen(false)}
@@ -473,7 +473,7 @@ useEffect(() => {
               {servicesMenu.map((item) => (
                 <Link
                   key={item.label}
-                  href={`/${locale}${item.href}`}
+                  href={`/${item.href}`}
                   id={`mobile-service-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2.5 p-2.5 rounded-xl bg-neutral-50 hover:bg-neutral-100 transition-colors"
@@ -499,7 +499,7 @@ useEffect(() => {
         <div className="p-5 border-t border-neutral-100 space-y-2.5">
           {isLoggedIn ? (
             <Link
-              href={`/${locale}/profile`}
+              href={`/profile`}
               id="mobile-nav-profile"
               onClick={() => setMobileOpen(false)}
               className="btn-secondary-lg w-full justify-center"

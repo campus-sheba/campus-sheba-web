@@ -22,7 +22,7 @@ export default function ProfileLogoutButton({ locale }: ProfileLogoutButtonProps
       try {
         await logoutAction(locale);
       } finally {
-        router.replace(`/${locale}`);
+        router.replace(`/`);
         router.refresh();
       }
     });

@@ -22,7 +22,7 @@ export default async function SettingsPage({
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Dashboard", href: `/${locale}/profile` },
+          { label: "Dashboard", href: `/profile` },
           { label: "Settings" },
         ]}
       />

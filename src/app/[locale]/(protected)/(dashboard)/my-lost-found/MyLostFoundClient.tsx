@@ -2,8 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import { Clock3, Eye, Plus } from "lucide-react";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import {
@@ -25,8 +24,7 @@ const formatDate = (value?: string) => {
 };
 
 export default function MyLostFoundClient() {
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale || "en";
+  // No locale prop drilling; next-intl handles locale in Link
   const [myPosts, setMyPosts] = useState<LostFoundItem[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -95,7 +93,7 @@ export default function MyLostFoundClient() {
       cellClassName: "text-right",
       render: (post) => (
         <Link
-          href={`/${locale}/my-lost-found/${post._id}`}
+          href={`/my-lost-found/${post._id}`}
           className="inline-flex items-center gap-1.5 rounded-lg border border-[#E30A13]/20 px-2.5 py-1.5 text-xs font-semibold text-[#E30A13] hover:bg-[#E30A13]/5"
         >
           <Eye className="w-3.5 h-3.5" /> View
@@ -109,7 +107,7 @@ export default function MyLostFoundClient() {
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Dashboard", href: `/${locale}/profile` },
+          { label: "Dashboard", href: "/profile" },
           { label: "Lost & Found" },
         ]}
       />
@@ -118,7 +116,7 @@ export default function MyLostFoundClient() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h1 className="text-xl font-bold text-gray-900">My Lost & Found History</h1>
           <Link
-            href={`/${locale}/my-lost-found/new`}
+            href="/my-lost-found/new"
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#E30A13] text-white text-sm font-semibold hover:bg-[#c70810]"
           >
             <Plus className="w-4 h-4" /> Post New Lost/Found Report

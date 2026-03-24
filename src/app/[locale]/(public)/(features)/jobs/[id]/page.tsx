@@ -45,7 +45,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="cs-container py-8 max-w-3xl">
-        <Link href={`/${locale}/jobs`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
+        <Link href={`/jobs`} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Jobs
         </Link>
 
@@ -57,7 +57,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
             <p className="text-gray-500 text-sm mb-1">Your application for <strong>{job.title}</strong> at <strong>{job.company}</strong> has been sent.</p>
             <p className="text-gray-400 text-sm mb-6">They will contact you at <strong>{email}</strong> or <strong>{phone}</strong>.</p>
-            <Link href={`/${locale}/jobs`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 text-white font-semibold text-sm hover:bg-sky-700">
+            <Link href={`/jobs`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 text-white font-semibold text-sm hover:bg-sky-700">
               Browse More Jobs
             </Link>
           </div>

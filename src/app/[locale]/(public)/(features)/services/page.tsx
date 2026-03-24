@@ -103,13 +103,13 @@ export default async function ServicesPage({
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href={`/${locale}?auth=signup`}
+                href={`/?auth=signup`}
                 className="inline-flex items-center justify-center rounded-2xl bg-[#E30A13] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#c40912]"
               >
                 Create free account
               </Link>
               <Link
-                href={`/${locale}${servicesMenu[0].href}`}
+                href={`${servicesMenu[0].href}`}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
               >
                 Start with {servicesMenu[0].label}
@@ -153,7 +153,7 @@ export default async function ServicesPage({
               return (
                 <Link
                   key={service.label}
-                  href={`/${locale}${service.href}`}
+                  href={`/${service.href}`}
                   className="group rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#E30A13]/25 hover:shadow-xl"
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -276,13 +276,13 @@ export default async function ServicesPage({
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={`/${locale}?auth=signup`}
+                  href={`?auth=signup`}
                   className="inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-[#E30A13] transition hover:bg-rose-50"
                 >
                   Join Campus Sheba
                 </Link>
                 <Link
-                  href={`/${locale}${servicesMenu[1].href}`}
+                  href={`/${servicesMenu[1].href}`}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   Browse marketplace

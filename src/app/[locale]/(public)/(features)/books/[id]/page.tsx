@@ -132,7 +132,7 @@ export default function BookDetailPage({
             This book listing doesn&apos;t exist
           </p>
           <Link
-            href={`/${locale}/books`}
+            href={`/books`}
             className="text-red-600 font-semibold"
           >
             ← Back to Books
@@ -363,7 +363,7 @@ export default function BookDetailPage({
               You can now contact the seller at their phone number or email.
             </p>
             <Link
-              href={`/${locale}/books`}
+              href={`/books`}
               className="inline-block bg-red-600 text-white rounded-xl px-8 py-3 font-semibold hover:bg-red-700 transition-colors"
             >
               Back to Books

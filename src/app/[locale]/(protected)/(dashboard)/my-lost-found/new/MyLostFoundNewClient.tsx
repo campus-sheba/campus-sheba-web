@@ -141,7 +141,7 @@ export default function MyLostFoundNewClient() {
     setIsSubmitting(false);
 
     setTimeout(() => {
-      router.push(`/${locale}/my-lost-found`);
+      router.push(`/my-lost-found`);
       router.refresh();
     }, 700);
   };
@@ -151,8 +151,8 @@ export default function MyLostFoundNewClient() {
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Dashboard", href: `/${locale}/profile` },
-          { label: "Lost & Found", href: `/${locale}/my-lost-found` },
+          { label: "Dashboard", href: `/profile` },
+          { label: "Lost & Found", href: `/my-lost-found` },
           { label: "New Report" },
         ]}
       />
@@ -160,7 +160,7 @@ export default function MyLostFoundNewClient() {
       <div className="rounded-2xl border border-gray-100 bg-white p-5">
         <div className="flex items-center justify-between gap-3 mb-4">
           <h1 className="text-xl font-bold text-gray-900">Post New Lost/Found Report</h1>
-          <Link href={`/${locale}/my-lost-found`} className="text-xs font-semibold text-[#E30A13] hover:underline">
+          <Link href={`/my-lost-found`} className="text-xs font-semibold text-[#E30A13] hover:underline">
             Back to History
           </Link>
         </div>

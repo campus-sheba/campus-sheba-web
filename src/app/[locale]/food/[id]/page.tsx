@@ -29,7 +29,7 @@ export default async function Page({
 
   return (
     <div className="p-4 max-w-7xl mx-auto bg-gray-50 ">
-      <Link href={`/${locale}`} className="text-red-600">
+      <Link href={`/`} className="text-red-600">
         ← Back
       </Link>
       <h1 className="text-2xl font-bold mt-3">Food Details</h1>
@@ -68,7 +68,7 @@ export default async function Page({
       <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
         <div className="text-sm text-gray-500">Sold by</div>
         <Link
-          href={`/${locale}/shop/${shop?.id}`}
+          href={`/shop/${shop?.id}`}
           className="font-semibold mt-2 block"
         >
           {shop?.name}

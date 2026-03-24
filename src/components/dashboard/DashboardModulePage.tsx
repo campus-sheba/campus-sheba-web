@@ -24,7 +24,7 @@ export default function DashboardModulePage({
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Dashboard", href: `/${locale}/profile` },
+          { label: "Dashboard", href: `/profile` },
           { label: title },
         ]}
       />
@@ -35,7 +35,7 @@ export default function DashboardModulePage({
 
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
-            href={`/${locale}${ordersLink}`}
+            href={`/${ordersLink}`}
             className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#E30A13] hover:text-[#E30A13] transition-colors"
           >
             <span>Open related order history</span>
@@ -43,7 +43,7 @@ export default function DashboardModulePage({
           </Link>
 
           <Link
-            href={`/${locale}${moduleLink}`}
+            href={`/${moduleLink}`}
             className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-[#E30A13] hover:text-[#E30A13] transition-colors"
           >
             <span>Go to {moduleLabel}</span>

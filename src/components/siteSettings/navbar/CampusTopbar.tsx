@@ -28,7 +28,7 @@ export default function CampusTopbar({
   const handleProviderClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (isLoggedIn) {
-      router.push(`/${locale}/marketplace/shop/create`);
+      router.push(`/marketplace/shop/create`);
       return;
     }
     dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
@@ -87,7 +87,7 @@ export default function CampusTopbar({
           </button>
 
           <Link
-            href={`/${locale}/blood-bank`}
+            href={`/blood-bank`}
             id="topbar-sos-btn"
             className="hidden lg:flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
             title="Emergency Blood Request"

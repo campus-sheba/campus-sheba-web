@@ -25,9 +25,17 @@ export const userEndpoints = {
     me: `${baseURL}/user/me`,
     categories: `${baseURL}/user/categories`,
     lostAndFound: `${baseURL}/user/lost-and-found`,
+    addresses: `${baseURL}/addresses`,
 };
 
 export const mediaEndpoints = {
     upload: `${baseURL}/media2/upload`,
     delete: `${baseURL}/media2`,
+};
+
+export const cartEndpoints = {
+    cart: `${baseURL}/cart`,
+    applyCoupon: `${baseURL}/cart/apply-coupon`,
+    removeCoupon: `${baseURL}/cart/remove-coupon`,
+    checkout: `${baseURL}/cart/checkout`,
 };

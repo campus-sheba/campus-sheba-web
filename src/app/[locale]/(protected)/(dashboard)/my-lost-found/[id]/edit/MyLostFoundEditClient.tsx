@@ -191,9 +191,9 @@ export default function MyLostFoundEditClient() {
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
-          { label: "Dashboard", href: `/${locale}/profile` },
-          { label: "Lost & Found", href: `/${locale}/my-lost-found` },
-          { label: getItemTitle(item), href: `/${locale}/my-lost-found/${item._id}` },
+          { label: "Dashboard", href: `/profile` },
+          { label: "Lost & Found", href: `/my-lost-found` },
+          { label: getItemTitle(item), href: `/my-lost-found/${item._id}` },
           { label: "Edit" },
         ]}
       />
@@ -201,7 +201,7 @@ export default function MyLostFoundEditClient() {
       <div className="rounded-2xl border border-gray-100 bg-white p-5">
         <div className="flex items-center justify-between gap-3 mb-4">
           <h1 className="text-xl font-bold text-gray-900">Edit Lost & Found Post</h1>
-          <Link href={`/${locale}/my-lost-found/${item._id}`} className="text-xs font-semibold text-[#E30A13] hover:underline">
+          <Link href={`/my-lost-found/${item._id}`} className="text-xs font-semibold text-[#E30A13] hover:underline">
             Back to Details
           </Link>
         </div>

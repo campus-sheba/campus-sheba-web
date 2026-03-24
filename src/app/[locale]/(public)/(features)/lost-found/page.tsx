@@ -396,7 +396,7 @@ export default function LostFoundPage() {
               return (
             <Link
               key={item._id}
-              href={`/${locale}/lost-found/${item._id}`}
+              href={`/lost-found/${item._id}`}
               className="bg-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow overflow-hidden group flex flex-row md:flex-col"
             >
               <div

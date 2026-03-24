@@ -148,7 +148,7 @@ export default function ListBookPage() {
               </p>
               <div className="flex gap-3 justify-center">
                 <Link
-                  href={`/${locale}/books`}
+                  href={`/books`}
                   className="bg-red-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-red-700 transition-colors"
                 >
                   View All Books
