@@ -143,7 +143,7 @@ export const CookieHelper = {
    */
   clearAll: (): void => {
     CookieHelper.clearAuth();
-    CookieHelper.clearUniversity();
+    // Intentionally NOT clearing university so guests retain context
   },
 };
 

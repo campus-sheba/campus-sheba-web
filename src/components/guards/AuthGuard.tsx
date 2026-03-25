@@ -8,30 +8,15 @@ type AuthGuardProps = {
 };
 
 export default async function AuthGuard({ children, locale }: AuthGuardProps) {
-	let authenticated = await isAuthenticated();
-
-	if (!authenticated) {
-		try {
-			await refreshAuth();
-			authenticated = await isAuthenticated();
-		} catch {
-			authenticated = false;
-		}
-	}
-
-	if (authenticated) {
-		try {
-			await getMe();
-		} catch {
-			try {
-				await refreshAuth();
-				await getMe();
-			} catch {
-				redirect(`/api/auth/clear?locale=${locale}`);
-			}
-		}
-	} else {
-			redirect(`/api/auth/clear?locale=${locale}`);
+	try {
+		// getMe calls getPrivate under the hood, which now natively intercepts 
+		// 401s and attempts a silent refresh. 
+		// Note: We cannot use persistUserCookie: true here because Next.js prevents 
+		// setting cookies during a Server Component render phase.
+		await getMe({ persistUserCookie: false });
+	} catch (error) {
+		// Session expired or completely invalid
+		redirect(`/api/auth/clear?locale=${locale}`);
 	}
 
 	return <>{children}</>;

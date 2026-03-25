@@ -34,18 +34,8 @@ export async function deletePrivate<T = unknown>(
   body?: ApiBody,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  const timeZone = cookieStore.get('timeZone')?.value;
-
-  const headers = mergeHeaders(
-    { Accept: 'application/json' },
-    token ? { Authorization: `Bearer ${token}` } : undefined,
-    timeZone ? { timeZone } : undefined,
-    options.headers,
-  );
-
-  return del<T>(url, body, { ...options, headers });
+  const { privateRequest } = await import('./privateRequest');
+  return privateRequest<T>('DELETE', url, body, options);
 }
 
 export async function deleteThirdParty<T = unknown>(

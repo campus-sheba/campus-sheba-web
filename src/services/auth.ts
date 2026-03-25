@@ -64,8 +64,6 @@ export async function clearAuthCookies() {
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
   cookieStore.delete("user");
-  cookieStore.delete("university");
-  cookieStore.delete("addressId");
 }
 
 export async function signupSendOtp(payload: SignupSendOtpPayload) {

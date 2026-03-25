@@ -17,6 +17,7 @@ export async function getPublic<T = unknown>(
 ): Promise<T> {
   const cookieStore = await cookies();
   const timeZone = cookieStore.get('timeZone')?.value;
+  const token = cookieStore.get('accessToken')?.value;
 
   const headers = mergeHeaders(
     { Accept: 'application/json' },
@@ -24,25 +25,37 @@ export async function getPublic<T = unknown>(
     options.headers,
   );
 
-  return get<T>(url, { ...options, headers });
+  let finalUrl = url;
+  
+  // Implicitly pass university purely for GUESTS on public listing APIs
+  if (!token) {
+    const universityCookie = cookieStore.get('university')?.value;
+    if (universityCookie) {
+      try {
+        const university = JSON.parse(decodeURIComponent(universityCookie));
+        if (university?._id) {
+          const urlObj = new URL(finalUrl.startsWith('http') ? finalUrl : `${process.env.BASE_URL || ''}${finalUrl}`);
+          // Don't override if caller already manually passed it
+          if (!urlObj.searchParams.has('university')) {
+            urlObj.searchParams.set('university', university._id);
+            finalUrl = urlObj.toString();
+          }
+        }
+      } catch (e) {
+        // Safe fail — cookie was corrupted or unparseable
+      }
+    }
+  }
+
+  return get<T>(finalUrl, { ...options, headers });
 }
 
 export async function getPrivate<T = unknown>(
   url: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  const timeZone = cookieStore.get('timeZone')?.value;
-
-  const headers = mergeHeaders(
-    { Accept: 'application/json' },
-    token ? { Authorization: `Bearer ${token}` } : undefined,
-    timeZone ? { timeZone } : undefined,
-    options.headers,
-  );
-
-  return get<T>(url, { ...options, headers });
+  const { privateRequest } = await import('./privateRequest');
+  return privateRequest<T>('GET', url, undefined, options);
 }
 
 export async function getThirdParty<T = unknown>(
