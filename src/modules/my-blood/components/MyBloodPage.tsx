@@ -213,7 +213,7 @@ export default function MyBloodPage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-5">{profile ? "Update Donor Profile" : "Register as Blood Donor"}</h3>
                 {profileError && <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-600 mb-5"><AlertCircle className="w-4 h-4 shrink-0" />{profileError}</div>}
                 <form onSubmit={handleProfileSubmit} className="space-y-5">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                     <div>
                       <label className={labelCls}>Blood Group *</label>
                       <select required value={profileForm.bloodGroup || "A+"} onChange={e => setProfileForm({ ...profileForm, bloodGroup: e.target.value as BloodGroup })} className={inputCls}>
@@ -339,7 +339,7 @@ export default function MyBloodPage() {
                   <h4 className="font-bold text-gray-900 mb-4">Create Emergency Blood Request</h4>
                   {requestError && <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-600 mb-4"><AlertCircle className="w-4 h-4 shrink-0" />{requestError}</div>}
                   <form onSubmit={handleRequestSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
                         <label className={labelCls}>Blood Group *</label>
                         <select required value={requestForm.bloodGroup || "A+"} onChange={e => setRequestForm({ ...requestForm, bloodGroup: e.target.value as BloodGroup })} className={inputCls}>

@@ -215,7 +215,7 @@ export default function ShopProductsTab({ shopId }: { shopId: string }) {
           {/* BASIC INFO SECTION */}
           {activeSection === "basic" && (
             <div className="space-y-4 animate-in slide-in-from-right-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>Type *</label>
                   <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={inputCls}>
@@ -249,7 +249,7 @@ export default function ShopProductsTab({ shopId }: { shopId: string }) {
                 <textarea value={form.description || ""} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={`${inputCls} resize-none`} placeholder="Detailed description of the product..." />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>Category *</label>
                   <select required value={form.categoryId || ""} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} className={inputCls}>
@@ -279,7 +279,7 @@ export default function ShopProductsTab({ shopId }: { shopId: string }) {
           {/* PRICING SECTION */}
           {activeSection === "pricing" && (
             <div className="space-y-4 animate-in slide-in-from-right-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>Price (৳) *</label>
                   <input type="number" required min={1} value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} className={inputCls} placeholder="0" />
@@ -290,7 +290,7 @@ export default function ShopProductsTab({ shopId }: { shopId: string }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>Discount Price (৳)</label>
                   <input type="number" min={0} value={form.discountPrice || ""} onChange={(e) => setForm({ ...form, discountPrice: Number(e.target.value) })} className={inputCls} placeholder="0 (Optional)" />
@@ -362,7 +362,7 @@ export default function ShopProductsTab({ shopId }: { shopId: string }) {
                 <label className={labelCls}>Contact Name</label>
                 <input value={form.contactName || ""} onChange={(e) => setForm({ ...form, contactName: e.target.value })} className={inputCls} placeholder="John Doe" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>Contact Phone</label>
                   <input value={form.contactPhone || ""} onChange={(e) => setForm({ ...form, contactPhone: e.target.value })} className={inputCls} placeholder="+880..." />
@@ -399,7 +399,7 @@ export default function ShopProductsTab({ shopId }: { shopId: string }) {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center bg-white px-5 py-4 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white px-5 py-4 rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
             <ImageIcon className="w-5 h-5 text-orange-500" />

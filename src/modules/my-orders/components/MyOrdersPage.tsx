@@ -370,7 +370,7 @@ export default function MyOrdersPage() {
                           order.items.map(item => {
                             const itemPending = (item.status || "PENDING").toUpperCase() === "PENDING";
                             return (
-                              <div key={item._id} className="px-5 py-4 flex items-center justify-between gap-4">
+                              <div key={item._id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div className="flex items-center gap-3">
                                   <CheckCircle2 className={`w-4 h-4 shrink-0 ${
                                     (item.status || "").toUpperCase() === "DELIVERED" ? "text-emerald-500" :

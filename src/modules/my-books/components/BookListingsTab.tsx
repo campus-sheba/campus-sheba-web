@@ -220,7 +220,7 @@ export default function BookListingsTab() {
           
           {activeSection === "basic" && (
             <div className="space-y-5 animate-in slide-in-from-right-4">
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className={labelCls}>Listing Type *</label>
                   <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })} className={inputCls} required>
@@ -235,7 +235,7 @@ export default function BookListingsTab() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="col-span-2">
                   <label className={labelCls}>Title *</label>
                   <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputCls} placeholder="e.g. Physics for Scientists and Engineers" />
@@ -270,7 +270,7 @@ export default function BookListingsTab() {
 
           {activeSection === "details" && (
             <div className="space-y-5 animate-in slide-in-from-right-4">
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className={labelCls}>Edition</label>
                   <input value={form.edition || ""} onChange={(e) => setForm({ ...form, edition: e.target.value })} className={inputCls} placeholder="e.g. 9th Edition" />
@@ -300,7 +300,7 @@ export default function BookListingsTab() {
               
               <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
                 <h4 className="text-xs font-bold text-gray-800 uppercase tracking-widest mb-4 flex items-center gap-2">Core Rates</h4>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className={labelCls}>Base Price (৳)</label>
                     <input type="number" min={0} value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} className={inputCls} />
@@ -327,7 +327,7 @@ export default function BookListingsTab() {
               {form.type === "Lending" && (
                 <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100/50">
                   <h4 className="text-xs font-bold text-blue-800 uppercase tracking-widest mb-4 flex items-center gap-2">Lending Rules</h4>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                       <label className={labelCls}>Borrow Duration (Days)</label>
                       <input type="number" min={1} value={form.borrowDuration || ""} onChange={(e) => setForm({ ...form, borrowDuration: Number(e.target.value) })} className={inputCls} placeholder="e.g. 14" />
@@ -409,7 +409,7 @@ export default function BookListingsTab() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-5 pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-3">
                 <div className="col-span-2">
                   <label className={labelCls}>Proxy Contact Entity Name</label>
                   <input value={form.contactName || ""} onChange={(e) => setForm({ ...form, contactName: e.target.value })} className={inputCls} placeholder="e.g. John Doe / Bookshop Dept" />

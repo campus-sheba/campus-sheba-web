@@ -457,7 +457,7 @@ export default function ShopForm({
           <p className="text-xs text-gray-500">
             Enter the GPS coordinates of your shop (longitude, latitude).
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Longitude</label>
               <input

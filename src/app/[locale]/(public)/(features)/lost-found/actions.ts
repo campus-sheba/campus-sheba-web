@@ -6,7 +6,7 @@ import { patchPrivate } from "@/utils/api/patch";
 import { postPrivate } from "@/utils/api/post";
 import { careersEndpoints, userEndpoints } from "@/utils/endpoints/endpoints";
 
-type LostFoundCategory = {
+export type LostFoundCategory = {
   _id: string;
   title: string;
   type: string;
@@ -14,11 +14,11 @@ type LostFoundCategory = {
   description?: string | null;
 };
 
-type LostFoundImage = {
+export type LostFoundImage = {
   url?: string | null;
 };
 
-type LostFoundLocation = {
+export type LostFoundLocation = {
   _id: string;
   name: string;
   latitude?: number;
@@ -26,26 +26,26 @@ type LostFoundLocation = {
   description?: string;
 };
 
-type UniversityLocationOption = {
+export type UniversityLocationOption = {
   id: string;
   name: string;
   type?: "hall" | "landmark" | "hub";
   universityId?: string;
 };
 
-type LostFoundItemInner = {
+export type LostFoundItemInner = {
   name?: string;
   description?: string;
   category?: string | { _id: string; title?: string };
   images?: LostFoundImage[];
 };
 
-type LostFoundCreator = {
+export type LostFoundCreator = {
   _id: string;
   name?: string;
 };
 
-type LostFoundItem = {
+export type LostFoundItem = {
   _id: string;
   title: string;
   description?: string;
@@ -80,24 +80,24 @@ type LostFoundItem = {
   updatedAt?: string;
 };
 
-type PaginatedResponse<T> = {
+export type PaginatedResponse<T> = {
   page: number;
   limit: number;
   total: number;
   data: T[];
 };
 
-type ApiEnvelope<T> = {
+export type ApiEnvelope<T> = {
   data: T;
 };
 
-type ApiMessageResponse = {
+export type ApiMessageResponse = {
   message?: string;
 };
 
-type ResolveRequestStatus = "pending" | "accepted" | "rejected";
+export type ResolveRequestStatus = "pending" | "accepted" | "rejected";
 
-type IncomingResolveRequest = {
+export type IncomingResolveRequest = {
   id: string;
   postId: string;
   requestedBy?: {
@@ -590,9 +590,4 @@ export async function getUniversityLocationsAction(universityId?: string) {
   }
 }
 
-export type {
-  IncomingResolveRequest,
-  LostFoundCategory,
-  LostFoundItem,
-  UniversityLocationOption,
-};
+
