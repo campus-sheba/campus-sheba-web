@@ -3,7 +3,6 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  LayoutDashboard,
   ShoppingBag,
   BookOpen,
   Droplets,
@@ -14,11 +13,12 @@ import {
   MapPin,
   Wallet,
   Settings,
-  Bike,
   LogOut,
   X,
   Menu,
   type LucideIcon,
+  User,
+  ClipboardList,
 } from "lucide-react";
 import { useState } from "react";
 import { logoutAction } from "@/app/[locale]/(protected)/(dashboard)/profile/actions";
@@ -42,10 +42,22 @@ type NavItem = {
 
 const primaryItems: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "Profile",
     href: "/profile",
-    icon: LayoutDashboard,
+    icon: User,
     color: "text-gray-600",
+  },
+  {
+    label: "My Shop",
+    href: "/my-shop",
+    icon: ShoppingBag,
+    color: "text-pink-600",
+  },
+  {
+    label: "My Orders",
+    href: "/my-orders",
+    icon: ClipboardList,
+    color: "text-indigo-600",
   },
   {
     label: "Addresses",
@@ -54,30 +66,22 @@ const primaryItems: NavItem[] = [
     color: "text-blue-500",
   },
   { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
-  {
-    label: "My Shop",
-    href: "/my-shop",
-    icon: ShoppingBag,
-    color: "text-pink-600",
-  },
-  {
+];
+
+const serviceItems: NavItem[] = [
+  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
+  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
+  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
+  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
+  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
+  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
+  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
+   {
     label: "Settings",
     href: "/settings",
     icon: Settings,
     color: "text-gray-500",
   },
-];
-
-const serviceItems: NavItem[] = [
-  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
-  { label: "Delivery", href: "/my-delivery", icon: Bike, color: "text-purple-600" },
-  { label: "Marketplace", href: "/my-marketplace", icon: ShoppingBag, color: "text-emerald-600" },
-  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
-  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
-  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
-  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
-  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
-  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
 ];
 
 
