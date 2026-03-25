@@ -157,7 +157,17 @@ export default function DashboardSidebar({ user }: Props) {
 
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
-        <form action={logoutAction.bind(null, locale)} method="POST">
+        <form 
+          action={logoutAction.bind(null, locale)} 
+          method="POST"
+          onSubmit={() => {
+            // Ensure client wipes the immediate auth React state 
+            // BEFORE the Next.js soft-redirect kicks in, 
+            // guaranteeing accurate Navbar and Campus UI render sequences 
+            const evt = new CustomEvent("client-logout");
+            window.dispatchEvent(evt);
+          }}
+        >
           <button
             type="submit"
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"

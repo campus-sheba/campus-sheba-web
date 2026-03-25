@@ -292,10 +292,18 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
 
   const logout = useCallback(() => {
     CookieHelper.clearAll();
-    dispatch({ type: "RESET_STATE" });
+    dispatch({ type: "CLEAR_AUTH" });
     dispatch({ type: "SET_AUTH_LOADING", payload: false });
     StorageHelper.clearAll();
   }, []);
+
+  useEffect(() => {
+    const handleLogoutEvent = () => logout();
+    window.addEventListener("client-logout", handleLogoutEvent);
+    return () => {
+      window.removeEventListener("client-logout", handleLogoutEvent);
+    };
+  }, [logout]);
 
   const selectUniversity = useCallback((university: University) => {
     dispatch({
