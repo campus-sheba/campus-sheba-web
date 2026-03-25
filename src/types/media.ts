@@ -10,6 +10,7 @@ export enum MediaFeatureName {
   LOST_AND_FOUND = "lost-and-found",
   SHOP = "shop",
   BANNER = "banner",
+  MISC = "misc",
 }
 
 export enum MediaFileType {

@@ -81,7 +81,7 @@ export async function getOwnBooksAction(params?: Record<string, string>) {
 
 export async function createBookAction(data: BookPayload) {
   try {
-    const payload = data as Record<string, unknown>;
+    const payload = data as unknown as Record<string, unknown>;
     // According to specs: /api/creator/books handles generic book creation
     const response = await postPrivate<{ data: Book }>(`${BASE}/creator/books`, payload);
     const book = (response as any)?.data ?? response;
