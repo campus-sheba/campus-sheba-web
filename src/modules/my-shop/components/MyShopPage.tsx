@@ -11,6 +11,7 @@ import {
 import ShopForm from "./ShopForm";
 import ShopProductsTab from "./ShopProductsTab";
 import ShopOrdersTab from "./ShopOrdersTab";
+import ShopReviewsTab from "./ShopReviewsTab";
 import Button from "@/components/ui/Button";
 import {
   Store,
@@ -463,13 +464,7 @@ export default function MyShopPage() {
 
         {activeTab === "orders" && <ShopOrdersTab />}
 
-        {activeTab === "reviews" && (
-          <div className="bg-white p-10 text-center rounded-xl border border-gray-100 shadow-sm">
-            <Star className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-bold">Reviews</p>
-            <p className="text-gray-400 text-sm mt-1">Customer reviews will appear here.</p>
-          </div>
-        )}
+        {activeTab === "reviews" && <ShopReviewsTab />}
       </div>
 
     </div>

@@ -244,6 +244,17 @@ export async function deleteProductAction(productId: string) {
 
 // ─── Order Actions ───────────────────────────────────────────────────────────
 
+export async function getCategoriesAction() {
+  try {
+    const response = await getPrivate<{ data: { _id: string; title: string }[] }>(`${BASE}/user/categories`);
+    const data = (response as any)?.data ?? [];
+    return { success: true as const, data };
+  } catch (error) {
+    return { success: false as const, message: "Failed to fetch categories", data: [] };
+  }
+}
+
+
 export async function getOwnerOrdersAction(params?: Record<string, string>) {
   try {
     const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
@@ -286,6 +297,45 @@ export async function cancelOrderItemAction(orderId: string, itemId: string) {
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to cancel item";
+    return { success: false as const, message };
+  }
+}
+
+// ─── Review Actions ──────────────────────────────────────────────────────────
+
+export interface Review {
+  _id: string;
+  rating: number;
+  comment?: string;
+  response?: string;
+  isVerifiedPurchase?: boolean;
+  createdAt?: string;
+  user?: { name: string; avatar?: string };
+}
+
+export type ReviewItemType = "shop" | "product" | "food" | "book" | "parcel";
+
+export async function getReviewsAction(type: ReviewItemType, params?: Record<string, string>) {
+  try {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    const url = `${BASE}/creator/reviews/${type}${qs}`;
+    const response = await getPrivate<{ data: Review[]; meta?: unknown }>(url);
+    const data = (response as any)?.data ?? [];
+    const meta = (response as any)?.meta ?? null;
+    return { success: true as const, data: data as Review[], meta };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to fetch reviews";
+    console.error("[getReviewsAction] Error:", message);
+    return { success: false as const, message, data: [] as Review[], meta: null };
+  }
+}
+
+export async function respondToReviewAction(reviewId: string, response: string) {
+  try {
+    const res = await postPrivate<{ data: Review }>(`${BASE}/creator/reviews/${reviewId}/respond`, { response });
+    return { success: true as const, data: (res as any)?.data ?? res };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to respond to review";
     return { success: false as const, message };
   }
 }
