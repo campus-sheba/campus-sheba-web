@@ -76,6 +76,14 @@ const serviceItems: NavItem[] = [
   { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
   { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
   { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
+  // garbadge collector, fund raising, 
+  {
+    label: "Garbadge Collector",
+    href: "/my-garbadge-collector",
+    icon: Archive,
+    color: "text-green-600",
+  },
+ 
    {
     label: "Settings",
     href: "/settings",
