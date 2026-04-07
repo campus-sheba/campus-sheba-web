@@ -3,6 +3,7 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import {
+  LayoutDashboard,
   ShoppingBag,
   BookOpen,
   Droplets,
@@ -13,12 +14,11 @@ import {
   MapPin,
   Wallet,
   Settings,
+  Bike,
   LogOut,
   X,
   Menu,
   type LucideIcon,
-  User,
-  ClipboardList,
 } from "lucide-react";
 import { useState } from "react";
 import { logoutAction } from "@/app/[locale]/(protected)/(dashboard)/profile/actions";
@@ -42,9 +42,9 @@ type NavItem = {
 
 const primaryItems: NavItem[] = [
   {
-    label: "Profile",
+    label: "Dashboard",
     href: "/profile",
-    icon: User,
+    icon: LayoutDashboard,
     color: "text-gray-600",
   },
   {
@@ -54,42 +54,31 @@ const primaryItems: NavItem[] = [
     color: "text-pink-600",
   },
   {
-    label: "My Orders",
-    href: "/my-orders",
-    icon: ClipboardList,
-    color: "text-indigo-600",
-  },
-  {
     label: "Addresses",
     href: "/my-addresses",
     icon: MapPin,
     color: "text-blue-500",
   },
   { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
-];
 
-const serviceItems: NavItem[] = [
-  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
-  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
-  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
-  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
-  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
-  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
-  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
-  // garbadge collector, fund raising, 
   {
-    label: "Garbadge Collector",
-    href: "/my-garbadge-collector",
-    icon: Archive,
-    color: "text-green-600",
-  },
- 
-   {
     label: "Settings",
     href: "/settings",
     icon: Settings,
     color: "text-gray-500",
   },
+];
+
+const serviceItems: NavItem[] = [
+  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
+  { label: "Delivery", href: "/my-delivery", icon: Bike, color: "text-purple-600" },
+  { label: "Marketplace", href: "/my-marketplace", icon: ShoppingBag, color: "text-emerald-600" },
+  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
+  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
+  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
+  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
+  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
+  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
 ];
 
 
@@ -157,17 +146,7 @@ export default function DashboardSidebar({ user }: Props) {
 
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
-        <form 
-          action={logoutAction.bind(null, locale)} 
-          method="POST"
-          onSubmit={() => {
-            // Ensure client wipes the immediate auth React state 
-            // BEFORE the Next.js soft-redirect kicks in, 
-            // guaranteeing accurate Navbar and Campus UI render sequences 
-            const evt = new CustomEvent("client-logout");
-            window.dispatchEvent(evt);
-          }}
-        >
+        <form action={logoutAction.bind(null, locale)} method="POST">
           <button
             type="submit"
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"

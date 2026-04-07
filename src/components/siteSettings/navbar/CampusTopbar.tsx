@@ -83,10 +83,10 @@ export default function CampusTopbar({
             onClick={handleProviderClick}
             className="hidden lg:block rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
           >
-            Be a Provider
+            Create Shop
           </button>
 
-          <Link
+          {/* <Link
             href={`/blood-bank`}
             id="topbar-sos-btn"
             className="hidden lg:flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
@@ -94,7 +94,7 @@ export default function CampusTopbar({
           >
             <Droplets className="w-3 h-3" />
             <span>SOS</span>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>

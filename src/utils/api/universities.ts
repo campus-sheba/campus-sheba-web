@@ -19,7 +19,8 @@ export const fetchUniversities = async (
   limit: number = 100
 ): Promise<University[]> => {
   try {
-    const url = `${careersEndpoints.universities}?page=${page}&limit=${limit}`;
+    const url = `${careersEndpoints.universities}?page=${page}&limit=${limit}&isActive=true`;
+    console.log("Fetching universities from:", url);
     const response = await fetch(url);
 
     if (!response.ok) {
