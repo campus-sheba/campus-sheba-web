@@ -1,14 +1,16 @@
 import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { Button, Heading, Paragraph, Subtitle, Title } from "@/components/ui";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
+import { usePathname } from "@/i18n/navigation";
 import { getShopCreateMessages } from "./messages";
 
 interface ShopCreateIntroProps {
-  locale: string;
   onStart: () => void;
 }
 
-export default function ShopCreateIntro({ locale, onStart }: ShopCreateIntroProps) {
+export default function ShopCreateIntro({ onStart }: ShopCreateIntroProps) {
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "en";
   const messages = getShopCreateMessages(locale);
   return (
     <div className="min-h-screen bg-gray-50 pb-14">

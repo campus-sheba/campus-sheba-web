@@ -12,6 +12,7 @@ import {
   Store,
   Trash2,
 } from "lucide-react";
+import { usePathname } from "@/i18n/navigation";
 import { Button, Heading, Paragraph, Subtitle, Title } from "@/components/ui";
 import { ContentWrapper } from "@/components/wrappers";
 import { uploadMediaFiles } from "@/lib/media/client";
@@ -34,7 +35,6 @@ import { OPERATING_DAYS, SHOP_TYPE_NOTES } from "./types";
 import { getShopCreateMessages } from "./messages";
 
 interface DynamicShopCreateFormProps {
-  locale: string;
   onBackToIntro: () => void;
 }
 
@@ -192,7 +192,9 @@ function SlotEditor({
   );
 }
 
-export default function DynamicShopCreateForm({ locale, onBackToIntro }: DynamicShopCreateFormProps) {
+export default function DynamicShopCreateForm({ onBackToIntro }: DynamicShopCreateFormProps) {
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "en";
   const messages = getShopCreateMessages(locale);
   const [categories, setCategories] = useState<ShopCategory[]>([]);
   const [subCategories, setSubCategories] = useState<ShopCategory[]>([]);

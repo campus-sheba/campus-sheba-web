@@ -4,13 +4,12 @@ import { useState } from "react";
 import DynamicShopCreateForm from "./_components/DynamicShopCreateForm";
 import ShopCreateIntro from "./_components/ShopCreateIntro";
 
-export default function CreateShopPage({ params }: { params: { locale: string } }) {
-  const locale = (params as { locale: string }).locale || "en";
+export default function CreateShopPage() {
   const [showForm, setShowForm] = useState(false);
 
   if (!showForm) {
-    return <ShopCreateIntro locale={locale} onStart={() => setShowForm(true)} />;
+    return <ShopCreateIntro onStart={() => setShowForm(true)} />;
   }
 
-  return <DynamicShopCreateForm locale={locale} onBackToIntro={() => setShowForm(false)} />;
+  return <DynamicShopCreateForm onBackToIntro={() => setShowForm(false)} />;
 }
