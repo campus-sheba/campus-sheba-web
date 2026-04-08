@@ -17,4 +17,6 @@ export type NextFetchOptions = {
 export type ApiRequestOptions = Omit<RequestInit, 'method' | 'body' | 'headers'> & {
     headers?: HeadersInit;
     next?: NextFetchOptions;
+    universityId?: string;
+    includeUniversity?: boolean;
 };

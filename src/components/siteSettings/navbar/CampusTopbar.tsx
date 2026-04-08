@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Droplets, MapPin } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useAppState } from "@/contexts/AppStateContext";
 
 type CampusTopbarProps = {
@@ -28,7 +27,7 @@ export default function CampusTopbar({
   const handleProviderClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (isLoggedIn) {
-      router.push(`/marketplace/shop/create`);
+      router.push(`/${locale}/marketplace/shop/create`);
       return;
     }
     dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });

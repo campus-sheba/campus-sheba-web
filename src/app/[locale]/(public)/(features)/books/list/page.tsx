@@ -10,6 +10,7 @@ import { BsBook, BsQuestionCircle } from "react-icons/bs";
 import { MdMenuBook } from "react-icons/md";
 import { BiSolidFileBlank } from "react-icons/bi";
 import { LiaFileInvoiceSolid } from "react-icons/lia";
+import { createBookLendAction, createBookSellAction } from "../actions";
 
 const CATEGORIES = [
   { name: "Textbook", icon: <MdMenuBook /> },
@@ -40,6 +41,9 @@ export default function ListBookPage() {
 
   const [formData, setFormData] = useState({
     listingType: "Sell" as "Sell" | "Rent",
+    addressId: "",
+    categoryId: "",
+    departmentId: "",
     title: "",
     author: "",
     subject: "",
@@ -64,6 +68,9 @@ export default function ListBookPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) newErrors.title = "Book title is required";
+    if (!formData.addressId.trim()) newErrors.addressId = "Address ID is required";
+    if (!formData.categoryId.trim()) newErrors.categoryId = "Category ID is required";
+    if (!formData.departmentId.trim()) newErrors.departmentId = "Department ID is required";
     if (!formData.author.trim()) newErrors.author = "Author name is required";
     if (!formData.subject.trim())
       newErrors.subject = "Subject/Department is required";
@@ -90,10 +97,41 @@ export default function ListBookPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      setSubmitted(true);
+      try {
+        const payload = {
+          title: formData.title,
+          author: formData.author,
+          addressId: formData.addressId,
+          photos: [],
+          category: formData.categoryId,
+          subject: formData.subject,
+          buyingYear: String(new Date().getFullYear()),
+          description: formData.description,
+          contactName: formData.contactName,
+          contactPhone: formData.contactPhone,
+          contactEmail: formData.contactEmail,
+          quality: formData.condition,
+          price: Number(formData.listingType === "Sell" ? formData.sellingPrice : formData.rentalPrice),
+          quantity: 1,
+          department: formData.departmentId,
+        };
+
+        if (formData.listingType === "Sell") {
+          await createBookSellAction(payload);
+        } else {
+          await createBookLendAction(payload);
+        }
+
+        setSubmitted(true);
+      } catch (error) {
+        setErrors((prev) => ({
+          ...prev,
+          submit: error instanceof Error ? error.message : "Failed to publish listing",
+        }));
+      }
     }
   };
 
@@ -158,6 +196,9 @@ export default function ListBookPage() {
                     setSubmitted(false);
                     setFormData({
                       listingType: "Sell",
+                      addressId: "",
+                      categoryId: "",
+                      departmentId: "",
                       title: "",
                       author: "",
                       subject: "",
@@ -255,6 +296,43 @@ export default function ListBookPage() {
               Book Details
             </h3>
             <div className="space-y-3 border p-4 bg-gray-50 rounded-lg border-gray-200">
+              {/* Title */}
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div>
+                  <label className="block text-xs md:text-sm text-gray-900 mb-1.5">Address ID *</label>
+                  <input
+                    type="text"
+                    name="addressId"
+                    value={formData.addressId}
+                    onChange={handleChange}
+                    placeholder="Paste address id"
+                    className="w-full px-4 py-2.5 rounded-lg border outline-none border-gray-200 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm text-gray-900 mb-1.5">Category ID *</label>
+                  <input
+                    type="text"
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleChange}
+                    placeholder="Paste category id"
+                    className="w-full px-4 py-2.5 rounded-lg border outline-none border-gray-200 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm text-gray-900 mb-1.5">Department ID *</label>
+                  <input
+                    type="text"
+                    name="departmentId"
+                    value={formData.departmentId}
+                    onChange={handleChange}
+                    placeholder="Paste department id"
+                    className="w-full px-4 py-2.5 rounded-lg border outline-none border-gray-200 text-sm"
+                  />
+                </div>
+              </div>
+
               {/* Title */}
               <div>
                 <label className="block text-xs md:text-sm text-gray-900 mb-1.5">
@@ -601,6 +679,7 @@ export default function ListBookPage() {
           </div>
 
           {/* Buttons */}
+          {errors.submit ? <p className="text-sm text-red-500">{errors.submit}</p> : null}
           <div className="flex mt-5">
             <button
               type="submit"

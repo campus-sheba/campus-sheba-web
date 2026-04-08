@@ -1,9 +1,8 @@
 import Link from "next/link";
 import React from "react";
-import { foods, shops } from "../../(public)/(features)/food/data";
 import { MdOutlineRestaurant } from "react-icons/md";
-import { FaClock } from "react-icons/fa6";
 import { FiClock } from "react-icons/fi";
+import { foods, shops } from "../data";
 
 function slugify(s: string) {
   return s
@@ -67,10 +66,7 @@ export default async function Page({
 
       <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
         <div className="text-sm text-gray-500">Sold by</div>
-        <Link
-          href={`/shop/${shop?.id}`}
-          className="font-semibold mt-2 block"
-        >
+        <Link href={`/shop/${shop?.id}`} className="font-semibold mt-2 block">
           {shop?.name}
         </Link>
       </div>

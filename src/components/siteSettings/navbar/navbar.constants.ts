@@ -33,6 +33,16 @@ export type ServiceMenuItem = {
   bg: string;
 };
 
+export type UniversityFeature = {
+  _id: string;
+  key: string;
+  title: string;
+  description: string;
+  routeName: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
 export const CAMPUSES: Campus[] = [
   { id: "ju", name: "Jahangirnagar University", short: "JU", location: "Savar, Dhaka" },
   { id: "du", name: "Dhaka University", short: "DU", location: "Nilkhet, Dhaka" },
@@ -123,6 +133,47 @@ export const servicesMenu: ServiceMenuItem[] = [
   { label: "Garbage Collector", description: "Eco-friendly waste pickup", href: "/garbage", icon: Trash2, color: "text-slate-600", bg: "bg-slate-50" },
   { label: "Lost & Found", description: "Recover lost items", href: "/lost-found", icon: MapPin, color: "text-yellow-600", bg: "bg-yellow-50" },
 ];
+
+const FEATURE_VISUALS: Record<
+  string,
+  Pick<ServiceMenuItem, "icon" | "color" | "bg">
+> = {
+  food: { icon: Bike, color: "text-purple-600", bg: "bg-purple-50" },
+  buy_sell: { icon: ShoppingBag, color: "text-emerald-600", bg: "bg-emerald-50" },
+  campus_mart: { icon: Store, color: "text-red-600", bg: "bg-red-50" },
+  book: { icon: BookOpen, color: "text-blue-600", bg: "bg-blue-50" },
+  blood: { icon: Droplets, color: "text-red-600", bg: "bg-red-50" },
+  tuition: { icon: GraduationCap, color: "text-amber-600", bg: "bg-amber-50" },
+  jobs: { icon: Briefcase, color: "text-sky-600", bg: "bg-sky-50" },
+  donation: { icon: Heart, color: "text-green-600", bg: "bg-green-50" },
+  parcel: { icon: Package, color: "text-violet-600", bg: "bg-violet-50" },
+  garbage: { icon: Trash2, color: "text-slate-600", bg: "bg-slate-50" },
+  lost_found: { icon: MapPin, color: "text-yellow-600", bg: "bg-yellow-50" },
+};
+
+export const mapUniversityFeaturesToServicesMenu = (
+  features: UniversityFeature[],
+): ServiceMenuItem[] => {
+  return features
+    .filter((feature) => feature.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((feature) => {
+      const visuals = FEATURE_VISUALS[feature.key] ?? {
+        icon: Store,
+        color: "text-brand-green-DEFAULT",
+        bg: "bg-brand-green-50",
+      };
+
+      return {
+        label: feature.title,
+        description: feature.description,
+        href: feature.routeName,
+        icon: visuals.icon,
+        color: visuals.color,
+        bg: visuals.bg,
+      };
+    });
+};
 
 export const navLinks = [
 //   { label: "Features", href: "#features" },

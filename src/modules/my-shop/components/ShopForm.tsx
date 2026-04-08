@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
+import type { ShopPayload } from "@/app/[locale]/(protected)/(dashboard)/my-shop/actions";
 
-const defaultShop = {
+const defaultShop: ShopPayload = {
   type: "Student Shop",
   name: "",
   description: "",
@@ -19,13 +20,15 @@ const defaultShop = {
 
 
 interface ShopFormProps {
-  initial?: typeof defaultShop;
-  onSubmit: (form: typeof defaultShop) => void;
+  initial?: ShopPayload;
+  onSubmit: (form: ShopPayload) => void;
   loading: boolean;
+  onCancel?: () => void;
+  isEdit?: boolean;
 }
 
-export default function ShopForm({ initial, onSubmit, loading }: ShopFormProps) {
-  const [form, setForm] = useState<typeof defaultShop>(initial || defaultShop);
+export default function ShopForm({ initial, onSubmit, loading, onCancel, isEdit }: ShopFormProps) {
+  const [form, setForm] = useState<ShopPayload>(initial || defaultShop);
   const [error, setError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -68,7 +71,16 @@ export default function ShopForm({ initial, onSubmit, loading }: ShopFormProps) 
       </div>
       {/* Add more fields as needed */}
       {error && <div className="text-red-500 text-sm">{error}</div>}
-      <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Save Shop"}</Button>
+      <div className="flex items-center gap-2">
+        <Button type="submit" disabled={loading}>
+          {loading ? "Saving..." : isEdit ? "Update Shop" : "Save Shop"}
+        </Button>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

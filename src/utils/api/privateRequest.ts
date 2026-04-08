@@ -81,6 +81,29 @@ export async function privateRequest<T = unknown>(
 ): Promise<T> {
   const cookieStore = await cookies();
   const timeZone = cookieStore.get('timeZone')?.value;
+  const explicitUniversityId = options.universityId;
+  const includeUniversity = options.includeUniversity !== false;
+  const fallbackUniversityId = cookieStore.get('universityId')?.value;
+  const universityCookie = cookieStore.get('university')?.value;
+
+  let resolvedUniversityId = explicitUniversityId || fallbackUniversityId;
+  if (!resolvedUniversityId && universityCookie) {
+    try {
+      const university = JSON.parse(decodeURIComponent(universityCookie));
+      resolvedUniversityId = university?._id;
+    } catch {
+      resolvedUniversityId = undefined;
+    }
+  }
+
+  let finalUrl = url;
+  if (includeUniversity && resolvedUniversityId) {
+    const urlObj = new URL(finalUrl.startsWith('http') ? finalUrl : `${BASE}${finalUrl}`);
+    if (!urlObj.searchParams.has('university')) {
+      urlObj.searchParams.set('university', resolvedUniversityId);
+      finalUrl = urlObj.toString();
+    }
+  }
 
   const buildHeaders = (token?: string) =>
     mergeHeaders(
@@ -93,7 +116,7 @@ export async function privateRequest<T = unknown>(
   // ── First attempt ────────────────────────────────────────────────────────
   const firstToken = cookieStore.get('accessToken')?.value;
   try {
-    return await request<T>(method, url, body, { ...options, headers: buildHeaders(firstToken) });
+    return await request<T>(method, finalUrl, body, { ...options, headers: buildHeaders(firstToken) });
   } catch (firstError) {
     if (!isUnauthorized(firstError)) throw firstError;
   }
@@ -107,5 +130,5 @@ export async function privateRequest<T = unknown>(
   }
 
   // ── Retry once with fresh token ──────────────────────────────────────────
-  return request<T>(method, url, body, { ...options, headers: buildHeaders(newToken) });
+  return request<T>(method, finalUrl, body, { ...options, headers: buildHeaders(newToken) });
 }

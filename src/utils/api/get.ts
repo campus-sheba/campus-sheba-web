@@ -21,29 +21,32 @@ export async function getPublic<T = unknown>(
 
   const headers = mergeHeaders(
     { Accept: 'application/json' },
+    token ? { Authorization: `Bearer ${token}` } : undefined,
     timeZone ? { timeZone } : undefined,
     options.headers,
   );
 
   let finalUrl = url;
-  
-  // Implicitly pass university purely for GUESTS on public listing APIs
-  if (!token) {
-    const universityCookie = cookieStore.get('university')?.value;
-    if (universityCookie) {
-      try {
-        const university = JSON.parse(decodeURIComponent(universityCookie));
-        if (university?._id) {
-          const urlObj = new URL(finalUrl.startsWith('http') ? finalUrl : `${process.env.BASE_URL || ''}${finalUrl}`);
-          // Don't override if caller already manually passed it
-          if (!urlObj.searchParams.has('university')) {
-            urlObj.searchParams.set('university', university._id);
-            finalUrl = urlObj.toString();
-          }
-        }
-      } catch (e) {
-        // Safe fail — cookie was corrupted or unparseable
-      }
+  const explicitUniversityId = options.universityId;
+  const includeUniversity = options.includeUniversity !== false;
+  const universityCookie = cookieStore.get('university')?.value;
+  const fallbackUniversityId = cookieStore.get('universityId')?.value;
+
+  let resolvedUniversityId = explicitUniversityId || fallbackUniversityId;
+  if (!resolvedUniversityId && universityCookie) {
+    try {
+      const university = JSON.parse(decodeURIComponent(universityCookie));
+      resolvedUniversityId = university?._id;
+    } catch {
+      resolvedUniversityId = undefined;
+    }
+  }
+
+  if (includeUniversity && resolvedUniversityId) {
+    const urlObj = new URL(finalUrl.startsWith('http') ? finalUrl : `${process.env.BASE_URL || ''}${finalUrl}`);
+    if (!urlObj.searchParams.has('university')) {
+      urlObj.searchParams.set('university', resolvedUniversityId);
+      finalUrl = urlObj.toString();
     }
   }
 

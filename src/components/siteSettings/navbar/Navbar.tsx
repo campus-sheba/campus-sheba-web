@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import Link from "next/link";
@@ -8,15 +7,7 @@ import {
   Menu,
   X,
   ChevronDown,
-  ShoppingBag,
-  BookOpen,
-  Bike,
-  Briefcase,
-  Heart,
-  Package,
   Search,
-  GraduationCap,
-  Trash2,
   MapPin,
   User,
   Wallet,
@@ -26,8 +17,14 @@ import {
 } from "lucide-react";
 import Logo from "./Logo";
 import CampusTopbar from "./CampusTopbar";
-import { navLinks, servicesMenu } from "./navbar.constants";
+import {
+  mapUniversityFeaturesToServicesMenu,
+  navLinks,
+  servicesMenu as fallbackServicesMenu,
+  type UniversityFeature,
+} from "./navbar.constants";
 import { useAppState } from "@/contexts/AppStateContext";
+import { landingPageEndpoints } from "@/utils/endpoints/endpoints";
 
 // ─── Navbar Component ─────────────────────────────────────────
 const Navbar = ({ locale }: { locale: string }) => {
@@ -38,10 +35,11 @@ const Navbar = ({ locale }: { locale: string }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   // Use global auth state instead of local state
   const isLoggedIn = appState.auth.isAuthenticated;
-  const userProfile = appState.user.profile;
   const [servicesOpen, setServicesOpen] = useState(false);
   const [walletPoints, setWalletPoints] = useState(120);
+  const [servicesMenu, setServicesMenu] = useState(fallbackServicesMenu);
   const servicesRef = useRef<HTMLDivElement>(null);
+  const selectedUniversityId = appState.university.selected?._id;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -53,6 +51,44 @@ useEffect(() => {
   // fetch wallet balance from API later
   setWalletPoints(120);
 }, []);
+
+  useEffect(() => {
+    const fetchUniversityFeatures = async () => {
+      if (!selectedUniversityId) {
+        setServicesMenu(fallbackServicesMenu);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          landingPageEndpoints.universityFeatures(selectedUniversityId),
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch features (${response.status})`);
+        }
+
+        const result = (await response.json()) as {
+          data?: Array<{ feature?: UniversityFeature }>;
+        };
+        const features = (result.data ?? [])
+          .map((item) => item.feature)
+          .filter((feature): feature is UniversityFeature => Boolean(feature));
+
+        const nextMenu = mapUniversityFeaturesToServicesMenu(features);
+        setServicesMenu(nextMenu.length ? nextMenu : fallbackServicesMenu);
+      } catch {
+        setServicesMenu(fallbackServicesMenu);
+      }
+    };
+
+    void fetchUniversityFeatures();
+  }, [selectedUniversityId]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -473,7 +509,7 @@ useEffect(() => {
               {servicesMenu.map((item) => (
                 <Link
                   key={item.label}
-                  href={`/${item.href}`}
+                  href={item.href}
                   id={`mobile-service-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2.5 p-2.5 rounded-xl bg-neutral-50 hover:bg-neutral-100 transition-colors"

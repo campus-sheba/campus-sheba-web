@@ -1,4 +1,4 @@
-export type ShopCategoryKind = "Food" | "Product" | "Service" | "Logistics" | "General";
+export type CreateFlowCategory = "Food" | "Product" | "Service";
 
 export interface ShopCategory {
   _id: string;
@@ -7,6 +7,14 @@ export interface ShopCategory {
   icon?: string;
   description?: string;
   parent?: string;
+}
+
+export interface ShopCreateCategoryOption {
+  kind: CreateFlowCategory;
+  label: string;
+  description: string;
+  categoryId: string;
+  available: boolean;
 }
 
 export interface SlotForm {
@@ -39,35 +47,8 @@ export interface PreOrderPolicyForm {
   nextDeliveryDate: string;
 }
 
-export interface DeliveryPolicyForm {
-  zoneName: string;
-  maxRadiusKm: number;
-  baseDeliveryFee: number;
-  minOrderForFreeDelivery: number;
-}
-
-export interface InventoryPolicyForm {
-  allowBackOrder: boolean;
-  maxOrderPerUser: number;
-}
-
-export interface ServiceSlaForm {
-  responseTimeHours: number;
-  revisionPolicy: string;
-}
-
-export interface ConnectorConfigForm {
-  provider: string;
-  merchantCode: string;
-  hubId: string;
-  coverageArea: string;
-  deliveryFeeModel: string;
-}
-
-export interface DynamicShopFormState {
-  type: "Student Shop" | "Startup";
-  categoryId: string;
-  subCategoryIds: string[];
+export interface ShopCreateFormState {
+  type: "Student Shop";
   name: string;
   description: string;
   address: string;
@@ -82,18 +63,11 @@ export interface DynamicShopFormState {
   latitude: string;
   longitude: string;
   tagsText: string;
-  isActive: boolean;
-  isAggregator: boolean;
-  isSkillBased: boolean;
   preOrderPolicy: PreOrderPolicyForm;
-  deliveryPolicy: DeliveryPolicyForm;
-  inventoryPolicy: InventoryPolicyForm;
-  serviceSla: ServiceSlaForm;
-  connector: ConnectorConfigForm;
 }
 
 export interface OwnerAddShopPayload {
-  type: "Student Shop" | "Startup";
+  type: "Student Shop";
   category: string;
   subCategories?: string[];
   name: string;
@@ -139,14 +113,6 @@ export interface OwnerAddShopPayload {
     leadTimeHours: number;
     nextDeliveryDate?: string;
   };
-  isActive?: boolean;
-}
-
-export interface AdvancedShopConfig {
-  deliveryPolicy?: DeliveryPolicyForm;
-  inventoryPolicy?: InventoryPolicyForm;
-  serviceSla?: ServiceSlaForm;
-  connector?: ConnectorConfigForm;
 }
 
 export const OPERATING_DAYS = [
@@ -159,10 +125,8 @@ export const OPERATING_DAYS = [
   "Saturday",
 ];
 
-export const SHOP_TYPE_NOTES: Record<ShopCategoryKind, string> = {
-  Food: "Enable pre-order windows, aggregator mode, and delivery connector-ready settings.",
-  Product: "Manage inventory behavior and per-user purchase limits for student demand peaks.",
-  Service: "Set service SLA standards and revision policy to build trust and transparency.",
-  Logistics: "Configure zone coverage and connector details for campus pickup and rider dispatch.",
-  General: "Configure core shop details and launch quickly with editable operational policies.",
+export const CATEGORY_MINIMUM_ORDER: Record<CreateFlowCategory, number> = {
+  Food: 100,
+  Product: 300,
+  Service: 0,
 };

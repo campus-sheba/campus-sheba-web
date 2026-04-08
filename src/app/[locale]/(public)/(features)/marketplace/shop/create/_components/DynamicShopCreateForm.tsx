@@ -1,63 +1,105 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
   Clock3,
+  Globe,
+  MapPin,
   Plus,
   Save,
   ShieldCheck,
   Store,
   Trash2,
+  Upload,
 } from "lucide-react";
-import { usePathname } from "@/i18n/navigation";
 import { Button, Heading, Paragraph, Subtitle, Title } from "@/components/ui";
 import { ContentWrapper } from "@/components/wrappers";
 import { uploadMediaFiles } from "@/lib/media/client";
 import { MediaFeatureName } from "@/types/media";
+import { createOwnerShopAction } from "../actions";
 import {
-  createOwnerShopAction,
-  getShopCategoriesAction,
-  getShopSubCategoriesAction,
-} from "../actions";
-import type {
-  AdvancedShopConfig,
-  DynamicShopFormState,
-  OperatingHourForm,
-  OwnerAddShopPayload,
-  ShopCategory,
-  ShopCategoryKind,
-  SlotForm,
+  CATEGORY_MINIMUM_ORDER,
+  OPERATING_DAYS,
+  type OperatingHourForm,
+  type OwnerAddShopPayload,
+  type PhotoForm,
+  type ShopCreateCategoryOption,
+  type ShopCreateFormState,
+  type SlotForm,
 } from "./types";
-import { OPERATING_DAYS, SHOP_TYPE_NOTES } from "./types";
-import { getShopCreateMessages } from "./messages";
 
 interface DynamicShopCreateFormProps {
+  locale: string;
+  selectedCategory: ShopCreateCategoryOption;
   onBackToIntro: () => void;
 }
 
-const toCategoryKind = (title: string): ShopCategoryKind => {
-  const normalized = title.trim().toLowerCase();
-  if (normalized === "food") return "Food";
-  if (normalized === "product") return "Product";
-  if (normalized === "service") return "Service";
-  if (normalized === "logistics") return "Logistics";
-  return "General";
+const fieldClassName =
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#E30A13] focus:ring-4 focus:ring-[#E30A13]/10";
+const labelClassName = "mb-1.5 block text-xs font-semibold uppercase tracking-[0.24em] text-slate-500";
+
+const categoryHelperCopy: Record<
+  ShopCreateCategoryOption["kind"],
+  { title: string; description: string; accent: string }
+> = {
+  Food: {
+    title: "Food shop settings",
+    description:
+      "Pre-order controls are shown here. Keep minimum order, delivery windows, and contact details clear.",
+    accent: "text-[#A80A12]",
+  },
+  Product: {
+    title: "Product shop settings",
+    description:
+      "Focus on catalog readiness, contact points, and a clean operating schedule. No pre-order block is shown.",
+    accent: "text-slate-700",
+  },
+  Service: {
+    title: "Skill / Service shop settings",
+    description: "Skill-based shops are flagged automatically and the minimum order amount can stay at zero.",
+    accent: "text-[#A80A12]",
+  },
 };
 
-const initialOperatingHours = (): OperatingHourForm[] =>
+const parseCommaSeparated = (value: string) =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const toNumber = (value: string | number) => {
+  if (typeof value === "number") return value;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const toCoordinates = (latitude: string, longitude: string): [number, number] | null => {
+  if (!latitude.trim() || !longitude.trim()) {
+    return null;
+  }
+
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  return [lng, lat];
+};
+
+const buildInitialOperatingHours = (): OperatingHourForm[] =>
   OPERATING_DAYS.map((day) => ({
     day,
     isClosed: day === "Friday",
     slots: day === "Friday" ? [] : [{ open: "09:00", close: "18:00" }],
   }));
 
-const buildInitialFormState = (): DynamicShopFormState => ({
+const buildInitialFormState = (category: ShopCreateCategoryOption["kind"]): ShopCreateFormState => ({
   type: "Student Shop",
-  categoryId: "",
-  subCategoryIds: [],
   name: "",
   description: "",
   address: "",
@@ -80,76 +122,116 @@ const buildInitialFormState = (): DynamicShopFormState => ({
     twitter: "",
     whatsapp: "",
   },
-  minimumOrderAmount: 0,
-  operatingHours: initialOperatingHours(),
+  minimumOrderAmount: CATEGORY_MINIMUM_ORDER[category],
+  operatingHours: buildInitialOperatingHours(),
   latitude: "",
   longitude: "",
   tagsText: "",
-  isActive: true,
-  isAggregator: false,
-  isSkillBased: false,
   preOrderPolicy: {
-    isPreOrderOnly: false,
-    leadTimeHours: 0,
+    isPreOrderOnly: category === "Food",
+    leadTimeHours: category === "Food" ? 8 : 0,
     nextDeliveryDate: "",
-  },
-  deliveryPolicy: {
-    zoneName: "",
-    maxRadiusKm: 0,
-    baseDeliveryFee: 0,
-    minOrderForFreeDelivery: 0,
-  },
-  inventoryPolicy: {
-    allowBackOrder: false,
-    maxOrderPerUser: 0,
-  },
-  serviceSla: {
-    responseTimeHours: 0,
-    revisionPolicy: "",
-  },
-  connector: {
-    provider: "",
-    merchantCode: "",
-    hubId: "",
-    coverageArea: "",
-    deliveryFeeModel: "",
   },
 });
 
-const parseCommaSeparated = (value: string) =>
-  value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-const toNumber = (value: string | number) => {
-  if (typeof value === "number") return value;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const getCategoryDefaults = (kind: ShopCategoryKind): Partial<DynamicShopFormState> => {
-  if (kind === "Food") {
-    return { type: "Student Shop", isAggregator: false, isSkillBased: false, minimumOrderAmount: 100 };
-  }
-  if (kind === "Product") {
-    return { type: "Student Shop", isAggregator: false, isSkillBased: false };
-  }
-  if (kind === "Logistics") {
-    return { type: "Startup", isAggregator: true, isSkillBased: false, minimumOrderAmount: 0 };
-  }
-  if (kind === "Service") {
-    return { type: "Student Shop", isAggregator: false, isSkillBased: true, minimumOrderAmount: 0 };
-  }
-  return {};
-};
-
-const fieldClassName =
-  "w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[#E30A13]";
-const labelClassName = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500";
-
 function FieldLabel({ children }: { children: string }) {
   return <label className={labelClassName}>{children}</label>;
+}
+
+function SectionCard({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+      <div className="mb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#A80A12]">{eyebrow}</p>
+        <Heading as="h2" size="lg" className="mt-1 text-slate-900">
+          {title}
+        </Heading>
+        <Paragraph size="sm" color="muted" className="mt-2 max-w-2xl">
+          {description}
+        </Paragraph>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function MediaTile({
+  title,
+  note,
+  value,
+  uploading,
+  onUpload,
+}: {
+  title: string;
+  note: string;
+  value: PhotoForm;
+  uploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+}) {
+  const inputId = `${title.replace(/\s+/g, "-").toLowerCase()}-upload`;
+
+  return (
+    <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">{title}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{note}</p>
+        </div>
+        <Upload className="mt-0.5 h-4 w-4 text-slate-400" />
+      </div>
+
+      <div className="mt-4 flex items-center gap-4">
+        <div className="h-16 w-16 overflow-hidden rounded-2xl border border-white bg-white shadow-sm">
+          {value.url ? (
+            <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: `url(${value.url})` }} />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[#A80A12]">
+              <Store className="h-6 w-6" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            id={inputId}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                void onUpload(file);
+              }
+              event.target.value = "";
+            }}
+          />
+          <label
+            htmlFor={inputId}
+            className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+              uploading
+                ? "border-slate-200 bg-slate-100 text-slate-400"
+                : "border-[#E30A13]/15 bg-white text-[#A80A12] hover:border-[#E30A13]/30 hover:bg-[#E30A13]/5"
+            }`}
+          >
+            {uploading ? "Uploading..." : "Upload image"}
+          </label>
+          <p className="mt-2 text-xs text-slate-400">
+            {value.url ? `Stored as ${value.key || "uploaded media"}` : "Upload a clear, square image for best results."}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function SlotEditor({
@@ -164,25 +246,32 @@ function SlotEditor({
   removable: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <input
-        type="time"
-        value={slot.open}
-        onChange={(event) => onChange({ ...slot, open: event.target.value })}
-        className={fieldClassName}
-      />
-      <span className="text-xs font-semibold text-gray-400">to</span>
-      <input
-        type="time"
-        value={slot.close}
-        onChange={(event) => onChange({ ...slot, close: event.target.value })}
-        className={fieldClassName}
-      />
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:flex-row md:items-center">
+      <div className="grid flex-1 gap-3 md:grid-cols-2">
+        <div>
+          <FieldLabel>Open</FieldLabel>
+          <input
+            type="time"
+            value={slot.open}
+            onChange={(event) => onChange({ ...slot, open: event.target.value })}
+            className={fieldClassName}
+          />
+        </div>
+        <div>
+          <FieldLabel>Close</FieldLabel>
+          <input
+            type="time"
+            value={slot.close}
+            onChange={(event) => onChange({ ...slot, close: event.target.value })}
+            className={fieldClassName}
+          />
+        </div>
+      </div>
       {removable ? (
         <button
           type="button"
           onClick={onRemove}
-          className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+          className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
           aria-label="Remove slot"
         >
           <Trash2 className="h-4 w-4" />
@@ -192,176 +281,62 @@ function SlotEditor({
   );
 }
 
-export default function DynamicShopCreateForm({ onBackToIntro }: DynamicShopCreateFormProps) {
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
-  const messages = getShopCreateMessages(locale);
-  const [categories, setCategories] = useState<ShopCategory[]>([]);
-  const [subCategories, setSubCategories] = useState<ShopCategory[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
-  const [form, setForm] = useState<DynamicShopFormState>(buildInitialFormState);
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+export default function DynamicShopCreateForm({
+  locale,
+  selectedCategory,
+  onBackToIntro,
+}: DynamicShopCreateFormProps) {
+  const router = useRouter();
+  const [form, setForm] = useState<ShopCreateFormState>(() => buildInitialFormState(selectedCategory.kind));
   const [error, setError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+  const helperCopy = categoryHelperCopy[selectedCategory.kind];
 
-    async function loadCategories() {
-      setCategoriesLoading(true);
-      const response = await getShopCategoriesAction(1, 50);
-
-      if (!mounted) return;
-
-      if (response.success && response.data) {
-        if (response.data.length > 0) {
-          setCategories(response.data);
-        } else if (categories.length === 0) {
-          setError(messages.form.errors.categoriesLoad);
-        }
-      } else {
-        setError(response.message ?? messages.form.errors.categoriesLoad);
-      }
-
-      setCategoriesLoading(false);
-    }
-
-    void loadCategories();
-
-    return () => {
-      mounted = false;
-    };
-  }, [categories.length, messages.form.errors.categoriesLoad]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadSubCategories() {
-      if (!form.categoryId) {
-        setSubCategories([]);
-        setNested("subCategoryIds", []);
-        return;
-      }
-
-      setSubCategoriesLoading(true);
-      const result = await getShopSubCategoriesAction(form.categoryId);
-      if (!mounted) return;
-
-      const items = result.success && result.data ? result.data : [];
-      setSubCategories(items);
-
-      setForm((prev) => ({
-        ...prev,
-        subCategoryIds: prev.subCategoryIds.filter((id) => items.some((entry) => entry._id === id)),
-      }));
-
-      setSubCategoriesLoading(false);
-    }
-
-    void loadSubCategories();
-
-    return () => {
-      mounted = false;
-    };
-  }, [form.categoryId]);
-
-  const selectedCategory = useMemo(
-    () => categories.find((item) => item._id === form.categoryId),
-    [categories, form.categoryId],
-  );
-
-  const categoryKind = useMemo<ShopCategoryKind>(
-    () => toCategoryKind(selectedCategory?.title ?? ""),
-    [selectedCategory],
-  );
-
-  useEffect(() => {
-    const defaults = getCategoryDefaults(categoryKind);
-    if (!Object.keys(defaults).length) return;
-    setForm((prev) => ({ ...prev, ...defaults }));
-  }, [categoryKind]);
-
-  const canProceedStepOne =
-    form.categoryId.trim() &&
-    form.name.trim();
-
-  const canProceedStepTwo =
-    form.logo.url.trim() &&
-    form.logo.key.trim() &&
-    form.coverPhoto.url.trim() &&
-    form.coverPhoto.key.trim() &&
-    Number.isFinite(Number(form.minimumOrderAmount));
-
-  const hasOperatingHour = form.operatingHours.some((day) => !day.isClosed && day.slots.length > 0);
-  const hasInvalidSlot = form.operatingHours.some(
-    (day) => !day.isClosed && day.slots.some((slot) => !slot.open || !slot.close),
-  );
-  const hasCoordinates = form.latitude.trim() && form.longitude.trim();
-  const hasValidCoordinates =
-    !hasCoordinates ||
-    (Number.isFinite(Number(form.latitude)) &&
-      Number.isFinite(Number(form.longitude)) &&
-      Math.abs(Number(form.latitude)) <= 90 &&
-      Math.abs(Number(form.longitude)) <= 180);
-  const preOrderVisible = categoryKind === "Food";
-  const preOrderValid =
-    !preOrderVisible ||
-    !form.preOrderPolicy.isPreOrderOnly ||
-    form.preOrderPolicy.leadTimeHours > 0;
-
-  const canSubmit =
-    canProceedStepOne &&
-    canProceedStepTwo &&
-    hasOperatingHour &&
-    !hasInvalidSlot &&
-    hasValidCoordinates &&
-    preOrderValid;
-
-  const setNested = <K extends keyof DynamicShopFormState>(key: K, value: DynamicShopFormState[K]) => {
+  const setField = <K extends keyof ShopCreateFormState>(key: K, value: ShopCreateFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const updateOperatingDay = (day: string, updater: (current: OperatingHourForm) => OperatingHourForm) => {
     setForm((prev) => ({
       ...prev,
-      operatingHours: prev.operatingHours.map((entry) =>
-        entry.day === day ? updater(entry) : entry,
-      ),
+      operatingHours: prev.operatingHours.map((entry) => (entry.day === day ? updater(entry) : entry)),
     }));
   };
 
-  const toggleSubCategory = (id: string) => {
-    setNested(
-      "subCategoryIds",
-      form.subCategoryIds.includes(id)
-        ? form.subCategoryIds.filter((entry) => entry !== id)
-        : [...form.subCategoryIds, id],
-    );
+  const addSlot = (day: string) => {
+    updateOperatingDay(day, (current) => ({
+      ...current,
+      slots: [...current.slots, { open: "09:00", close: "18:00" }],
+    }));
   };
 
-  const handleMediaUpload = async (file: File, target: "logo" | "coverPhoto") => {
+  const removeSlot = (day: string, slotIndex: number) => {
+    updateOperatingDay(day, (current) => ({
+      ...current,
+      slots: current.slots.filter((_, index) => index !== slotIndex),
+    }));
+  };
+
+  const uploadMedia = async (file: File, target: "logo" | "coverPhoto") => {
     if (target === "logo") setUploadingLogo(true);
     if (target === "coverPhoto") setUploadingCover(true);
 
     try {
-      const upload = await uploadMediaFiles([file], MediaFeatureName.SHOP);
-      if (!upload.success || !upload.urls.length) {
-        setError(upload.message ?? "Failed to upload media.");
+      const response = await uploadMediaFiles([file], MediaFeatureName.SHOP);
+
+      if (!response.success || !response.urls.length) {
+        setError(response.message ?? "Failed to upload media.");
         return;
       }
 
-      const mediaValue = {
-        url: upload.urls[0],
+      setField(target, {
+        url: response.urls[0],
         key: file.name,
         size: file.size,
-      };
-
-      setNested(target, mediaValue);
+      });
       setError(null);
     } finally {
       if (target === "logo") setUploadingLogo(false);
@@ -369,14 +344,41 @@ export default function DynamicShopCreateForm({ onBackToIntro }: DynamicShopCrea
     }
   };
 
-  const buildPayload = (): { payload: OwnerAddShopPayload; advancedConfig: AdvancedShopConfig } => {
-    const subCategories = form.subCategoryIds;
+  const requiredState = useMemo(() => {
+    const coordinates = toCoordinates(form.latitude, form.longitude);
+    const hasOpenHours = form.operatingHours.some(
+      (day) => !day.isClosed && day.slots.some((slot) => slot.open && slot.close),
+    );
+
+    return {
+      hasCoordinates: Boolean(coordinates),
+      hasHours: hasOpenHours,
+      hasBrand: Boolean(form.name.trim() && form.logo.url && form.coverPhoto.url),
+      hasContact: Boolean(form.phoneNumber.trim()),
+      canSubmit:
+        Boolean(form.name.trim()) &&
+        Boolean(form.logo.url.trim()) &&
+        Boolean(form.coverPhoto.url.trim()) &&
+        Boolean(form.phoneNumber.trim()) &&
+        Boolean(form.minimumOrderAmount >= 0) &&
+        Boolean(coordinates) &&
+        hasOpenHours,
+    };
+  }, [form]);
+
+  const buildPayload = (): OwnerAddShopPayload | null => {
+    const coordinates = toCoordinates(form.latitude, form.longitude);
+    if (!coordinates) {
+      return null;
+    }
+
     const tags = parseCommaSeparated(form.tagsText);
 
-    const hasCoordinates = form.latitude.trim() && form.longitude.trim();
-    const coordinates: [number, number] | null = hasCoordinates
-      ? [toNumber(form.longitude), toNumber(form.latitude)]
-      : null;
+    const operatingHours = form.operatingHours.map((day) => ({
+      day: day.day,
+      isClosed: day.isClosed,
+      slots: day.isClosed ? [] : day.slots.filter((slot) => slot.open && slot.close),
+    }));
 
     const socialLinks = {
       facebook: form.socialLinks.facebook.trim() || undefined,
@@ -385,16 +387,9 @@ export default function DynamicShopCreateForm({ onBackToIntro }: DynamicShopCrea
       whatsapp: form.socialLinks.whatsapp.trim() || undefined,
     };
 
-    const normalizedOperatingHours = form.operatingHours.map((day) => ({
-      day: day.day,
-      isClosed: day.isClosed,
-      slots: day.isClosed ? [] : day.slots.filter((slot) => slot.open && slot.close),
-    }));
-
-    const payload: OwnerAddShopPayload = {
-      type: form.type,
-      category: form.categoryId,
-      ...(subCategories.length ? { subCategories } : {}),
+    return {
+      type: "Student Shop",
+      category: selectedCategory.categoryId,
       name: form.name.trim(),
       description: form.description.trim() || undefined,
       address: form.address.trim() || undefined,
@@ -409,902 +404,479 @@ export default function DynamicShopCreateForm({ onBackToIntro }: DynamicShopCrea
         size: toNumber(form.coverPhoto.size),
       },
       contactEmail: form.contactEmail.trim() || undefined,
-      phoneNumber: form.phoneNumber.trim() || undefined,
+      phoneNumber: form.phoneNumber.trim(),
       website: form.website.trim() || undefined,
       socialLinks:
         socialLinks.facebook || socialLinks.instagram || socialLinks.twitter || socialLinks.whatsapp
           ? socialLinks
           : undefined,
       minimumOrderAmount: toNumber(form.minimumOrderAmount),
-      operatingHours: normalizedOperatingHours,
-      ...(coordinates && hasValidCoordinates ? { location: { type: "Point", coordinates } } : {}),
-      isActive: form.isActive,
+      operatingHours,
+      location: {
+        type: "Point",
+        coordinates,
+      },
+      isAggregator: false,
+      isSkillBased: selectedCategory.kind === "Service",
       ...(tags.length ? { tags } : {}),
-    };
-
-    if (categoryKind === "Food") {
-      payload.isAggregator = false;
-      payload.isSkillBased = false;
-      payload.preOrderPolicy = {
-        isPreOrderOnly: form.preOrderPolicy.isPreOrderOnly,
-        leadTimeHours: toNumber(form.preOrderPolicy.leadTimeHours),
-        ...(form.preOrderPolicy.nextDeliveryDate
-          ? { nextDeliveryDate: new Date(form.preOrderPolicy.nextDeliveryDate).toISOString() }
-          : {}),
-      };
-    }
-
-    if (categoryKind === "Product") {
-      payload.isAggregator = false;
-      payload.isSkillBased = false;
-    }
-
-    if (categoryKind === "Logistics") {
-      payload.isAggregator = true;
-      payload.isSkillBased = false;
-    }
-
-    if (categoryKind === "Service") {
-      payload.isAggregator = false;
-      payload.isSkillBased = true;
-    }
-
-    const advancedConfig: AdvancedShopConfig = {
-      ...(categoryKind === "Food" || categoryKind === "Logistics"
+      ...(selectedCategory.kind === "Food"
         ? {
-            deliveryPolicy: form.deliveryPolicy,
-            connector: form.connector,
+            preOrderPolicy: {
+              isPreOrderOnly: form.preOrderPolicy.isPreOrderOnly,
+              leadTimeHours: toNumber(form.preOrderPolicy.leadTimeHours),
+              ...(form.preOrderPolicy.nextDeliveryDate
+                ? { nextDeliveryDate: new Date(form.preOrderPolicy.nextDeliveryDate).toISOString() }
+                : {}),
+            },
           }
         : {}),
-      ...(categoryKind === "Product" ? { inventoryPolicy: form.inventoryPolicy } : {}),
-      ...(categoryKind === "Service" ? { serviceSla: form.serviceSla } : {}),
     };
-
-    return { payload, advancedConfig };
   };
 
-  const hasAdvancedConfig = (advancedConfig: AdvancedShopConfig) => {
-    const values = JSON.stringify(advancedConfig);
-    return values !== "{}" && values.replace(/[{}\[\]\":,0\s]/g, "").length > 0;
-  };
+  const submitForm = async () => {
+    if (!requiredState.canSubmit) {
+      setError("Complete the required fields, upload both images, add a location, and keep at least one open hour slot.");
+      return;
+    }
 
-  const saveAdvancedConfig = (shopName: string, advancedConfig: AdvancedShopConfig) => {
-    if (!hasAdvancedConfig(advancedConfig)) return;
-    const storageKey = `shop_advanced_config_${shopName.trim().toLowerCase().replace(/\s+/g, "_")}`;
-    window.localStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        createdAt: new Date().toISOString(),
-        advancedConfig,
-      }),
-    );
-  };
-
-  const submitForm = () => {
-    if (!canSubmit) {
-      if (!hasValidCoordinates) {
-        setError("Coordinates must be valid [lng, lat] values.");
-        return;
-      }
-      if (hasInvalidSlot) {
-        setError("Every open operating day must include slot open and close time.");
-        return;
-      }
-      if (!preOrderValid) {
-        setError("Lead time is required for pre-order only food shops.");
-        return;
-      }
-      setError(messages.form.errors.requiredAllSections);
+    const payload = buildPayload();
+    if (!payload) {
+      setError("Add a valid map location before submitting the shop.");
       return;
     }
 
     setError(null);
-    setSubmitMessage(null);
+    setIsSubmitting(true);
 
-    const { payload, advancedConfig } = buildPayload();
-
-    startTransition(async () => {
+    try {
       const result = await createOwnerShopAction(payload);
 
       if (!result.success) {
-        setError(result.message ?? messages.form.errors.createFail);
+        setError(result.message ?? "Failed to create shop.");
         return;
       }
 
-      saveAdvancedConfig(payload.name, advancedConfig);
-      setSubmitMessage(
-        hasAdvancedConfig(advancedConfig)
-          ? messages.form.success.advancedSavedMessage
-          : messages.form.success.pendingMessage,
-      );
-      setSubmitted(true);
-    });
+      router.replace(`/${locale}/my-shop`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <ContentWrapper maxWidth="container" padding="lg" className="py-12">
-          <div className="mx-auto max-w-xl rounded-3xl border border-emerald-100 bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-              <CheckCircle2 className="h-8 w-8" />
-            </div>
-            <Title as="h2" size="2xl" className="mb-2">
-              {messages.form.success.title}
-            </Title>
-            <Paragraph color="muted" size="sm" className="mx-auto max-w-md">
-              {submitMessage ?? messages.form.success.defaultMessage}
-            </Paragraph>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link href={`/${locale}/marketplace`}>
-                <Button uppercase={false} className="!border-0 !bg-[#E30A13] !text-white">
-                  {messages.form.buttons.goMarketplace}
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                uppercase={false}
-                onClick={() => {
-                  setSubmitted(false);
-                  setStep(1);
-                  setForm(buildInitialFormState());
-                  setSubmitMessage(null);
-                }}
-              >
-                {messages.form.buttons.createAnother}
-              </Button>
-            </div>
-          </div>
-        </ContentWrapper>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-14">
-      <section className="border-b border-red-200/70 bg-gradient-to-r from-[#AE0810] to-[#D20A12] text-white">
+    <div className="min-h-screen bg-slate-50 pb-14">
+      <section className="border-b border-slate-200 bg-white/90 text-slate-900 backdrop-blur">
         <ContentWrapper maxWidth="container" padding="lg" className="py-8 md:py-10">
           <button
             type="button"
             onClick={onBackToIntro}
-            className="mb-4 inline-flex items-center gap-2 text-xs font-semibold text-red-100 transition hover:text-white"
+            className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#A80A12] transition hover:text-[#7A0810]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            {messages.form.backToIntro}
+            Back to intro
           </button>
-          <div className="flex flex-wrap items-start justify-between gap-4">
+
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div>
-              <Subtitle color="default" className="!text-red-100">
-                {messages.form.heroBadge}
+              <Subtitle color="default" className="!text-[#A80A12]">
+                Dynamic Shop Builder
               </Subtitle>
-              <Title as="h1" size="2xl" className="mt-2 !text-white md:!text-4xl">
-                {messages.form.heroTitle}
+              <Title as="h1" size="2xl" className="mt-2 text-slate-950 md:!text-4xl">
+                Set up your {selectedCategory.label} shop
               </Title>
-              <Paragraph size="sm" className="mt-3 max-w-2xl !text-red-50">
-                {messages.form.heroDescription}
+              <Paragraph size="sm" color="muted" className="mt-3 max-w-2xl">
+                The form below adapts to the selected category, keeps the payload aligned with the API,
+                and redirects you to My Shop after a successful create.
               </Paragraph>
             </div>
-            <div className="rounded-2xl bg-white/15 px-4 py-3 text-xs">
-              <p className="font-semibold text-white">{messages.form.currentStep}</p>
-              <p className="mt-1 text-red-100">{step} of 4</p>
+
+            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Selected category</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-900">{selectedCategory.label}</p>
+                </div>
+                <div className="rounded-2xl bg-white p-3 text-[#A80A12] shadow-sm">
+                  <Store className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#A80A12]" />
+                Type is fixed to Student Shop
+              </div>
             </div>
           </div>
         </ContentWrapper>
       </section>
 
-      <ContentWrapper maxWidth="container" padding="md" className="space-y-5">
-        <div className="grid gap-2 rounded-2xl border border-gray-100 bg-white p-4 md:grid-cols-4">
-          {messages.form.steps.map(
-            (label, index) => {
-              const isActive = step === index + 1;
-              const isDone = step > index + 1;
-
-              return (
-                <div
-                  key={label}
-                  className={`rounded-xl border px-3 py-2 text-sm font-medium ${
-                    isActive
-                      ? "border-[#E30A13] bg-red-50 text-[#B70910]"
-                      : isDone
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border-gray-100 bg-gray-50 text-gray-500"
-                  }`}
-                >
-                  {index + 1}. {label}
-                </div>
-              );
-            },
-          )}
-        </div>
-
+      <ContentWrapper maxWidth="container" padding="md" className="mt-6">
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {error}
           </div>
         ) : null}
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm md:p-7">
-          {step === 1 ? (
-            <div className="space-y-5">
-              <Heading as="h2" size="xl">
-                {messages.form.step1Title}
-              </Heading>
-
+        <div className="grid gap-6 lg:grid-cols-[1.35fr_0.85fr] lg:items-start">
+          <div className="space-y-6">
+            <SectionCard
+              eyebrow="Brand basics"
+              title="Tell students who you are"
+              description="These are the fields that create the first impression on your shop page. Keep them precise and useful."
+            >
               <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <FieldLabel>{messages.form.labels.category}</FieldLabel>
-                  <select
-                    value={form.categoryId}
-                    onChange={(event) => setNested("categoryId", event.target.value)}
-                    className={fieldClassName}
-                    disabled={categoriesLoading}
-                  >
-                    <option value="">
-                      {categoriesLoading ? messages.form.loadingCategories : messages.form.selectCategory}
-                    </option>
-                    {categories.map((item) => (
-                      <option key={item._id} value={item._id}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <FieldLabel>{messages.form.labels.shopType}</FieldLabel>
-                  <select
-                    value={form.type}
-                    onChange={(event) =>
-                      setNested("type", event.target.value as DynamicShopFormState["type"])
-                    }
-                    className={fieldClassName}
-                  >
-                    <option value="Student Shop">Student Shop</option>
-                    <option value="Startup">Startup</option>
-                  </select>
-                </div>
-
                 <div className="md:col-span-2">
-                  <FieldLabel>{messages.form.labels.shopName}</FieldLabel>
+                  <FieldLabel>Shop name</FieldLabel>
                   <input
                     value={form.name}
-                    onChange={(event) => setNested("name", event.target.value)}
-                    placeholder="Example: JU Smart Food Corner"
+                    onChange={(event) => setField("name", event.target.value)}
+                    placeholder="Example: JUBAZAR Creative Services"
                     className={fieldClassName}
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <FieldLabel>{messages.form.labels.description}</FieldLabel>
+                  <FieldLabel>Description</FieldLabel>
                   <textarea
                     value={form.description}
-                    onChange={(event) => setNested("description", event.target.value)}
+                    onChange={(event) => setField("description", event.target.value)}
+                    placeholder="Short, clear summary of what you sell or offer."
                     rows={4}
-                    placeholder="Tell students what you offer and why they should buy from your shop."
                     className={`${fieldClassName} resize-none`}
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <FieldLabel>{messages.form.labels.subCategories}</FieldLabel>
-                  {subCategoriesLoading ? (
-                    <p className="text-sm text-gray-500">{messages.form.loadingCategories}</p>
-                  ) : subCategories.length ? (
-                    <div className="grid gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3 md:grid-cols-2">
-                      {subCategories.map((item) => (
-                        <label
-                          key={item._id}
-                          className="inline-flex items-center gap-2 text-sm font-medium text-gray-700"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={form.subCategoryIds.includes(item._id)}
-                            onChange={() => toggleSubCategory(item._id)}
-                          />
-                          {item.title}
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No sub-categories available for this category.</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
-                <div className="mb-1 flex items-center gap-2 font-semibold">
-                  <Store className="h-4 w-4" />
-                  {messages.form.notes.categorySpecific}
-                </div>
-                {SHOP_TYPE_NOTES[categoryKind]}
-              </div>
-            </div>
-          ) : null}
-
-          {step === 2 ? (
-            <div className="space-y-5">
-              <Heading as="h2" size="xl">{messages.form.step2Title}</Heading>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <FieldLabel>{messages.form.labels.address}</FieldLabel>
+                  <FieldLabel>Address</FieldLabel>
                   <input
                     value={form.address}
-                    onChange={(event) => setNested("address", event.target.value)}
-                    placeholder="Hall area, road, and campus location"
+                    onChange={(event) => setField("address", event.target.value)}
+                    placeholder="JU Campus / Online / Nearby campus area"
                     className={fieldClassName}
                   />
                 </div>
+
                 <div>
-                  <FieldLabel>{messages.form.labels.contactEmail}</FieldLabel>
+                  <FieldLabel>Phone number</FieldLabel>
+                  <input
+                    value={form.phoneNumber}
+                    onChange={(event) => setField("phoneNumber", event.target.value)}
+                    placeholder="017XXXXXXXX"
+                    className={fieldClassName}
+                  />
+                </div>
+
+                <div>
+                  <FieldLabel>Contact email</FieldLabel>
                   <input
                     type="email"
                     value={form.contactEmail}
-                    onChange={(event) => setNested("contactEmail", event.target.value)}
-                    placeholder="owner@shop.com"
+                    onChange={(event) => setField("contactEmail", event.target.value)}
+                    placeholder="owner@example.com"
                     className={fieldClassName}
                   />
                 </div>
+
                 <div>
-                  <FieldLabel>{messages.form.labels.phoneNumber}</FieldLabel>
-                  <input
-                    value={form.phoneNumber}
-                    onChange={(event) => setNested("phoneNumber", event.target.value)}
-                    placeholder="+8801XXXXXXXXX"
-                    className={fieldClassName}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.website}</FieldLabel>
+                  <FieldLabel>Website</FieldLabel>
                   <input
                     value={form.website}
-                    onChange={(event) => setNested("website", event.target.value)}
-                    placeholder="https://example.com"
+                    onChange={(event) => setField("website", event.target.value)}
+                    placeholder="https://your-shop.example"
                     className={fieldClassName}
                   />
                 </div>
+
                 <div>
-                  <FieldLabel>{messages.form.labels.minimumOrderAmount}</FieldLabel>
+                  <FieldLabel>Minimum order amount</FieldLabel>
                   <input
                     type="number"
                     min={0}
                     value={form.minimumOrderAmount}
-                    onChange={(event) => setNested("minimumOrderAmount", toNumber(event.target.value))}
+                    onChange={(event) => setField("minimumOrderAmount", toNumber(event.target.value))}
                     className={fieldClassName}
                   />
                 </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.facebook}</FieldLabel>
-                  <input
-                    value={form.socialLinks.facebook}
-                    onChange={(event) =>
-                      setNested("socialLinks", { ...form.socialLinks, facebook: event.target.value })
-                    }
-                    className={fieldClassName}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.instagram}</FieldLabel>
-                  <input
-                    value={form.socialLinks.instagram}
-                    onChange={(event) =>
-                      setNested("socialLinks", { ...form.socialLinks, instagram: event.target.value })
-                    }
-                    className={fieldClassName}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.twitter}</FieldLabel>
-                  <input
-                    value={form.socialLinks.twitter}
-                    onChange={(event) =>
-                      setNested("socialLinks", { ...form.socialLinks, twitter: event.target.value })
-                    }
-                    className={fieldClassName}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.whatsapp}</FieldLabel>
-                  <input
-                    value={form.socialLinks.whatsapp}
-                    onChange={(event) =>
-                      setNested("socialLinks", { ...form.socialLinks, whatsapp: event.target.value })
-                    }
-                    className={fieldClassName}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.latitude}</FieldLabel>
-                  <input
-                    value={form.latitude}
-                    onChange={(event) => setNested("latitude", event.target.value)}
-                    placeholder="23.8103"
-                    className={fieldClassName}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>{messages.form.labels.longitude}</FieldLabel>
-                  <input
-                    value={form.longitude}
-                    onChange={(event) => setNested("longitude", event.target.value)}
-                    placeholder="90.4125"
-                    className={fieldClassName}
-                  />
-                </div>
+
                 <div className="md:col-span-2">
-                  <FieldLabel>{messages.form.labels.tags}</FieldLabel>
+                  <FieldLabel>Tags</FieldLabel>
                   <input
                     value={form.tagsText}
-                    onChange={(event) => setNested("tagsText", event.target.value)}
-                    placeholder="fast delivery, budget food, halal"
+                    onChange={(event) => setField("tagsText", event.target.value)}
+                    placeholder="Design, preorder, campus pickup"
                     className={fieldClassName}
                   />
                 </div>
               </div>
+            </SectionCard>
 
-              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                <Heading as="h3" size="base" className="mb-3">
-                  Media Fields
-                </Heading>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-xl border border-gray-200 bg-white p-3">
-                    <FieldLabel>{messages.form.labels.logoUpload}</FieldLabel>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        if (file) void handleMediaUpload(file, "logo");
-                      }}
-                      className="text-sm"
-                    />
-                    <p className="mt-2 text-xs text-gray-500">
-                      {uploadingLogo ? "Uploading..." : form.logo.url || "No logo uploaded yet."}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 bg-white p-3">
-                    <FieldLabel>{messages.form.labels.coverUpload}</FieldLabel>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        if (file) void handleMediaUpload(file, "coverPhoto");
-                      }}
-                      className="text-sm"
-                    />
-                    <p className="mt-2 text-xs text-gray-500">
-                      {uploadingCover ? "Uploading..." : form.coverPhoto.url || "No cover uploaded yet."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          {step === 3 ? (
-            <div className="space-y-6">
-              <Heading as="h2" size="xl">{messages.form.step3Title}</Heading>
-
-              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <Heading as="h3" size="base">
-                    Operating Hours
-                  </Heading>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-500">
-                    <Clock3 className="h-3.5 w-3.5" />
-                    Required
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {form.operatingHours.map((day) => (
-                    <div key={day.day} className="rounded-xl border border-gray-200 bg-white p-3">
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-gray-700">{day.day}</p>
-                        <label className="inline-flex items-center gap-2 text-xs font-medium text-gray-500">
-                          <input
-                            type="checkbox"
-                            checked={day.isClosed}
-                            onChange={(event) =>
-                              updateOperatingDay(day.day, (current) => ({
-                                ...current,
-                                isClosed: event.target.checked,
-                                slots: event.target.checked
-                                  ? []
-                                  : current.slots.length
-                                    ? current.slots
-                                    : [{ open: "09:00", close: "18:00" }],
-                              }))
-                            }
-                          />
-                          Closed
-                        </label>
-                      </div>
-                      {day.isClosed ? (
-                        <p className="text-xs text-gray-400">Closed on this day</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {day.slots.map((slot, slotIndex) => (
-                            <SlotEditor
-                              key={`${day.day}-${slotIndex}`}
-                              slot={slot}
-                              removable={day.slots.length > 1}
-                              onChange={(next) =>
-                                updateOperatingDay(day.day, (current) => ({
-                                  ...current,
-                                  slots: current.slots.map((inner, innerIndex) =>
-                                    innerIndex === slotIndex ? next : inner,
-                                  ),
-                                }))
-                              }
-                              onRemove={() =>
-                                updateOperatingDay(day.day, (current) => ({
-                                  ...current,
-                                  slots: current.slots.filter((_, innerIndex) => innerIndex !== slotIndex),
-                                }))
-                              }
-                            />
-                          ))}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateOperatingDay(day.day, (current) => ({
-                                ...current,
-                                slots: [...current.slots, { open: "", close: "" }],
-                              }))
-                            }
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#B70A11]"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                            {messages.form.buttons.addSlot}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {(categoryKind === "Food" || categoryKind === "Logistics") && (
-                <div className="rounded-2xl border border-gray-100 bg-white p-4">
-                  <Heading as="h3" size="base" className="mb-3">
-                    Delivery Zone / Connector
-                  </Heading>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <FieldLabel>Delivery Zone Name</FieldLabel>
-                      <input
-                        value={form.deliveryPolicy.zoneName}
-                        onChange={(event) =>
-                          setNested("deliveryPolicy", {
-                            ...form.deliveryPolicy,
-                            zoneName: event.target.value,
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Max Radius (km)</FieldLabel>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.deliveryPolicy.maxRadiusKm}
-                        onChange={(event) =>
-                          setNested("deliveryPolicy", {
-                            ...form.deliveryPolicy,
-                            maxRadiusKm: toNumber(event.target.value),
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Base Delivery Fee</FieldLabel>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.deliveryPolicy.baseDeliveryFee}
-                        onChange={(event) =>
-                          setNested("deliveryPolicy", {
-                            ...form.deliveryPolicy,
-                            baseDeliveryFee: toNumber(event.target.value),
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Min Order For Free Delivery</FieldLabel>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.deliveryPolicy.minOrderForFreeDelivery}
-                        onChange={(event) =>
-                          setNested("deliveryPolicy", {
-                            ...form.deliveryPolicy,
-                            minOrderForFreeDelivery: toNumber(event.target.value),
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-
-                    <div>
-                      <FieldLabel>Connector Provider</FieldLabel>
-                      <input
-                        value={form.connector.provider}
-                        onChange={(event) =>
-                          setNested("connector", { ...form.connector, provider: event.target.value })
-                        }
-                        placeholder="Example: Ju Food Riders"
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Merchant Code</FieldLabel>
-                      <input
-                        value={form.connector.merchantCode}
-                        onChange={(event) =>
-                          setNested("connector", { ...form.connector, merchantCode: event.target.value })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Hub ID</FieldLabel>
-                      <input
-                        value={form.connector.hubId}
-                        onChange={(event) =>
-                          setNested("connector", { ...form.connector, hubId: event.target.value })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Coverage Area</FieldLabel>
-                      <input
-                        value={form.connector.coverageArea}
-                        onChange={(event) =>
-                          setNested("connector", { ...form.connector, coverageArea: event.target.value })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <FieldLabel>Delivery Fee Model</FieldLabel>
-                      <input
-                        value={form.connector.deliveryFeeModel}
-                        onChange={(event) =>
-                          setNested("connector", {
-                            ...form.connector,
-                            deliveryFeeModel: event.target.value,
-                          })
-                        }
-                        placeholder="Flat / Distance / Dynamic"
-                        className={fieldClassName}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {categoryKind === "Food" && (
-                <div className="rounded-2xl border border-gray-100 bg-white p-4">
-                  <Heading as="h3" size="base" className="mb-3">
-                    Food-specific Policy
-                  </Heading>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <p className="text-sm font-medium text-gray-600">
-                      Aggregator mode is fixed to disabled for Food category.
-                    </p>
-                    <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={form.preOrderPolicy.isPreOrderOnly}
-                        onChange={(event) =>
-                          setNested("preOrderPolicy", {
-                            ...form.preOrderPolicy,
-                            isPreOrderOnly: event.target.checked,
-                          })
-                        }
-                      />
-                      Pre-order only
-                    </label>
-                    <div>
-                      <FieldLabel>Lead Time (hours)</FieldLabel>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.preOrderPolicy.leadTimeHours}
-                        onChange={(event) =>
-                          setNested("preOrderPolicy", {
-                            ...form.preOrderPolicy,
-                            leadTimeHours: toNumber(event.target.value),
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Next Delivery Date</FieldLabel>
-                      <input
-                        type="date"
-                        value={form.preOrderPolicy.nextDeliveryDate}
-                        onChange={(event) =>
-                          setNested("preOrderPolicy", {
-                            ...form.preOrderPolicy,
-                            nextDeliveryDate: event.target.value,
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {categoryKind === "Product" && (
-                <div className="rounded-2xl border border-gray-100 bg-white p-4">
-                  <Heading as="h3" size="base" className="mb-3">
-                    Inventory Policy
-                  </Heading>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={form.inventoryPolicy.allowBackOrder}
-                        onChange={(event) =>
-                          setNested("inventoryPolicy", {
-                            ...form.inventoryPolicy,
-                            allowBackOrder: event.target.checked,
-                          })
-                        }
-                      />
-                      Allow backorder
-                    </label>
-                    <div>
-                      <FieldLabel>Max Order Per User</FieldLabel>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.inventoryPolicy.maxOrderPerUser}
-                        onChange={(event) =>
-                          setNested("inventoryPolicy", {
-                            ...form.inventoryPolicy,
-                            maxOrderPerUser: toNumber(event.target.value),
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {categoryKind === "Service" && (
-                <div className="rounded-2xl border border-gray-100 bg-white p-4">
-                  <Heading as="h3" size="base" className="mb-3">
-                    Service SLA
-                  </Heading>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <p className="text-sm font-medium text-gray-600">
-                      Skill-based mode is enabled by default for Service category.
-                    </p>
-                    <div>
-                      <FieldLabel>First Response Time (hours)</FieldLabel>
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.serviceSla.responseTimeHours}
-                        onChange={(event) =>
-                          setNested("serviceSla", {
-                            ...form.serviceSla,
-                            responseTimeHours: toNumber(event.target.value),
-                          })
-                        }
-                        className={fieldClassName}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <FieldLabel>Revision Policy</FieldLabel>
-                      <textarea
-                        value={form.serviceSla.revisionPolicy}
-                        onChange={(event) =>
-                          setNested("serviceSla", {
-                            ...form.serviceSla,
-                            revisionPolicy: event.target.value,
-                          })
-                        }
-                        rows={3}
-                        className={`${fieldClassName} resize-none`}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : null}
-
-          {step === 4 ? (
-            <div className="space-y-5">
-              <Heading as="h2" size="xl">{messages.form.step4Title}</Heading>
-
-              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Summary</p>
-                <dl className="mt-3 grid gap-3 text-sm md:grid-cols-2">
-                  <div>
-                    <dt className="text-gray-500">Category</dt>
-                    <dd className="font-semibold text-gray-800">{selectedCategory?.title || "Not selected"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Shop Name</dt>
-                    <dd className="font-semibold text-gray-800">{form.name || "Not provided"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Contact</dt>
-                    <dd className="font-semibold text-gray-800">{form.phoneNumber || "Not provided"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Minimum Order</dt>
-                    <dd className="font-semibold text-gray-800">{form.minimumOrderAmount}</dd>
-                  </div>
-                  <div className="md:col-span-2">
-                    <dt className="text-gray-500">Description</dt>
-                    <dd className="font-semibold text-gray-800">{form.description || "Not provided"}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
-                <div className="mb-1 flex items-center gap-2 font-semibold">
-                  <ShieldCheck className="h-4 w-4" />
-                  {messages.form.notes.payloadStrategyTitle}
-                </div>
-                {messages.form.notes.payloadStrategyBody}
-              </div>
-            </div>
-          ) : null}
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-5">
-            <Button
-              variant="ghost"
-              uppercase={false}
-              onClick={() => {
-                if (step === 1) {
-                  onBackToIntro();
-                  return;
-                }
-                setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
-              }}
+            <SectionCard
+              eyebrow="Media"
+              title="Upload your logo and cover image"
+              description="Use clean, well-lit images. The logo should be simple and the cover should communicate your brand at a glance."
             >
-              {messages.form.buttons.back}
-            </Button>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <MediaTile
+                  title="Logo"
+                  note="Use a square image that works at small sizes."
+                  value={form.logo}
+                  uploading={uploadingLogo}
+                  onUpload={async (file) => uploadMedia(file, "logo")}
+                />
+                <MediaTile
+                  title="Cover photo"
+                  note="Choose a wider image that feels like your shop banner."
+                  value={form.coverPhoto}
+                  uploading={uploadingCover}
+                  onUpload={async (file) => uploadMedia(file, "coverPhoto")}
+                />
+              </div>
+            </SectionCard>
 
-            <div className="flex flex-wrap gap-2">
-              {step < 4 ? (
-                <Button
-                  uppercase={false}
-                  className="!border-0 !bg-[#E30A13] !text-white"
-                  disabled={(step === 1 && !canProceedStepOne) || (step === 2 && !canProceedStepTwo)}
-                  onClick={() => setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4)}
-                >
-                  {messages.form.buttons.next}
-                </Button>
+            <SectionCard
+              eyebrow="Location and hours"
+              title="Share where and when customers can reach you"
+              description="Your shop page uses the map location and opening windows to set expectations clearly."
+            >
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <FieldLabel>Latitude</FieldLabel>
+                    <input
+                      value={form.latitude}
+                      onChange={(event) => setField("latitude", event.target.value)}
+                      placeholder="23.8825"
+                      className={fieldClassName}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>Longitude</FieldLabel>
+                    <input
+                      value={form.longitude}
+                      onChange={(event) => setField("longitude", event.target.value)}
+                      placeholder="90.2673"
+                      className={fieldClassName}
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Operating hours</p>
+                      <p className="mt-1 text-xs text-slate-500">Add at least one open day with a time slot.</p>
+                    </div>
+                    <Clock3 className="h-4 w-4 text-slate-400" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {form.operatingHours.map((day) => (
+                      <div key={day.day} className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">{day.day}</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {day.isClosed ? "Marked as closed" : "Open for business"}
+                            </p>
+                          </div>
+
+                          <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                            <input
+                              type="checkbox"
+                              checked={day.isClosed}
+                              onChange={(event) => {
+                                const isClosed = event.target.checked;
+                                updateOperatingDay(day.day, (current) => ({
+                                  ...current,
+                                  isClosed,
+                                  slots: isClosed
+                                    ? []
+                                    : current.slots.length
+                                      ? current.slots
+                                      : [{ open: "09:00", close: "18:00" }],
+                                }));
+                              }}
+                            />
+                            Closed
+                          </label>
+                        </div>
+
+                        {!day.isClosed ? (
+                          <div className="mt-4 space-y-3">
+                            {day.slots.map((slot, slotIndex) => (
+                              <SlotEditor
+                                key={`${day.day}-${slotIndex}`}
+                                slot={slot}
+                                onChange={(next) =>
+                                  updateOperatingDay(day.day, (current) => ({
+                                    ...current,
+                                    slots: current.slots.map((currentSlot, index) =>
+                                      index === slotIndex ? next : currentSlot,
+                                    ),
+                                  }))
+                                }
+                                onRemove={() => removeSlot(day.day, slotIndex)}
+                                removable={day.slots.length > 1}
+                              />
+                            ))}
+
+                            <button
+                              type="button"
+                              onClick={() => addSlot(day.day)}
+                              className="inline-flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#E30A13]/35 hover:bg-white hover:text-[#A80A12]"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Add time slot
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              eyebrow="Category specific"
+              title={helperCopy.title}
+              description={helperCopy.description}
+            >
+              {selectedCategory.kind === "Food" ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2 rounded-[1.5rem] border border-[#E30A13]/15 bg-[#E30A13]/5 p-4 text-sm text-slate-700">
+                    Food shops typically need a pre-order policy. The fields below are included in the payload
+                    only for this category.
+                  </div>
+
+                  <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={form.preOrderPolicy.isPreOrderOnly}
+                      onChange={(event) =>
+                        setField("preOrderPolicy", {
+                          ...form.preOrderPolicy,
+                          isPreOrderOnly: event.target.checked,
+                        })
+                      }
+                    />
+                    Pre-order only
+                  </label>
+
+                  <div>
+                    <FieldLabel>Lead time hours</FieldLabel>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.preOrderPolicy.leadTimeHours}
+                      onChange={(event) =>
+                        setField("preOrderPolicy", {
+                          ...form.preOrderPolicy,
+                          leadTimeHours: toNumber(event.target.value),
+                        })
+                      }
+                      className={fieldClassName}
+                    />
+                  </div>
+
+                  <div>
+                    <FieldLabel>Next delivery date</FieldLabel>
+                    <input
+                      type="date"
+                      value={form.preOrderPolicy.nextDeliveryDate}
+                      onChange={(event) =>
+                        setField("preOrderPolicy", {
+                          ...form.preOrderPolicy,
+                          nextDeliveryDate: event.target.value,
+                        })
+                      }
+                      className={fieldClassName}
+                    />
+                  </div>
+                </div>
               ) : (
+                <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                  {selectedCategory.kind === "Service"
+                    ? "Skill / Service shops are flagged as skill-based automatically. Minimum order amount can stay at zero unless you want to set a floor for your work."
+                    : "Product shops keep the payload lean: no pre-order block is shown, and the backend receives only the general shop fields."}
+                </div>
+              )}
+            </SectionCard>
+          </div>
+
+          <aside className="space-y-6 lg:sticky lg:top-6">
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#A80A12]">Submission summary</p>
+              <Heading as="h3" size="base" className="mt-1 text-slate-900">
+                Ready to create
+              </Heading>
+
+              <div className="mt-4 space-y-3">
+                {[
+                  { label: "Type", value: "Student Shop" },
+                  { label: "Category", value: selectedCategory.label },
+                  { label: "Backend category", value: selectedCategory.categoryId || "Loaded from API" },
+                  { label: "Skill-based", value: selectedCategory.kind === "Service" ? "Yes" : "No" },
+                  { label: "Subcategories", value: "Not used" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{item.label}</span>
+                    <span className="text-sm font-semibold text-slate-800">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Required before submit
+                </div>
+                <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                  <li className={requiredState.hasBrand ? "text-emerald-700" : ""}>Logo, cover photo, and shop name</li>
+                  <li className={requiredState.hasContact ? "text-emerald-700" : ""}>Phone number</li>
+                  <li className={requiredState.hasCoordinates ? "text-emerald-700" : ""}>Valid map coordinates</li>
+                  <li className={requiredState.hasHours ? "text-emerald-700" : ""}>At least one open operating slot</li>
+                </ul>
+              </div>
+
+              <div className="mt-5 flex items-center gap-2 rounded-2xl border border-[#E30A13]/10 bg-[#E30A13]/5 px-4 py-3 text-xs font-medium text-slate-600">
+                <ShieldCheck className="h-4 w-4 text-[#A80A12]" />
+                Payload uses Student Shop, no logistics branch, and no subcategory selection.
+              </div>
+
+              <div className="mt-5 flex flex-col gap-3">
+                <Button uppercase={false} variant="outline" onClick={onBackToIntro} className="justify-center">
+                  Back
+                </Button>
                 <Button
                   uppercase={false}
-                  className="!border-0 !bg-[#E30A13] !text-white"
-                  onClick={submitForm}
-                  disabled={!canSubmit || isPending}
+                  onClick={() => void submitForm()}
+                  disabled={isSubmitting}
+                  className="justify-center !border-0 !bg-[#E30A13] !text-white"
                 >
                   <Save className="mr-2 h-4 w-4" />
-                  {isPending ? messages.form.buttons.submitting : messages.form.buttons.submit}
+                  {isSubmitting ? "Creating..." : "Create shop"}
                 </Button>
-              )}
-            </div>
-          </div>
-        </section>
+              </div>
+
+              <p className="mt-4 text-xs leading-5 text-slate-400">
+                After a successful create, you will be redirected to /{locale}/my-shop to manage verification,
+                edits, products, orders, and shop details.
+              </p>
+            </section>
+
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <MapPin className="h-4 w-4 text-[#A80A12]" />
+                {selectedCategory.label} note
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{helperCopy.description}</p>
+
+              <div className={`mt-4 inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-semibold ${helperCopy.accent}`}>
+                <Globe className="h-3.5 w-3.5" />
+                Use clear, real-world details. Students should understand the shop in a glance.
+              </div>
+            </section>
+          </aside>
+        </div>
       </ContentWrapper>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { shops, foods } from "../../(public)/(features)/food/data";
+import { shops, foods } from "../../food/data";
 import { MdOutlineRestaurant } from "react-icons/md";
 
 function slugify(s: string) {

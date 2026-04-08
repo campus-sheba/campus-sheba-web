@@ -30,7 +30,13 @@ export async function request<T = unknown>(
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
 
-    const { headers: optionHeaders, next = { revalidate: 0 }, ...restOptions } = options;
+    const {
+        headers: optionHeaders,
+        next = { revalidate: 0 },
+        universityId: _universityId,
+        includeUniversity: _includeUniversity,
+        ...restOptions
+    } = options;
 
     const shouldSendBody = method !== 'GET' && body !== undefined;
     const formData = isFormData(body);

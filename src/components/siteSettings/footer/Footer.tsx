@@ -3,11 +3,27 @@
 import Link from "next/link";
 import React from "react";
 import {
-  GraduationCap, Bike, BookOpen, ShoppingBag, Droplets,
-  Briefcase, Heart, Package, Trash2, MapPin, Mail, Phone,
-  FacebookIcon, Twitter, Instagram, Youtube, ArrowRight,
-  Shield, Globe,
+  GraduationCap,
+  Bike,
+  BookOpen,
+  ShoppingBag,
+  Droplets,
+  Briefcase,
+  Heart,
+  Package,
+  Trash2,
+  MapPin,
+  Mail,
+  Phone,
+  FacebookIcon,
+  Twitter,
+  Instagram,
+  Youtube,
+  ArrowRight,
+  Shield,
+  Globe,
 } from "lucide-react";
+import Logo from "../navbar/Logo";
 
 interface FooterProps {
   locale?: string;
@@ -50,8 +66,16 @@ const UNIVERSITIES = [
 ];
 
 const SOCIAL = [
-  { label: "Facebook", icon: FacebookIcon, href: "https://facebook.com/campussheba" },
-  { label: "Instagram", icon: Instagram, href: "https://instagram.com/campussheba" },
+  {
+    label: "Facebook",
+    icon: FacebookIcon,
+    href: "https://facebook.com/campussheba",
+  },
+  {
+    label: "Instagram",
+    icon: Instagram,
+    href: "https://instagram.com/campussheba",
+  },
   { label: "Twitter", icon: Twitter, href: "https://twitter.com/campussheba" },
   { label: "YouTube", icon: Youtube, href: "https://youtube.com/campussheba" },
 ];
@@ -62,8 +86,10 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
   const href = (path: string) => `/${path}`;
 
   return (
-    <footer className="bg-brand-navy-DEFAULT text-white" aria-label="Site footer">
-
+    <footer
+      className="bg-brand-navy-DEFAULT text-white"
+      aria-label="Site footer"
+    >
       {/* ─── Newsletter Band ─── */}
       <div className="border-b border-white/8">
         <div className="cs-container py-10">
@@ -92,7 +118,9 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 type="submit"
                 id="footer-newsletter-submit"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #00A651, #00c460)" }}
+                style={{
+                  background: "linear-gradient(135deg, #00A651, #00c460)",
+                }}
               >
                 Subscribe
                 <ArrowRight className="w-4 h-4" />
@@ -105,7 +133,6 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       {/* ─── Main Footer Grid ─── */}
       <div className="cs-container py-14">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
-
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             {/* Logo */}
@@ -115,21 +142,17 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               className="inline-flex items-center gap-2.5 mb-5 group"
               aria-label="Campus Sheba Home"
             >
-              <div className="w-10 h-10 rounded-xl bg-brand-green-DEFAULT flex items-center justify-center shadow-sm group-hover:shadow-glow transition-all duration-200">
-                <GraduationCap className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </div>
-              <div className="leading-none">
-                <span className="font-display font-bold text-xl text-white block leading-none">
-                  Campus<span className="text-brand-green-DEFAULT">Sheba</span>
-                </span>
-                <span className="text-[9px] font-medium text-white/30 tracking-widest uppercase">
+              <div className="leading-none bg-white p-2 rounded-lg">
+                <Logo />
+                <span className="text-[9px] font-medium text-brand-navy-DEFAULT tracking-widest uppercase">
                   Your Campus. Your World.
                 </span>
               </div>
             </Link>
 
             <p className="text-sm text-white/50 leading-relaxed mb-6 max-w-[220px]">
-              A 360° campus lifestyle super-app connecting students, educators, and service providers across Bangladesh.
+              A 360° campus lifestyle super-app connecting students, educators,
+              and service providers across Bangladesh.
             </p>
 
             {/* Social Links */}
@@ -179,7 +202,10 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                     id={`footer-service-${s.label.toLowerCase().replace(/\s+/g, "-")}`}
                     className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors duration-150 group"
                   >
-                    <s.icon className="w-3.5 h-3.5 text-white/20 group-hover:text-brand-green-DEFAULT flex-shrink-0 transition-colors" strokeWidth={2} />
+                    <s.icon
+                      className="w-3.5 h-3.5 text-white/20 group-hover:text-brand-green-DEFAULT flex-shrink-0 transition-colors"
+                      strokeWidth={2}
+                    />
                     {s.label}
                   </Link>
                 </li>
@@ -247,7 +273,8 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               Get the App
             </h4>
             <p className="text-sm text-white/40 mb-4 leading-relaxed">
-              Available on iOS and Android with all features accessible on the go.
+              Available on iOS and Android with all features accessible on the
+              go.
             </p>
             <div className="space-y-2">
               <a
@@ -259,8 +286,12 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                   <Phone className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-white/30 leading-none">Download on the</p>
-                  <p className="text-sm font-semibold text-white leading-none mt-0.5">App Store</p>
+                  <p className="text-[9px] text-white/30 leading-none">
+                    Download on the
+                  </p>
+                  <p className="text-sm font-semibold text-white leading-none mt-0.5">
+                    App Store
+                  </p>
                 </div>
               </a>
               <a
@@ -272,8 +303,12 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                   <Package className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-white/30 leading-none">Get it on</p>
-                  <p className="text-sm font-semibold text-white leading-none mt-0.5">Google Play</p>
+                  <p className="text-[9px] text-white/30 leading-none">
+                    Get it on
+                  </p>
+                  <p className="text-sm font-semibold text-white leading-none mt-0.5">
+                    Google Play
+                  </p>
                 </div>
               </a>
             </div>
@@ -282,12 +317,15 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
             <div className="mt-6 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-brand-green-DEFAULT/10 border border-brand-green-DEFAULT/20">
               <Shield className="w-4 h-4 text-brand-green-DEFAULT flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-brand-green-400">University Verified</p>
-                <p className="text-[10px] text-white/30">Safe & trusted platform</p>
+                <p className="text-xs font-semibold text-brand-green-400">
+                  University Verified
+                </p>
+                <p className="text-[10px] text-white/30">
+                  Safe & trusted platform
+                </p>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -296,7 +334,8 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
         <div className="cs-container py-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">
-              © {currentYear} Campus Sheba. All rights reserved. Made with ❤️ in Bangladesh.
+              © {currentYear} Campus Sheba. All rights reserved. Made with ❤️ in
+              Bangladesh.
             </p>
             <div className="flex items-center gap-4">
               <Link

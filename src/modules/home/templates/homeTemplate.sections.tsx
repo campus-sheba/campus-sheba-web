@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -13,6 +13,14 @@ import {
   MessageCircle,
   LayoutGrid,
 } from "lucide-react";
+import {
+  mapUniversityFeaturesToServicesMenu,
+  servicesMenu as fallbackServicesMenu,
+  type UniversityFeature,
+} from "@/components/siteSettings/navbar/navbar.constants";
+import { useAppState } from "@/contexts/AppStateContext";
+import { landingPageEndpoints } from "@/utils/endpoints/endpoints";
+import { fetchUniversities } from "@/utils/api/universities";
 import {
   BLOOD_REQUESTS,
   FAQS,
@@ -149,7 +157,6 @@ export function ModuleButton({
   color,
   bg,
   href,
-  locale,
 }: {
   icon: React.ElementType;
   label: string;
@@ -157,7 +164,6 @@ export function ModuleButton({
   color: string;
   bg: string;
   href: string;
-  locale: string;
 }) {
   return (
     <Link
@@ -196,7 +202,7 @@ function Stars({ count = 5 }: { count?: number }) {
   );
 }
 
-export function HeroSection({ locale }: { locale: string }) {
+export function HeroSection() {
   const [activeModule, setActiveModule] = useState(0);
   const [activeRole, setActiveRole] = useState(HERO_ROLES[0].id);
   const [activeSignal, setActiveSignal] = useState(0);
@@ -645,7 +651,7 @@ export function TestimonialsSection() {
   );
 }
 
-export function BloodWidget({ locale }: { locale: string }) {
+export function BloodWidget() {
   return (
     <Section className="py-16 bg-neutral-50">
       <div className="cs-container">
@@ -730,6 +736,24 @@ export function BloodWidget({ locale }: { locale: string }) {
 }
 
 export function UniversitiesSection() {
+  const [universities, setUniversities] = useState<string[]>(UNIVERSITIES);
+
+  useEffect(() => {
+    const loadUniversities = async () => {
+      try {
+        const response = await fetchUniversities(1, 10);
+        const names = response.map((university) => university.name).filter(Boolean);
+        if (names.length) {
+          setUniversities(names);
+        }
+      } catch {
+        // Keep static fallback if the live request fails.
+      }
+    };
+
+    void loadUniversities();
+  }, []);
+
   return (
     <Section className="py-14 bg-white border-y border-neutral-100">
       <div className="cs-container">
@@ -737,7 +761,7 @@ export function UniversitiesSection() {
           Serving Students at
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          {UNIVERSITIES.map((university) => (
+          {universities.map((university) => (
             <div
               key={university}
               className="flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-neutral-50 border border-neutral-200 hover:border-brand-green-DEFAULT hover:bg-brand-green-50 transition-all duration-200 cursor-default group"
@@ -834,7 +858,7 @@ export function FAQSection() {
   );
 }
 
-export function CTASection({ locale }: { locale: string }) {
+export function CTASection() {
   return (
     <Section className="py-20 bg-white">
       <div className="cs-container">
@@ -911,11 +935,97 @@ export function CTASection({ locale }: { locale: string }) {
   );
 }
 
-export function HomeModulesOverlay({ locale }: { locale: string }) {
+export function HomeModulesOverlay() {
+  const { state } = useAppState();
+  const selectedUniversityId = state.university.selected?._id;
+  type ModuleOverlayItem = {
+    id: string;
+    label: string;
+    desc: string;
+    icon: React.ElementType;
+    color: string;
+    bg: string;
+    href: string;
+  };
+  const [dynamicModules, setDynamicModules] = useState<ModuleOverlayItem[]>(
+    MODULES.slice(0, 7),
+  );
+  const moduleStyleByHref = useMemo(
+    () =>
+      new Map(
+        MODULES.map((module) => [
+          module.href,
+          { color: module.color, bg: module.bg },
+        ]),
+      ),
+    [],
+  );
+
+  useEffect(() => {
+    const fetchUniversityFeatures = async () => {
+      if (!selectedUniversityId) {
+        setDynamicModules(
+          fallbackServicesMenu.slice(0, 7).map((item, index) => ({
+            id: `fallback-${index}`,
+            label: item.label,
+            desc: item.description,
+            icon: item.icon,
+            color: moduleStyleByHref.get(item.href)?.color ?? "#334155",
+            bg: moduleStyleByHref.get(item.href)?.bg ?? "#F8FAFC",
+            href: item.href,
+          })),
+        );
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          landingPageEndpoints.universityFeatures(selectedUniversityId),
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+          },
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch features (${response.status})`);
+        }
+
+        const result = (await response.json()) as {
+          data?: Array<{ feature?: UniversityFeature }>;
+        };
+        const features = (result.data ?? [])
+          .map((item) => item.feature)
+          .filter((feature): feature is UniversityFeature => Boolean(feature));
+        const mapped = mapUniversityFeaturesToServicesMenu(features).slice(0, 7);
+
+        if (!mapped.length) {
+          return;
+        }
+
+        setDynamicModules(
+          mapped.map((item, index) => ({
+            id: `feature-${index}`,
+            label: item.label,
+            desc: item.description,
+            icon: item.icon,
+            color: moduleStyleByHref.get(item.href)?.color ?? "#334155",
+            bg: moduleStyleByHref.get(item.href)?.bg ?? "#F8FAFC",
+            href: item.href,
+          })),
+        );
+      } catch {
+        // Keep current modules on failure.
+      }
+    };
+
+    void fetchUniversityFeatures();
+  }, [selectedUniversityId, moduleStyleByHref]);
+
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-8">
-      {MODULES.slice(0, 7).map((module) => (
-        <ModuleButton key={module.id} {...module} locale={locale} />
+      {dynamicModules.map((module) => (
+        <ModuleButton key={module.id} {...module} />
       ))}
       <Link
         href={`/services`}

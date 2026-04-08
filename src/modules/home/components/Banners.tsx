@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -9,7 +8,8 @@ import "swiper/css/effect-fade";
 import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
 import "./banner-pagination.css";
 import { landingPageEndpoints } from "@/utils/endpoints/endpoints";
-import { getPublic } from "@/utils/api/get";
+import { useAppState } from "@/contexts/AppStateContext";
+import { getClient } from "@/utils/api/client";
 
 interface Banner {
   _id: string;
@@ -24,6 +24,8 @@ interface BannersProps {
 }
 
 const Banners = ({ bottomOverlay }: BannersProps) => {
+  const { state } = useAppState();
+  const selectedUniversityId = state.university.selected?._id;
   const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +34,21 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
 
   useEffect(() => {
     const fetchBanners = async () => {
+      if (!selectedUniversityId) {
+        setBanners([]);
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const res: any = await getPublic(landingPageEndpoints.heroBanner);
+        setIsLoading(true);
+        setError(null);
+        setImagesLoaded(0);
+        setAllImagesLoaded(false);
+        const res = await getClient<{ data?: Banner[] }>(
+          landingPageEndpoints.heroBannerByUniversity(selectedUniversityId),
+          { universityId: selectedUniversityId },
+        );
         setBanners(res?.data || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -41,8 +56,8 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
         setIsLoading(false);
       }
     };
-    fetchBanners();
-  }, []);
+    void fetchBanners();
+  }, [selectedUniversityId]);
 
   useEffect(() => {
     if (!isLoading && banners.length > 0 && imagesLoaded === banners.length) {
