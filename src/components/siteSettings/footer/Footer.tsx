@@ -1,89 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  GraduationCap,
-  Bike,
-  BookOpen,
-  ShoppingBag,
-  Droplets,
-  Briefcase,
-  Heart,
   Package,
-  Trash2,
-  MapPin,
   Mail,
   Phone,
-  FacebookIcon,
-  Twitter,
-  Instagram,
-  Youtube,
   ArrowRight,
   Shield,
   Globe,
 } from "lucide-react";
 import Logo from "../navbar/Logo";
+import { Button } from "@/components/ui";
+import { fetchUniversities } from "@/services/universities";
+import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
+import {
+  COMPANY_LINKS,
+  FALLBACK_UNIVERSITIES,
+  SERVICES,
+  SOCIAL,
+  SUPPORT_LINKS,
+} from "./footer.constants";
 
 interface FooterProps {
   locale?: string;
 }
 
-const SERVICES = [
-  { label: "Delivery Sheba", href: "/delivery", icon: Bike },
-  { label: "Book Sheba", href: "/books", icon: BookOpen },
-  { label: "Buy & Sell", href: "/marketplace", icon: ShoppingBag },
-  { label: "Blood Bank", href: "/blood-bank", icon: Droplets },
-  { label: "Tuition Sheba", href: "/tuition", icon: GraduationCap },
-  { label: "Jobs", href: "/jobs", icon: Briefcase },
-  { label: "Donation", href: "/donation", icon: Heart },
-  { label: "Parcel Delivery", href: "/parcel", icon: Package },
-  { label: "Eco Pickup", href: "/garbage", icon: Trash2 },
-  { label: "Lost & Found", href: "/lost-found", icon: MapPin },
-];
-
-const COMPANY_LINKS = [
-  { label: "About Us", href: "/about" },
-  { label: "Careers", href: "/careers" },
-  { label: "Blog", href: "/blog" },
-  { label: "Press Kit", href: "/press" },
-  { label: "Contact", href: "/contact" },
-];
-
-const SUPPORT_LINKS = [
-  { label: "Help Center", href: "/help" },
-  { label: "Community Guidelines", href: "/guidelines" },
-  { label: "Report an Issue", href: "/report" },
-  { label: "Privacy Policy", href: "/privacy-policy" },
-  { label: "Terms & Conditions", href: "/terms-condition" },
-];
-
-const UNIVERSITIES = [
-  "Jahangirnagar University",
-  "Dhaka University",
-  "Chittagong University",
-  "+ More Coming Soon",
-];
-
-const SOCIAL = [
-  {
-    label: "Facebook",
-    icon: FacebookIcon,
-    href: "https://facebook.com/campussheba",
-  },
-  {
-    label: "Instagram",
-    icon: Instagram,
-    href: "https://instagram.com/campussheba",
-  },
-  { label: "Twitter", icon: Twitter, href: "https://twitter.com/campussheba" },
-  { label: "YouTube", icon: Youtube, href: "https://youtube.com/campussheba" },
-];
-
 const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
   const currentYear = new Date().getFullYear();
+  const [universities, setUniversities] = useState<string[]>(FALLBACK_UNIVERSITIES);
 
-  const href = (path: string) => `/${path}`;
+  const href = (path: string) => {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return `/${locale}${normalizedPath}`;
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    const loadUniversities = async () => {
+      try {
+        const items = await fetchUniversities(1, 6);
+        if (!mounted) return;
+        const names = items.map((item) => item.name).filter(Boolean);
+        if (names.length) {
+          setUniversities([...names.slice(0, 4), "+ More Coming Soon"]);
+        }
+      } catch {
+        // Keep fallback list.
+      }
+    };
+    void loadUniversities();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <footer
@@ -91,8 +61,8 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       aria-label="Site footer"
     >
       {/* ─── Newsletter Band ─── */}
-      <div className="border-b border-white/8">
-        <div className="cs-container py-10">
+      <SectionWrapper spacing="none" background="transparent" className="my-0 border-b border-white/8">
+        <ContentWrapper maxWidth="container" padding="none" className="py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-xl text-white mb-1">
@@ -114,24 +84,26 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 className="flex-1 md:w-64 px-4 py-2.5 rounded-xl bg-white/8 border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green-DEFAULT/60 transition-colors"
                 aria-label="Email address for newsletter"
               />
-              <button
+              <Button
                 type="submit"
                 id="footer-newsletter-submit"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow flex-shrink-0"
+                variant="secondary"
+                uppercase={false}
+                className="flex-shrink-0 gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow"
                 style={{
                   background: "linear-gradient(135deg, #00A651, #00c460)",
                 }}
               >
                 Subscribe
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Button>
             </form>
           </div>
-        </div>
-      </div>
+        </ContentWrapper>
+      </SectionWrapper>
 
       {/* ─── Main Footer Grid ─── */}
-      <div className="cs-container py-14">
+      <ContentWrapper maxWidth="container" padding="none" className="py-14">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
@@ -258,7 +230,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 Partner Universities
               </h4>
               <ul className="space-y-2">
-                {UNIVERSITIES.map((u) => (
+                {universities.map((u) => (
                   <li key={u} className="text-sm text-white/40">
                     {u}
                   </li>
@@ -327,14 +299,14 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
             </div>
           </div>
         </div>
-      </div>
+      </ContentWrapper>
 
       {/* ─── Bottom Bar ─── */}
-      <div className="border-t border-white/8">
-        <div className="cs-container py-5">
+      <SectionWrapper spacing="none" background="transparent" className="my-0 border-t border-white/8">
+        <ContentWrapper maxWidth="container" padding="none" className="py-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">
-              © {currentYear} Campus Sheba. All rights reserved. Made with ❤️ in
+              © {currentYear} Campus Sheba. All rights reserved. Made with care in
               Bangladesh.
             </p>
             <div className="flex items-center gap-4">
@@ -363,8 +335,8 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               </Link>
             </div>
           </div>
-        </div>
-      </div>
+        </ContentWrapper>
+      </SectionWrapper>
     </footer>
   );
 };

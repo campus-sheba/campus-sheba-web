@@ -1,5 +1,5 @@
-import HomePage from "@/modules/home/HomePage";
+import HomeTemplate from "@/modules/home/templates/HomeTemplate";
 
-export default function LandingHomeRoute() {
-  return <HomePage />;
+export default function HomePage() {
+  return <HomeTemplate />;
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAppState } from "@/contexts/AppStateContext";
 import { University } from "@/types/global";
 import { CookieHelper, StorageHelper } from "@/lib/appStateHelper";
-import { fetchUniversities } from "@/utils/api/universities";
+import { fetchUniversities } from "@/services/universities";
 import { Loader } from "lucide-react";
 
 type UniversitySelectorModalProps = {

@@ -1,23 +1,18 @@
 "use client";
 import Banners from "../components/Banners";
+import { PageContentWrapper, SectionWrapper } from "@/components/wrappers";
 
-import {
- 
-  HomeModulesOverlay,
- 
-  UniversitiesSection,
-} from "./homeTemplate.sections";
+import { UniversitiesSection } from "../components/UniversitySection";
+import { FeaturesSection } from "../components/Features";
 
 // ─── MAIN HOME TEMPLATE ───────────────────────────────────────
 export default function HomeTemplate() {
   return (
-    <div>
-      {/* Hero */}
-      {/* <HeroSection  /> */}
-      <Banners bottomOverlay={<HomeModulesOverlay />} />
-
-      {/* Trust + Navigation */}
+    <PageContentWrapper spacing="none" className="mt-0">
+      <SectionWrapper spacing="none" background="transparent" className="my-0">
+        <Banners bottomOverlay={<FeaturesSection />} />
+      </SectionWrapper>
       <UniversitiesSection />
-    </div>
+    </PageContentWrapper>
   );
 }

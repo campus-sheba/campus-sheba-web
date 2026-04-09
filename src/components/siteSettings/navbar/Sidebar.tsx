@@ -7,6 +7,29 @@ import { cn } from "@/utils/utils";
 import XIcon from "@/components/ui/icons/XIcon";
 import SearchIcon from "@/components/ui/icons/SearchIcon";
 
+const SOCIAL_LINKS = [
+  {
+    label: "Facebook",
+    href: "https://facebook.com/campussheba",
+    icon: Facebook,
+  },
+  {
+    label: "Twitter",
+    href: "https://twitter.com/campussheba",
+    icon: Twitter,
+  },
+  {
+    label: "YouTube",
+    href: "https://youtube.com/campussheba",
+    icon: Youtube,
+  },
+  {
+    label: "RSS",
+    href: "/rss",
+    icon: Rss,
+  },
+];
+
 export interface NavItem {
   label: string;
   href: string;
@@ -100,6 +123,7 @@ export default function Sidebar({ open, onClose, items }: SidebarProps) {
               type="search"
               placeholder="Search..."
               className="w-full rounded-full border border-gray-200 bg-white px-4 py-3 pr-10 text-sm outline-none focus:border-gray-400 transition-colors"
+              aria-label="Search navigation"
             />
             <SearchIcon className="absolute right-10 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
           </div>
@@ -126,39 +150,22 @@ export default function Sidebar({ open, onClose, items }: SidebarProps) {
           {/* Footer */}
           <div className="mt-6 pt-4 text-xs text-gray-500 mb-2 p-6">
             <div className="flex items-center gap-4 mb-8">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="Youtube"
-              >
-                <Youtube className="h-5 w-5" />
-              </Link>
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="RSS"
-              >
-                <Rss className="h-5 w-5" />
-              </Link>
+              {SOCIAL_LINKS.map((social) => (
+                <Link
+                  key={social.label}
+                  href={social.href}
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  aria-label={social.label}
+                  target={social.href.startsWith("http") ? "_blank" : undefined}
+                  rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                >
+                  <social.icon className="h-5 w-5" />
+                </Link>
+              ))}
             </div>
             <p>
-              © 2026 <span className="underline">JNews</span> - Premium
-              WordPress news & magazine theme by{" "}
-              <span className="underline">Jegtheme</span>.
+              © 2026 Campus Sheba. Student-first campus services platform for
+              Bangladesh.
             </p>
           </div>
         </div>

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { logoutAction } from "@/app/[locale]/(protected)/(dashboard)/profile/actions";
+import { Button } from "@/components/ui";
 
 interface SidebarUser {
   name?: string;
@@ -147,13 +148,16 @@ export default function DashboardSidebar({ user }: Props) {
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
         <form action={logoutAction.bind(null, locale)} method="POST">
-          <button
+          <Button
             type="submit"
-            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+            variant="ghost"
+            fullWidth
+            uppercase={false}
+            className="justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
             Log Out
-          </button>
+          </Button>
         </form>
       </div>
     </div>

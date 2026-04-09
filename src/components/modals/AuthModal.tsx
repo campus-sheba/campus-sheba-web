@@ -10,10 +10,149 @@ import {
 } from "@/app/[locale]/(auth)/signup/actions";
 import { useAppState } from "@/contexts/AppStateContext";
 import { University, UserProfile } from "@/types/global";
+import { Button, Paragraph, Title } from "@/components/ui";
+import { SectionWrapper } from "@/components/wrappers";
+import { cn } from "@/utils/utils";
+
+type AuthTab = "login" | "signup";
+type SignupStep = "phone" | "otp" | "details";
+
+const OTP_LENGTH = 6;
+
+const FIELD_LABEL_CLASS = "mb-1 block text-sm font-medium text-neutral-700";
+const FIELD_ERROR_CLASS = "mt-1 text-xs text-red-500";
+
+const INPUT_BASE_CLASS =
+  "w-full border border-neutral-300 rounded-lg py-2.5 outline-none text-sm focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600";
+
+type FieldLabelProps = {
+  children: React.ReactNode;
+};
+
+function FieldLabel({ children }: FieldLabelProps) {
+  return <label className={FIELD_LABEL_CLASS}>{children}</label>;
+}
+
+type FieldErrorProps = {
+  message?: string;
+};
+
+function FieldError({ message }: FieldErrorProps) {
+  if (!message) return null;
+  return <p className={FIELD_ERROR_CLASS}>{message}</p>;
+}
+
+type PhoneInputFieldProps = {
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+};
+
+function PhoneInputField({ value, error, onChange }: PhoneInputFieldProps) {
+  return (
+    <div>
+      <FieldLabel>Phone Number</FieldLabel>
+      <div className="flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100">
+        <span className="inline-flex items-center gap-1 border-r border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm font-semibold text-neutral-700">
+          <Phone className="h-4 w-4 text-neutral-400" />
+          (+88)
+        </span>
+        <input
+          type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          placeholder="01XXXXXXXXX"
+          className="w-full px-3 py-2.5 text-sm outline-none"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </div>
+      <FieldError message={error} />
+    </div>
+  );
+}
+
+type PinInputFieldProps = {
+  label: string;
+  value: string;
+  error?: string;
+  placeholder?: string;
+  className?: string;
+  withIcon?: boolean;
+  onChange: (value: string) => void;
+};
+
+function PinInputField({
+  label,
+  value,
+  error,
+  placeholder = "****",
+  className,
+  withIcon = false,
+  onChange,
+}: PinInputFieldProps) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <div className={cn(withIcon && "relative")}>
+        {withIcon && (
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+        )}
+        <input
+          type="password"
+          placeholder={placeholder}
+          className={cn(INPUT_BASE_CLASS, withIcon ? "pl-10 pr-4" : "px-4", className)}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </div>
+      <FieldError message={error} />
+    </div>
+  );
+}
+
+type AuthSubmitButtonProps = {
+  isPending: boolean;
+  idleText: string;
+  pendingText: string;
+};
+
+function AuthSubmitButton({
+  isPending,
+  idleText,
+  pendingText,
+}: AuthSubmitButtonProps) {
+  return (
+    <Button
+      type="submit"
+      disabled={isPending}
+      variant="secondary"
+      fullWidth
+      uppercase={false}
+      className="rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+    >
+      {isPending ? pendingText : idleText}
+    </Button>
+  );
+}
+
+const validatePhoneNumber = (phoneDigits: string) => {
+  if (!phoneDigits) return "Phone number is required";
+  if (phoneDigits.length !== 11) return "Phone number must be 11 digits";
+  return "";
+};
+
+const validatePin = (pin: string, minimumLength = 4) => {
+  if (!pin) return "PIN is required";
+  if (pin.length < minimumLength) {
+    return `PIN must be at least ${minimumLength} digits`;
+  }
+  return "";
+};
 
 type AuthModalProps = {
   isOpen: boolean;
-  defaultTab?: "login" | "signup";
+  defaultTab?: AuthTab;
   onClose: () => void;
 };
 
@@ -24,7 +163,7 @@ export default function AuthModal({
 }: AuthModalProps) {
   const { state, login, selectUniversity } = useAppState();
   const [isPending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState<"login" | "signup">(defaultTab);
+  const [activeTab, setActiveTab] = useState<AuthTab>(defaultTab);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   // Login state
@@ -35,7 +174,7 @@ export default function AuthModal({
   });
 
   // Signup state
-  const [signupStep, setSignupStep] = useState<"phone" | "otp" | "details">("phone");
+  const [signupStep, setSignupStep] = useState<SignupStep>("phone");
   const [signupForm, setSignupForm] = useState({
     phone: "",
     otp: "",
@@ -67,13 +206,13 @@ export default function AuthModal({
 
   const handleOtpDigitChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
-    const current = signupForm.otp.padEnd(6, " ").slice(0, 6).split("");
+    const current = signupForm.otp.padEnd(OTP_LENGTH, " ").slice(0, OTP_LENGTH).split("");
     current[index] = digit || " ";
     const nextOtp = current.join("").replace(/\s/g, "");
 
-    setSignupForm({ ...signupForm, otp: nextOtp });
+    setSignupForm((prev) => ({ ...prev, otp: nextOtp }));
 
-    if (digit && index < 5) {
+    if (digit && index < OTP_LENGTH - 1) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
@@ -81,11 +220,14 @@ export default function AuthModal({
   const handleOtpKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== "Backspace") return;
 
-    const current = signupForm.otp.padEnd(6, " ").slice(0, 6).split("");
+    const current = signupForm.otp.padEnd(OTP_LENGTH, " ").slice(0, OTP_LENGTH).split("");
 
     if (current[index] !== " ") {
       current[index] = " ";
-      setSignupForm({ ...signupForm, otp: current.join("").replace(/\s/g, "") });
+      setSignupForm((prev) => ({
+        ...prev,
+        otp: current.join("").replace(/\s/g, ""),
+      }));
       return;
     }
 
@@ -96,10 +238,13 @@ export default function AuthModal({
 
   const handleOtpPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault();
-    const pastedDigits = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    setSignupForm({ ...signupForm, otp: pastedDigits });
+    const pastedDigits = event.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, OTP_LENGTH);
+    setSignupForm((prev) => ({ ...prev, otp: pastedDigits }));
 
-    const focusIndex = Math.min(pastedDigits.length, 5);
+    const focusIndex = Math.min(pastedDigits.length, OTP_LENGTH - 1);
     otpInputRefs.current[focusIndex]?.focus();
   };
 
@@ -140,14 +285,11 @@ export default function AuthModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     const normalizedPhone = normalizePhoneDigits(loginForm.phone);
+    const phoneError = validatePhoneNumber(normalizedPhone);
+    const pinError = validatePin(loginForm.pin);
 
-    if (!normalizedPhone) newErrors.phone = "Phone number is required";
-    if (normalizedPhone && normalizedPhone.length !== 11) {
-      newErrors.phone = "Phone number must be 11 digits";
-    }
-    if (!loginForm.pin) newErrors.pin = "PIN is required";
-    if (loginForm.pin && loginForm.pin.length < 4)
-      newErrors.pin = "PIN must be at least 4 digits";
+    if (phoneError) newErrors.phone = phoneError;
+    if (pinError) newErrors.pin = pinError;
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -184,11 +326,9 @@ export default function AuthModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     const normalizedPhone = normalizePhoneDigits(signupForm.phone);
+    const phoneError = validatePhoneNumber(normalizedPhone);
 
-    if (!normalizedPhone) newErrors.phone = "Phone number is required";
-    if (normalizedPhone && normalizedPhone.length !== 11) {
-      newErrors.phone = "Phone number must be 11 digits";
-    }
+    if (phoneError) newErrors.phone = phoneError;
     if (Object.keys(newErrors).length === 0) {
       const fullPhone = buildFullPhone(normalizedPhone);
       setErrors({});
@@ -204,7 +344,7 @@ export default function AuthModal({
           return;
         }
 
-        setSignupForm({ ...signupForm, phone: normalizedPhone, otp: "" });
+        setSignupForm((prev) => ({ ...prev, phone: normalizedPhone, otp: "" }));
         setSignupStep("otp");
       });
     } else {
@@ -217,8 +357,8 @@ export default function AuthModal({
     const newErrors: Record<string, string> = {};
 
     if (!signupForm.otp) newErrors.otp = "OTP is required";
-    if (signupForm.otp && signupForm.otp.length !== 6)
-      newErrors.otp = "OTP must be 6 digits";
+    if (signupForm.otp && signupForm.otp.length !== OTP_LENGTH)
+      newErrors.otp = `OTP must be ${OTP_LENGTH} digits`;
 
     if (Object.keys(newErrors).length === 0) {
       setErrors({});
@@ -246,9 +386,8 @@ export default function AuthModal({
     const newErrors: Record<string, string> = {};
 
     if (!signupForm.name) newErrors.name = "Name is required";
-    if (!signupForm.pin) newErrors.pin = "PIN is required";
-    if (signupForm.pin && signupForm.pin.length < 4)
-      newErrors.pin = "PIN must be at least 4 digits";
+    const pinError = validatePin(signupForm.pin);
+    if (pinError) newErrors.pin = pinError;
     if (!signupForm.confirmPin)
       newErrors.confirmPin = "Confirm PIN is required";
     if (signupForm.pin !== signupForm.confirmPin)
@@ -302,149 +441,101 @@ export default function AuthModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/50 px-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4">
-          {activeTab === "signup" && signupStep !== "phone" && (
+        <SectionWrapper
+          spacing="none"
+          background="transparent"
+          className="my-0 border-b border-neutral-100 px-6 py-4"
+        >
+          <div className="flex items-center justify-between">
+            {activeTab === "signup" && signupStep !== "phone" && (
+              <button
+                onClick={() => setSignupStep("phone")}
+                className="text-neutral-600 hover:text-neutral-900"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
+            {!(activeTab === "signup" && signupStep !== "phone") && (
+              <div />
+            )}
+            <Title as="h2" size="lg" weight="semibold" className="text-neutral-900">
+              {activeTab === "login" ? "Sign In" : "Create Account"}
+            </Title>
             <button
-              onClick={() => setSignupStep("phone")}
-              className="text-neutral-600 hover:text-neutral-900"
+              onClick={onClose}
+              className="text-neutral-400 hover:text-neutral-600"
             >
-              <ChevronLeft className="h-5 w-5" />
+              ✕
             </button>
-          )}
-          {!(activeTab === "signup" && signupStep !== "phone") && (
-            <div />
-          )}
-          <h2 className="text-lg font-semibold text-neutral-900">
-            {activeTab === "login" ? "Sign In" : "Create Account"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-600"
-          >
-            ✕
-          </button>
-        </div>
+          </div>
+        </SectionWrapper>
 
         {/* Body */}
-        <div className="p-6">
+        <SectionWrapper spacing="none" background="transparent" className="my-0 p-6">
           {activeTab === "login" && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Phone Number
-                </label>
-                <div className="flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100">
-                  <span className="inline-flex items-center gap-1 border-r border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm font-semibold text-neutral-700">
-                    <Phone className="h-4 w-4 text-neutral-400" />
-                    (+88)
-                  </span>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="01XXXXXXXXX"
-                    className="w-full px-3 py-2.5 outline-none text-sm"
-                    value={loginForm.phone}
-                    onChange={(e) =>
-                      setLoginForm({
-                        ...loginForm,
-                        phone: normalizePhoneDigits(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
-                )}
-              </div>
+              <PhoneInputField
+                value={loginForm.phone}
+                error={errors.phone}
+                onChange={(value) =>
+                  setLoginForm((prev) => ({
+                    ...prev,
+                    phone: normalizePhoneDigits(value),
+                  }))
+                }
+              />
 
-              {/* PIN */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  PIN
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                  <input
-                    type="password"
-                    placeholder="****"
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm"
-                    value={loginForm.pin}
-                    onChange={(e) =>
-                      setLoginForm({ ...loginForm, pin: e.target.value })
-                    }
-                  />
-                </div>
-                {errors.pin && (
-                  <p className="text-xs text-red-500 mt-1">{errors.pin}</p>
-                )}
-              </div>
+              <PinInputField
+                label="PIN"
+                value={loginForm.pin}
+                error={errors.pin}
+                withIcon
+                onChange={(value) =>
+                  setLoginForm((prev) => ({ ...prev, pin: value }))
+                }
+              />
 
-              {errors.general && (
-                <p className="text-xs text-red-500">{errors.general}</p>
-              )}
+              <FieldError message={errors.general} />
 
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition disabled:opacity-60"
-              >
-                {isPending ? "Signing in..." : "Sign In"}
-              </button>
+              <AuthSubmitButton
+                isPending={isPending}
+                pendingText="Signing in..."
+                idleText="Sign In"
+              />
             </form>
           )}
 
           {activeTab === "signup" && signupStep === "phone" && (
             <form onSubmit={handleSignupPhoneSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Phone Number
-                </label>
-                <div className="flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100">
-                  <span className="inline-flex items-center gap-1 border-r border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm font-semibold text-neutral-700">
-                    <Phone className="h-4 w-4 text-neutral-400" />
-                    (+88)
-                  </span>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="01XXXXXXXXX"
-                    className="w-full px-3 py-2.5 outline-none text-sm"
-                    value={signupForm.phone}
-                    onChange={(e) =>
-                      setSignupForm({
-                        ...signupForm,
-                        phone: normalizePhoneDigits(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
-                )}
-              </div>
+              <PhoneInputField
+                value={signupForm.phone}
+                error={errors.phone}
+                onChange={(value) =>
+                  setSignupForm((prev) => ({
+                    ...prev,
+                    phone: normalizePhoneDigits(value),
+                  }))
+                }
+              />
 
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition"
-              >
-                {isPending ? "Sending..." : "Send OTP"}
-              </button>
+              <AuthSubmitButton
+                isPending={isPending}
+                pendingText="Sending..."
+                idleText="Send OTP"
+              />
             </form>
           )}
 
           {activeTab === "signup" && signupStep === "otp" && (
             <form onSubmit={handleSignupOtpSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Enter OTP
-                </label>
+                <FieldLabel>Enter OTP</FieldLabel>
                 <div className="flex justify-between gap-2">
-                  {Array.from({ length: 6 }).map((_, index) => {
-                    const otpChars = signupForm.otp.padEnd(6, " ").slice(0, 6).split("");
+                  {Array.from({ length: OTP_LENGTH }).map((_, index) => {
+                    const otpChars = signupForm.otp
+                      .padEnd(OTP_LENGTH, " ")
+                      .slice(0, OTP_LENGTH)
+                      .split("");
                     return (
                       <input
                         key={index}
@@ -464,100 +555,65 @@ export default function AuthModal({
                     );
                   })}
                 </div>
-                {errors.otp && (
-                  <p className="text-xs text-red-500 mt-1">{errors.otp}</p>
-                )}
+                <FieldError message={errors.otp} />
               </div>
 
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition"
-              >
-                {isPending ? "Verifying..." : "Verify OTP"}
-              </button>
+              <AuthSubmitButton
+                isPending={isPending}
+                pendingText="Verifying..."
+                idleText="Verify OTP"
+              />
             </form>
           )}
 
           {activeTab === "signup" && signupStep === "details" && (
             <form onSubmit={handleSignupDetailsSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Full Name
-                </label>
+                <FieldLabel>Full Name</FieldLabel>
                 <input
                   type="text"
                   placeholder="Your name"
-                  className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm"
+                  className={cn(INPUT_BASE_CLASS, "px-4")}
                   value={signupForm.name}
                   onChange={(e) =>
-                    setSignupForm({ ...signupForm, name: e.target.value })
+                    setSignupForm((prev) => ({ ...prev, name: e.target.value }))
                   }
                 />
-                {errors.name && (
-                  <p className="text-xs text-red-500 mt-1">{errors.name}</p>
-                )}
+                <FieldError message={errors.name} />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Create PIN
-                </label>
-                <input
-                  type="password"
-                  placeholder="****"
-                  className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm"
-                  value={signupForm.pin}
-                  onChange={(e) =>
-                    setSignupForm({ ...signupForm, pin: e.target.value })
-                  }
-                />
-                {errors.pin && (
-                  <p className="text-xs text-red-500 mt-1">{errors.pin}</p>
-                )}
-              </div>
+              <PinInputField
+                label="Create PIN"
+                value={signupForm.pin}
+                error={errors.pin}
+                onChange={(value) =>
+                  setSignupForm((prev) => ({ ...prev, pin: value }))
+                }
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Confirm PIN
-                </label>
-                <input
-                  type="password"
-                  placeholder="****"
-                  className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm"
-                  value={signupForm.confirmPin}
-                  onChange={(e) =>
-                    setSignupForm({
-                      ...signupForm,
-                      confirmPin: e.target.value,
-                    })
-                  }
-                />
-                {errors.confirmPin && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.confirmPin}
-                  </p>
-                )}
-              </div>
+              <PinInputField
+                label="Confirm PIN"
+                value={signupForm.confirmPin}
+                error={errors.confirmPin}
+                onChange={(value) =>
+                  setSignupForm((prev) => ({ ...prev, confirmPin: value }))
+                }
+              />
 
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition"
-              >
-                {isPending ? "Creating..." : "Create Account"}
-              </button>
+              <AuthSubmitButton
+                isPending={isPending}
+                pendingText="Creating..."
+                idleText="Create Account"
+              />
 
-              {errors.general && (
-                <p className="text-xs text-red-500">{errors.general}</p>
-              )}
+              <FieldError message={errors.general} />
             </form>
           )}
 
           {/* Tab Switcher */}
           {activeTab === "login" ? (
-            <p className="mt-4 text-xs text-center text-neutral-600">
-              Don&lsquo;t have an account?{" "}
+            <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
+              Don&apos;t have an account?{" "}
               <button
                 onClick={() => {
                   setActiveTab("signup");
@@ -567,9 +623,9 @@ export default function AuthModal({
               >
                 Sign up
               </button>
-            </p>
+            </Paragraph>
           ) : (
-            <p className="mt-4 text-xs text-center text-neutral-600">
+            <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
               Already have an account?{" "}
               <button
                 onClick={() => {
@@ -580,9 +636,9 @@ export default function AuthModal({
               >
                 Sign in
               </button>
-            </p>
+            </Paragraph>
           )}
-        </div>
+        </SectionWrapper>
       </div>
     </div>
   );

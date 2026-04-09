@@ -1,4 +1,3 @@
-import { type ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -6,66 +5,20 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-fade";
 import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
-import "./banner-pagination.css";
-import { landingPageEndpoints } from "@/utils/endpoints/endpoints";
+import "../styles/banner-pagination.css";
 import { useAppState } from "@/contexts/AppStateContext";
-import { getClient } from "@/utils/api/client";
-
-interface Banner {
-  _id: string;
-  title: string;
-  description: string;
-  photo?: { url: string };
-  link?: string;
-}
+import { ContentWrapper } from "@/components/wrappers";
+import { useHomeBanners } from "../hooks/useHomeBanners";
 
 interface BannersProps {
-  bottomOverlay?: ReactNode;
+  bottomOverlay?: React.ReactNode;
 }
 
 const Banners = ({ bottomOverlay }: BannersProps) => {
   const { state } = useAppState();
   const selectedUniversityId = state.university.selected?._id;
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [imagesLoaded, setImagesLoaded] = useState(0);
-  const [allImagesLoaded, setAllImagesLoaded] = useState(false);
-
-  useEffect(() => {
-    const fetchBanners = async () => {
-      if (!selectedUniversityId) {
-        setBanners([]);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        setImagesLoaded(0);
-        setAllImagesLoaded(false);
-        const res = await getClient<{ data?: Banner[] }>(
-          landingPageEndpoints.heroBannerByUniversity(selectedUniversityId),
-          { universityId: selectedUniversityId },
-        );
-        setBanners(res?.data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    void fetchBanners();
-  }, [selectedUniversityId]);
-
-  useEffect(() => {
-    if (!isLoading && banners.length > 0 && imagesLoaded === banners.length) {
-      setAllImagesLoaded(true);
-    }
-  }, [imagesLoaded, banners.length, isLoading]);
-
-  const handleImageLoad = () => setImagesLoaded((prev) => prev + 1);
+  const { banners, isLoading, error, allImagesLoaded, handleImageLoad } =
+    useHomeBanners(selectedUniversityId);
 
   const renderSkeleton = () => (
     <div className="relative h-[55vh] w-full animate-pulse bg-gray-100">
@@ -130,11 +83,11 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
       {/* Bottom overlay — 50% inside banner, 50% outside banner */}
       {bottomOverlay && (
         <div className="pointer-events-none relative md:absolute inset-x-0 bottom-0 z-20 mt-12 lg:mt-0 md:translate-y-1/2 px-4 md:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="pointer-events-auto bg-transparent px-0 py-0">
+          <ContentWrapper maxWidth="container" padding="none">
+            <div className="pointer-events-auto bg-transparent">
               {bottomOverlay}
             </div>
-          </div>
+          </ContentWrapper>
         </div>
       )}
     </div>
