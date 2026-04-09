@@ -1,6 +1,9 @@
+
+import "@/app/globals.css";
+
+
 import type { Metadata } from "next";
 import { Sora, Inter } from "next/font/google";
-import "@/app/globals.css";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -9,9 +12,10 @@ import { Suspense } from "react";
 import Loading from "@/components/common/Loading";
 import Navbar from "@/components/siteSettings/navbar/Navbar";
 import Footer from "@/components/siteSettings/footer/Footer";
-import CartButton from "@/components/cart/CartButton";
+import CartButton from "@/modules/cart/CartButton";
 import { Toaster } from "sonner";
 import { LayoutClientProviders } from "@/components/providers/LayoutClientProviders";
+
 
 const sora = Sora({
   variable: "--font-sora",
@@ -80,15 +84,15 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${sora.variable} ${inter.variable}`}>
+    <html lang={locale} className={` ${inter.variable}`}>
       <body className="antialiased font-body bg-white text-neutral-900">
         <NextIntlClientProvider messages={messages}>
           <LayoutClientProviders locale={locale}>
             <Suspense fallback={<Loading />}>
               <Navbar locale={locale} />
               <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">{children}</main>
-              <Footer locale={locale} />
-              <CartButton locale={locale} />
+              <Footer />
+              <CartButton />
             </Suspense>
             <Toaster
               position="top-right"

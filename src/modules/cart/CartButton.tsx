@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 import React, { useMemo, useState, useEffect } from "react";
 import { useAppState } from "@/contexts/AppStateContext";
-import { getCartAction, CartItem } from "@/app/[locale]/(protected)/(dashboard)/cart/actions";
+import { getCartAction } from "@/services/cart";
+import { CartItem } from "@/types/cart";
 
 /* ─────────────────────────── types ─────────────────────────── */
-type CartButtonProps = { locale: string };
 
 
 
@@ -40,7 +40,7 @@ const B = {
 };
 
 /* ═══════════════════════════ component ══════════════════════ */
-export default function CartButton({ locale }: CartButtonProps) {
+export default function CartButton() {
   const pathname = usePathname();
   const { dispatch } = useAppState();
 

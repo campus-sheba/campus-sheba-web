@@ -1,14 +1,11 @@
 import { getMe } from "@/services/auth";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardSidebar from "@/modules/dashboard/DashboardSidebar";
 
 export default async function DashboardLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
 
   let user = null;
   try {
