@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChevronDown, MapPin } from "lucide-react";
 import { useAppState } from "@/contexts/AppStateContext";
+import { ContentWrapper } from "@/components/wrappers";
 
 type CampusTopbarProps = {
   locale: string;
@@ -39,7 +40,11 @@ export default function CampusTopbar({
       style={{ height: "var(--topbar-height)" }}
       id="campus-topbar"
     >
-      <div className="cs-container flex items-center justify-between h-full">
+      <ContentWrapper
+        maxWidth="container"
+        padding="none"
+        className="flex h-full items-center justify-between"
+      >
         {/* University Selector */}
         <button
           onClick={handleChangeUniversity}
@@ -95,7 +100,7 @@ export default function CampusTopbar({
             <span>SOS</span>
           </Link> */}
         </div>
-      </div>
+      </ContentWrapper>
     </div>
   );
 }

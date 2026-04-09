@@ -1,8 +1,8 @@
 export type ModuleOverlayItem = {
-    id: string;
-    label: string;
-    icon: React.ElementType;
-    color: string;
-    bg: string;
-    href: string;
+  id: string;
+  label: string;
+  href: string;
+  iconUrl?: string;
+  color?: string;
+  bg?: string;
 };

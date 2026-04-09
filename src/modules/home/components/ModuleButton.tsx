@@ -1,12 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ModuleOverlayItem } from "../types";
 
 export function ModuleButton({
-  icon: Icon,
   label,
-  color,
-  bg,
   href,
+  iconUrl,
+  color = "#334155",
+  bg = "#F8FAFC",
 }: Omit<ModuleOverlayItem, "id">) {
   return (
     <Link
@@ -17,11 +18,20 @@ export function ModuleButton({
         className="flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-200 group-hover:scale-110 group-hover:shadow-md md:h-14 md:w-14"
         style={{ background: bg }}
       >
-        <Icon
-          className="h-5 w-5 md:h-7 md:w-7"
-          style={{ color }}
-          strokeWidth={1.8}
-        />
+        {iconUrl ? (
+          <Image
+            src={iconUrl}
+            alt={label}
+            width={28}
+            height={28}
+            className="h-5 w-5 object-contain md:h-7 md:w-7"
+          />
+        ) : (
+          <span
+            className="h-5 w-5 rounded-full md:h-7 md:w-7"
+            style={{ backgroundColor: color }}
+          />
+        )}
       </div>
       <div className="text-center">
         <p className="text-xs md:text-sm font-semibold text-neutral-800 leading-tight">

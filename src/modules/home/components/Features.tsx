@@ -1,12 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { LayoutGrid } from "lucide-react";
-import {
-  mapUniversityFeaturesToServicesMenu,
-  servicesMenu as fallbackServicesMenu,
-} from "@/components/siteSettings/navbar/navbar.constants";
 import { ContentWrapper } from "@/components/wrappers";
 import { useAppState } from "@/contexts/AppStateContext";
 import { fetchUniversityFeatures } from "@/services/home";
@@ -17,55 +11,56 @@ export function FeaturesSection() {
   const { state } = useAppState();
   const selectedUniversityId = state.university.selected?._id;
   const [dynamicModules, setDynamicModules] = useState<ModuleOverlayItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fallbackModules = useMemo<ModuleOverlayItem[]>(
-    () =>
-      fallbackServicesMenu.slice(0, 7).map((item, index) => ({
-        id: `fallback-${index}`,
-        label: item.label,
-        icon: item.icon,
-        color: item.color.includes("text-") ? "#334155" : item.color,
-        bg: item.bg.includes("bg-") ? "#F8FAFC" : item.bg,
-        href: item.href,
-      })),
-    [],
-  );
+  const skeletonCards = useMemo(() => Array.from({ length: 8 }), []);
 
   useEffect(() => {
     const loadUniversityFeatures = async () => {
       if (!selectedUniversityId) {
-        setDynamicModules(fallbackModules);
+        setDynamicModules([]);
+        setIsLoading(false);
         return;
       }
 
       try {
+        setIsLoading(true);
         const features = await fetchUniversityFeatures(selectedUniversityId);
-        const mapped = mapUniversityFeaturesToServicesMenu(features).slice(
-          0,
-          7,
-        );
-        if (!mapped.length) {
-          setDynamicModules(fallbackModules);
-          return;
-        }
-
         setDynamicModules(
-          mapped.map((item, index) => ({
-            id: `feature-${index}`,
-            label: item.label,
-            icon: item.icon,
-            color: item.color.includes("text-") ? "#334155" : item.color,
-            bg: item.bg.includes("bg-") ? "#F8FAFC" : item.bg,
-            href: item.href,
-          })),
+          features
+            .filter((feature) => feature.isActive)
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((feature) => ({
+              id: feature._id,
+              label: feature.title,
+              href: feature.routeName,
+              iconUrl: feature.icon?.url,
+            })),
         );
       } catch {
-        setDynamicModules(fallbackModules);
+        setDynamicModules([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     void loadUniversityFeatures();
-  }, [fallbackModules, selectedUniversityId]);
+  }, [selectedUniversityId]);
+
+  if (isLoading) {
+    return (
+      <ContentWrapper maxWidth="container" padding="none">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-8">
+          {skeletonCards.map((_, index) => (
+            <div
+              key={`features-skeleton-${index}`}
+              className="h-[90px] animate-pulse rounded-xl border border-neutral-200 bg-neutral-100 md:h-[112px]"
+            />
+          ))}
+        </div>
+      </ContentWrapper>
+    );
+  }
 
   return (
     <ContentWrapper maxWidth="container" padding="none">
@@ -73,34 +68,11 @@ export function FeaturesSection() {
         {dynamicModules.map((module) => (
           <ModuleButton
             key={module.id}
-            icon={module.icon}
             label={module.label}
-            color={module.color}
-            bg={module.bg}
             href={module.href}
+            iconUrl={module.iconUrl}
           />
         ))}
-        <Link
-          href="/services"
-          className="module-card group flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#00A651]/40 p-1 py-3 text-center transition hover:border-[#00A651] hover:shadow-lg md:p-4"
-        >
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-200 group-hover:scale-110 group-hover:shadow-md md:h-14 md:w-14"
-            style={{ background: "#F0FFF7" }}
-          >
-            <LayoutGrid
-              className="h-5 w-5 md:h-7 md:w-7"
-              style={{ color: "#00A651" }}
-              strokeWidth={1.8}
-            />
-          </div>
-          <p
-            className="text-xs font-semibold leading-tight md:text-sm"
-            style={{ color: "#00A651" }}
-          >
-            Explore All
-          </p>
-        </Link>
       </div>
     </ContentWrapper>
   );

@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  ChevronDown,
-  Search,
-  User,
-  Wallet,
-  ShoppingCart,
-} from "lucide-react";
+import { ChevronDown, Search, User, Wallet, ShoppingCart } from "lucide-react";
 import Logo from "./Logo";
 import CampusTopbar from "./CampusTopbar";
 import {
@@ -68,7 +62,10 @@ const Navbar = ({ locale }: { locale: string }) => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
+      if (
+        servicesRef.current &&
+        !servicesRef.current.contains(e.target as Node)
+      ) {
         setServicesOpen(false);
       }
     };
@@ -103,10 +100,7 @@ const Navbar = ({ locale }: { locale: string }) => {
 
   return (
     <>
-      <CampusTopbar
-        locale={locale}
-        onLanguageChange={handleLanguageChange}
-      />
+      <CampusTopbar locale={locale} onLanguageChange={handleLanguageChange} />
 
       {/* ─── Main Navbar ─── */}
       <nav
@@ -212,13 +206,14 @@ const Navbar = ({ locale }: { locale: string }) => {
                         Available at 3+ universities in Bangladesh
                       </p>
                       <Link
-                        href={
-                          isLoggedIn ? `/profile` : "#"
-                        }
+                        href={isLoggedIn ? `/profile` : "#"}
                         onClick={(e) => {
                           if (!isLoggedIn) {
                             e.preventDefault();
-                            appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
+                            appDispatch({
+                              type: "OPEN_AUTH_MODAL",
+                              payload: { defaultTab: "login" },
+                            });
                           }
                           setServicesOpen(false);
                         }}
@@ -237,9 +232,7 @@ const Navbar = ({ locale }: { locale: string }) => {
                   <Link
                     key={link.label}
                     href={
-                      link.href.startsWith("#")
-                        ? link.href
-                        : `/${link.href}`
+                      link.href.startsWith("#") ? link.href : `/${link.href}`
                     }
                     id={`mobile-nav-${link.label.toLowerCase()}`}
                     onClick={() => setMobileOpen(false)}
@@ -253,34 +246,6 @@ const Navbar = ({ locale }: { locale: string }) => {
           </div>
           {/* ─── Desktop Right CTAs ─── */}
           <div className="hidden lg:flex items-center gap-3">
-            {isLoggedIn && (
-              <Link
-                href={`/wallet`}
-                id="nav-wallet-btn"
-                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-colors hover:border-[#00A651]/40 hover:text-[#00A651]"
-                title="Wallet"
-              >
-                <Wallet className="h-4.5 w-4.5" />
-
-                {walletPoints > 0 && (
-                  <span className="absolute -right-2 -top-1.5 flex h-4.5 min-w-5 items-center justify-center rounded-full bg-[#00A651] px-1 text-[10px] font-bold leading-none text-white">
-                    {walletPoints}
-                  </span>
-                )}
-              </Link>
-            )}
-            <Link
-              href={`/cart`}
-              id="nav-cart-btn"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-colors hover:border-[#E30A13]/40 hover:text-[#E30A13]"
-              title="Cart"
-            >
-              <ShoppingCart className="h-4.5 w-4.5" />
-              <span className="absolute -right-1.5 -top-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#E30A13] px-1 text-[10px] font-bold leading-none text-white">
-                0
-              </span>
-            </Link>
-
             <div className="w-px h-5 bg-neutral-200" />
 
             {isLoggedIn ? (
@@ -295,26 +260,26 @@ const Navbar = ({ locale }: { locale: string }) => {
             ) : (
               <>
                 <button
-                  onClick={() => appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } })}
+                  onClick={() =>
+                    appDispatch({
+                      type: "OPEN_AUTH_MODAL",
+                      payload: { defaultTab: "login" },
+                    })
+                  }
                   id="nav-login-btn"
                   className="inline-flex items-center justify-center rounded-xl border border-brand-green-DEFAULT/30 px-4 py-2 text-sm font-semibold text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
                 >
                   Log In
-                </button>
-
-                <button
-                  onClick={() => appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "signup" } })}
-                  id="nav-signup-btn"
-                  className="inline-flex items-center justify-center rounded-xl bg-[#E30A13] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
-                >
-                  Get Started
                 </button>
               </>
             )}
           </div>
 
           {/* ─── Mobile Right: logo + bar icon only ─── */}
-          <NavbarMobileToggle mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+          <NavbarMobileToggle
+            mobileOpen={mobileOpen}
+            setMobileOpen={setMobileOpen}
+          />
         </ContentWrapper>
       </nav>
 

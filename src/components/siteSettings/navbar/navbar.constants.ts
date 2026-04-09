@@ -38,6 +38,11 @@ export type UniversityFeature = {
   key: string;
   title: string;
   description: string;
+  icon?: {
+    url?: string;
+    key?: string;
+    size?: number;
+  };
   routeName: string;
   sortOrder: number;
   isActive: boolean;

@@ -27,7 +27,6 @@ export async function fetchUniversityFeatures(universityId: string): Promise<Uni
     landingPageEndpoints.universityFeatures(universityId),
     { universityId },
   );
-  console.log(response.data);
   return (response.data ?? [])
     .map((item) => item.feature)
     .filter((feature): feature is UniversityFeature => Boolean(feature));
