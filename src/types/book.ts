@@ -1,63 +1,102 @@
-export type BookCategory = "Textbook" | "Notebook" | "Reference" | "Novel" | "Lab Manual" | "Study Guide" | "Question Bank" | "Other";
-export type BookCondition = "New" | "Like New" | "Good" | "Acceptable";
-export type ListingType = "Sell" | "Rent";
-export type FilterType = "All" | "For Sale" | "For Rent";
+/** API-aligned book marketplace types (GET /user/books, creator CRUD). */
 
-export interface Book {
-    id: string;
-    title: string;
-    author: string;
-    category: BookCategory;
-    condition: BookCondition;
-    listingType: ListingType;
-    sellingPrice?: number;
-    originalPrice?: number;
-    rentalPrice?: number;
-    description: string;
-    department: string;
-    semester: string;
-    location: string;
-    postedTime: string;
-    subject: string;
-    seller: SellerInfo;
-    images?: string[];
-}
+export type BookType = "Selling" | "Lending" | "Donation";
+export type BookQuality = "New" | "Like New" | "Good" | "Acceptable";
 
-export interface SellerInfo {
-    id: string;
-    name: string;
-    phone: string;
-    email: string;
-    rating?: number;
-    totalListings?: number;
-}
+export type BookCategoryRef = {
+  _id: string;
+  type?: string;
+  title: string;
+  icon?: string;
+  description?: string;
+};
 
-export interface BookListingForm {
-    listingType: ListingType;
-    title: string;
-    author: string;
-    subject: string;
-    category: BookCategory;
-    condition: BookCondition;
-    description: string;
-    sellingPrice?: number;
-    originalPrice?: number;
-    rentalPrice?: number;
-    department: string;
-    semester: string;
-    location: string;
-    contactName: string;
-    contactPhone: string;
-    contactEmail: string;
-}
+export type BookPhoto = {
+  url: string;
+  key?: string;
+  size?: number;
+  _id?: string;
+};
 
-export interface Department {
-    id: string;
-    name: string;
-}
+export type BookListing = {
+  _id: string;
+  title: string;
+  author?: string;
+  edition?: string;
+  slug?: string;
+  photos: BookPhoto[];
+  category?: BookCategoryRef | string;
+  subject?: string;
+  university?: unknown;
+  address?: string | { _id: string; address?: string; type?: string };
+  buyingYear?: string;
+  description?: string;
+  type: BookType;
+  status?: string;
+  sellerType?: string;
+  publisher?: string;
+  department?: string | { _id: string; name?: string; code?: string };
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  quality?: BookQuality | string;
+  price: number;
+  discountPrice?: number;
+  quantity?: number;
+  safekeepingCharge?: number;
+  availabilityStatus?: string;
+  borrowDuration?: number;
+  maxExtensionDuration?: number;
+  allowsExtension?: boolean;
+  rating?: number;
+  reviewCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
-export interface BookListingResponse {
-    success: boolean;
-    message: string;
-    data?: Book;
-}
+export type BookPaginatedResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: BookListing[];
+};
+
+export type BookPhotoPayload = {
+  url: string;
+  key: string;
+  size: number;
+};
+
+/** Shared create/update body fields matching API DTOs */
+export type CreateBookPayload = {
+  title: string;
+  author?: string;
+  addressId: string;
+  edition?: string;
+  photos: BookPhotoPayload[];
+  category: string;
+  subject?: string;
+  buyingYear: string;
+  description: string;
+  type: BookType;
+  sellerType?: string;
+  publisher?: string;
+  department: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail?: string;
+  quality: BookQuality;
+  price: number;
+  discountPrice?: number;
+  safekeepingCharge?: number;
+  quantity: number;
+  returnDate?: string;
+  borrowDuration?: number;
+  maxExtensionDuration?: number;
+  allowsExtension?: boolean;
+  availabilityStatus?: string;
+};
+
+export type UpdateBookPayload = Partial<Omit<CreateBookPayload, "photos">> & {
+  photos?: BookPhotoPayload[];
+};

@@ -1,0 +1,354 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useAppState } from "@/contexts/AppStateContext";
+import { fetchBookCategories, fetchCreatorOwnBooks } from "@/services/books";
+import type { BookListing } from "@/types/book";
+import type { BuySellCategory } from "@/types/buy-sell";
+import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+
+const BOOK_TYPES = ["", "Selling", "Lending", "Donation"] as const;
+const QUALITIES = ["", "New", "Like New", "Good", "Acceptable"] as const;
+function formatMoney(n: number) {
+  return `৳${n.toLocaleString()}`;
+}
+
+function typeLabel(t: string) {
+  if (t === "Selling") return "Sell";
+  if (t === "Lending") return "Lend";
+  if (t === "Donation") return "Donate";
+  return t || "—";
+}
+
+export default function MyBooksPage() {
+  const t = useTranslations("common");
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
+  const { state } = useAppState();
+
+  const universityId =
+    state.university.selected?._id ?? state.user.profile?.university?._id;
+
+  const [categories, setCategories] = useState<BuySellCategory[]>([]);
+  const [items, setItems] = useState<BookListing[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [searchKey, setSearchKey] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [bookType, setBookType] = useState("");
+  const [quality, setQuality] = useState("");
+
+  const limit = 15;
+
+  const buildApiParams = (nextPage: number) => ({
+    page: nextPage,
+    limit,
+    searchKey: searchKey.trim() || undefined,
+    category: categoryId || undefined,
+    type: bookType || undefined,
+    quality: quality || undefined,
+    university: universityId,
+  });
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetchBookCategories();
+        setCategories(res.data ?? []);
+      } catch {
+        setCategories([]);
+      }
+    })();
+  }, []);
+
+  const fetchPage = async (nextPage: number, append: boolean) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
+    setError(null);
+    try {
+      const res = await fetchCreatorOwnBooks(buildApiParams(nextPage));
+      console.log(res);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setTotal(typeof res.total === "number" ? res.total : rows.length);
+      setItems((prev) => (append ? [...prev, ...rows] : rows));
+      setPage(nextPage);
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : tt("myBooks.failedLoad", "Failed to load books."),
+      );
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchPage(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- apply filters manually
+  }, []);
+
+  const hasMore = items.length < total;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-gray-900">
+            {tt("myBooks.title", "My Books")}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {tt("myBooks.subtitle", "Your textbook listings.")}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/my-books/new"
+            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+          >
+            {tt("myBooks.newListing", "List a book")}
+          </Link>
+          <Link
+            href="/books"
+            className="text-sm font-semibold text-[#00A651] hover:underline"
+          >
+            {tt("myBooks.browse", "Browse books")} →
+          </Link>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex min-w-[200px] flex-[2] flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">
+              {tt("myBooks.search", "Search")}
+            </span>
+            <input
+              type="search"
+              placeholder={tt(
+                "myBooks.searchPlaceholder",
+                "Title, author, description…",
+              )}
+              value={searchKey}
+              onChange={(e) => setSearchKey(e.target.value)}
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+            />
+          </label>
+          <label className="flex min-w-[160px] flex-1 flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">
+              {tt("myBooks.category", "Category")}
+            </span>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+            >
+              <option value="">{tt("myBooks.all", "All")}</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex min-w-[130px] flex-1 flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">
+              {tt("myBooks.type", "Type")}
+            </span>
+            <select
+              value={bookType}
+              onChange={(e) => setBookType(e.target.value)}
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+            >
+              {BOOK_TYPES.map((x) => (
+                <option key={x || "any-type"} value={x}>
+                  {x ? typeLabel(x) : tt("myBooks.any", "Any")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex min-w-[130px] flex-1 flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">
+              {tt("myBooks.quality", "Quality")}
+            </span>
+            <select
+              value={quality}
+              onChange={(e) => setQuality(e.target.value)}
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+            >
+              {QUALITIES.map((q) => (
+                <option key={q || "any-q"} value={q}>
+                  {q || tt("myBooks.any", "Any")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => void fetchPage(1, false)}
+            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+          >
+            {tt("myBooks.apply", "Apply")}
+          </button>
+        </div>
+      </div>
+
+      {error ? (
+        <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
+
+      {loading ? (
+        <p className="text-sm text-gray-500">
+          {tt("myBooks.loading", "Loading your books…")}
+        </p>
+      ) : items.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-12 text-center text-sm text-gray-500">
+          {tt(
+            "myBooks.empty",
+            "No books yet. List a textbook to share with your campus.",
+          )}
+        </p>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/90 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="w-16 px-4 py-3 font-medium" aria-hidden />
+                  <th className="px-4 py-3 font-medium">
+                    {tt("myBooks.book", "Book")}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {tt("myBooks.type", "Type")}
+                  </th>
+                  <th className="px-4 py-3 font-medium text-right">
+                    {tt("myBooks.price", "Price")}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {tt("myBooks.status", "Status")}
+                  </th>
+                  <th className="w-28 px-4 py-3 font-medium" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {items.map((item) => {
+                  const photo = item.photos?.[0]?.url;
+                  const updated = item.updatedAt
+                    ? new Date(item.updatedAt).toLocaleDateString()
+                    : item.createdAt
+                      ? new Date(item.createdAt).toLocaleDateString()
+                      : "—";
+                  const showPrice =
+                    item.type === "Donation" || item.price === 0;
+                  return (
+                    <tr key={item._id} className="bg-white hover:bg-gray-50/60">
+                      <td className="px-4 py-2.5">
+                        <div className="relative h-11 w-11 overflow-hidden rounded-lg bg-gray-100">
+                          {photo ? (
+                            <Image
+                              src={photo}
+                              alt={item.title}
+                              fill
+                              className="object-cover"
+                              sizes="44px"
+                              unoptimized={shouldUnoptimizeRemoteImage(photo)}
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-xs text-gray-300">
+                              —
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="max-w-[280px] px-4 py-2.5">
+                        <p className="line-clamp-2 font-medium text-gray-900">
+                          {item.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          {tt("myBooks.updated", "Updated")} {updated}
+                        </p>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                        {typeLabel(item.type)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#00A651]">
+                        {showPrice ? (
+                          <span>Free</span>
+                        ) : (
+                          <>
+                            {item.discountPrice != null &&
+                            item.discountPrice < item.price ? (
+                              <>
+                                <span>
+                                  ৳{item.discountPrice.toLocaleString()}
+                                </span>
+                                <span className="ml-1 text-xs font-normal text-gray-400 line-through">
+                                  ৳{item.price.toLocaleString()}
+                                </span>
+                              </>
+                            ) : (
+                              formatMoney(item.price)
+                            )}
+                          </>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        {item.status ? (
+                          <span className="inline-block rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
+                            {item.status}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
+                        <Link
+                          href={`/my-books/${item._id}/edit`}
+                          className="font-semibold text-gray-800 hover:underline"
+                        >
+                          {tt("myBooks.edit", "Edit")}
+                        </Link>
+                        <span className="mx-2 text-gray-300" aria-hidden>
+                          ·
+                        </span>
+                        <Link
+                          href={`/books/${item._id}`}
+                          className="font-semibold text-[#00A651] hover:underline"
+                        >
+                          {tt("myBooks.view", "View")}
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {hasMore && !loading ? (
+        <button
+          type="button"
+          disabled={loadingMore}
+          onClick={() => void fetchPage(page + 1, true)}
+          className="w-full rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+        >
+          {loadingMore
+            ? tt("myBooks.loadingShort", "Loading…")
+            : tt("myBooks.loadMore", "Load more")}
+        </button>
+      ) : null}
+    </div>
+  );
+}

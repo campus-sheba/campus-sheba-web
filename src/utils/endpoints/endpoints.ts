@@ -81,13 +81,23 @@ export const bookEndpoints = {
     creatorLend: `${baseURL}/creator/books/lend`,
     creatorDonate: `${baseURL}/creator/books/donate`,
     creatorOwn: `${baseURL}/creator/books/own`,
-    creatorById: (bookId: string) => `${baseURL}/creator/books/${bookId}`,
+    creatorById: (bookId: string) => `${baseURL}/creator/books/${encodeURIComponent(bookId)}`,
     userBase: `${baseURL}/user/books`,
     userBorrowable: `${baseURL}/user/books/borrowable`,
     userMyListed: `${baseURL}/user/books/my-listed`,
     userBorrowed: `${baseURL}/user/books/borrowed`,
-    userById: (bookId: string) => `${baseURL}/user/books/${bookId}`,
-    borrowingRequest: `${baseURL}/book-borrowing/request`,
+    userById: (bookId: string) => `${baseURL}/user/books/${encodeURIComponent(bookId)}`,
+};
+
+export const bookBorrowingEndpoints = {
+    request: `${baseURL}/book-borrowing/request`,
+    respond: (id: string) => `${baseURL}/book-borrowing/respond/${encodeURIComponent(id)}`,
+    returnBook: (id: string) => `${baseURL}/book-borrowing/return/${encodeURIComponent(id)}`,
+    extendRequest: (id: string) => `${baseURL}/book-borrowing/extend/${encodeURIComponent(id)}`,
+    extendRespond: (borrowId: string, extendId: string) =>
+        `${baseURL}/book-borrowing/extend/${encodeURIComponent(borrowId)}/${encodeURIComponent(extendId)}`,
+    borrowed: `${baseURL}/book-borrowing/borrowed`,
+    lent: `${baseURL}/book-borrowing/lent`,
 };
 
 export const buySellEndpoints = {
