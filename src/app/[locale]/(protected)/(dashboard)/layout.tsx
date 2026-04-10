@@ -6,7 +6,6 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   let user = null;
   try {
     const response = await getMe();
@@ -20,7 +19,9 @@ export default async function DashboardLayout({
       <div className="cs-container py-6 lg:h-full lg:py-6">
         <div className="flex gap-6 items-start lg:h-full">
           <DashboardSidebar user={user} />
-          <main className="flex-1 min-w-0 lg:h-full lg:overflow-y-auto lg:pr-1 scrollbar-hide">{children}</main>
+          <main className="flex-1 min-w-0 lg:h-full lg:overflow-y-auto lg:pr-1 scrollbar-hide">
+            {children}
+          </main>
         </div>
       </div>
     </div>

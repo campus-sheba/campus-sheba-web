@@ -32,6 +32,11 @@ function CategoryListingsSection({
     category: category._id,
   });
 
+  // Do not render category section when it has no listings.
+  if (inView && !isLoading && !error && items.length === 0) {
+    return null;
+  }
+
   return (
     <div ref={ref}>
       <SectionWrapper spacing="sm" background="transparent" className="my-0">
@@ -57,10 +62,6 @@ function CategoryListingsSection({
               <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
             ))}
           </div>
-        ) : items.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
-            No listings found.
-          </p>
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {items.slice(0, 8).map((item) => (

@@ -3,23 +3,13 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  BookOpen,
-  Droplets,
-  GraduationCap,
-  Briefcase,
-  Heart,
-  Archive,
+  UserRound,
   MapPin,
-  Wallet,
-  Settings,
-  Bike,
+  ClipboardList,
+  Tag,
   LogOut,
   X,
   Menu,
-  ClipboardList,
-  Tag,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -55,16 +45,10 @@ type NavItem = {
 
 const primaryItems: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "Profile",
     href: "/profile",
-    icon: LayoutDashboard,
+    icon: UserRound,
     color: "text-gray-600",
-  },
-  {
-    label: "My Shop",
-    href: "/my-shop",
-    icon: ShoppingBag,
-    color: "text-pink-600",
   },
   {
     label: "Addresses",
@@ -78,71 +62,11 @@ const primaryItems: NavItem[] = [
     icon: ClipboardList,
     color: "text-indigo-600",
   },
-  { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
-
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    color: "text-gray-500",
-  },
-];
-
-const serviceItems: NavItem[] = [
-  {
-    label: "Lost & Found",
-    href: "/my-lost-found",
-    icon: MapPin,
-    color: "text-yellow-600",
-  },
-  {
-    label: "Delivery",
-    href: "/my-delivery",
-    icon: Bike,
-    color: "text-purple-600",
-  },
-  {
-    label: "Marketplace",
-    href: "/my-marketplace",
-    icon: ShoppingBag,
-    color: "text-emerald-600",
-  },
   {
     label: "My Buy & Sell",
     href: "/my-buy-sell",
     icon: Tag,
     color: "text-teal-600",
-  },
-  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
-  {
-    label: "Blood Requests",
-    href: "/my-blood-requests",
-    icon: Droplets,
-    color: "text-red-600",
-  },
-  {
-    label: "Tuition",
-    href: "/my-tuition",
-    icon: GraduationCap,
-    color: "text-amber-600",
-  },
-  {
-    label: "Job Applications",
-    href: "/my-job-applications",
-    icon: Briefcase,
-    color: "text-sky-600",
-  },
-  {
-    label: "Donations",
-    href: "/my-donations",
-    icon: Heart,
-    color: "text-green-600",
-  },
-  {
-    label: "Parcels",
-    href: "/my-parcels",
-    icon: Archive,
-    color: "text-violet-600",
   },
 ];
 
@@ -228,18 +152,11 @@ export default function DashboardSidebar({ user }: Props) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3">
         <div className="space-y-0.5">{primaryItems.map(renderNavItem)}</div>
-
-        <div className="pt-3 mt-3 border-t border-gray-100">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
-            Service Centers
-          </p>
-          <div className="space-y-0.5">{serviceItems.map(renderNavItem)}</div>
-        </div>
       </nav>
 
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
-        <form action={logoutAction.bind(null, locale)} method="POST">
+        <form action={logoutAction.bind(null, locale)}>
           <Button
             type="submit"
             variant="ghost"

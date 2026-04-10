@@ -1,9 +1,7 @@
-
 import "@/app/globals.css";
 
-
 import type { Metadata } from "next";
-import { Sora, Inter } from "next/font/google";
+import { Sora, Inter, Montserrat } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -15,7 +13,6 @@ import Footer from "@/components/siteSettings/footer/Footer";
 import CartButton from "@/modules/cart/CartButton";
 import { Toaster } from "sonner";
 import { LayoutClientProviders } from "@/components/providers/LayoutClientProviders";
-
 
 const sora = Sora({
   variable: "--font-sora",
@@ -31,6 +28,12 @@ const inter = Inter({
   display: "swap",
 });
 
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Campus Sheba — Your Campus. Your World.",
@@ -39,9 +42,16 @@ export const metadata: Metadata = {
   description:
     "Campus Sheba is a 360-degree campus lifestyle platform connecting students, educators, and service providers in one seamless ecosystem. Food delivery, books, marketplace, blood bank, and more.",
   keywords: [
-    "campus sheba", "student app", "campus delivery", "book exchange",
-    "blood bank", "student marketplace", "tuition", "campus services",
-    "bangladesh university", "student entrepreneur",
+    "campus sheba",
+    "student app",
+    "campus delivery",
+    "book exchange",
+    "blood bank",
+    "student marketplace",
+    "tuition",
+    "campus services",
+    "bangladesh university",
+    "student entrepreneur",
   ],
   authors: [{ name: "Campus Sheba Team" }],
   creator: "Campus Sheba",
@@ -84,13 +94,15 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={` ${inter.variable}`}>
+    <html lang={locale} className={`  ${montserrat.className}  `}>
       <body className="antialiased font-body bg-white text-neutral-900">
         <NextIntlClientProvider messages={messages}>
           <LayoutClientProviders locale={locale}>
             <Suspense fallback={<Loading />}>
               <Navbar locale={locale} />
-              <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">{children}</main>
+              <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">
+                {children}
+              </main>
               <Footer />
               <CartButton />
             </Suspense>
