@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Home, LayoutGrid, MapPin, Menu, Search, ShoppingCart, User, X } from "lucide-react";
+import {
+  Home,
+  LayoutGrid,
+  MapPin,
+  Menu,
+  Search,
+  ShoppingCart,
+  User,
+  X,
+} from "lucide-react";
 import Logo from "./Logo";
 import type { ServiceMenuItem } from "./navbar.constants";
 
@@ -61,7 +70,9 @@ export function NavbarMobileBottom({
           href="/marketplace"
           id="bottom-nav-service"
           className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
-            pathname?.includes("/marketplace") ? "text-[#E30A13]" : "text-neutral-600"
+            pathname?.includes("/marketplace")
+              ? "text-[#E30A13]"
+              : "text-neutral-600"
           }`}
         >
           <LayoutGrid className="w-5 h-5" strokeWidth={2} />
@@ -87,7 +98,9 @@ export function NavbarMobileBottom({
             href="/profile"
             id="bottom-nav-profile"
             className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
-              pathname?.includes("/profile") ? "text-[#E30A13]" : "text-neutral-600"
+              pathname?.includes("/profile")
+                ? "text-[#E30A13]"
+                : "text-neutral-600"
             }`}
           >
             <User className="w-5 h-5" strokeWidth={2} />
@@ -141,15 +154,22 @@ export function NavbarMobileDrawer({
 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
-          <MapPin className="w-4 h-4 text-[#00A651] flex-shrink-0" strokeWidth={2.5} />
+          <MapPin
+            className="w-4 h-4 text-[#00A651] flex-shrink-0"
+            strokeWidth={2.5}
+          />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider leading-none mb-0.5">
               Your Campus
             </p>
             {selectedUniversityName ? (
-              <p className="text-xs font-semibold text-neutral-800 truncate">{selectedUniversityName}</p>
+              <p className="text-xs font-semibold text-neutral-800 truncate">
+                {selectedUniversityName}
+              </p>
             ) : (
-              <p className="text-xs font-semibold text-amber-500">No university selected yet</p>
+              <p className="text-xs font-semibold text-amber-500">
+                No university selected yet
+              </p>
             )}
           </div>
         </div>
@@ -165,7 +185,7 @@ export function NavbarMobileDrawer({
         </div>
 
         <div className="space-y-1">
-          {navLinks.map((link) => (
+          {/* {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href.startsWith("#") ? link.href : `/${link.href}`}
@@ -175,7 +195,7 @@ export function NavbarMobileDrawer({
             >
               {link.label}
             </Link>
-          ))}
+          ))} */}
         </div>
 
         <div>
@@ -191,10 +211,17 @@ export function NavbarMobileDrawer({
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2.5 p-2.5 rounded-xl bg-neutral-50 hover:bg-neutral-100 transition-colors"
               >
-                <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center flex-shrink-0`}>
-                  <item.icon className={`w-4 h-4 ${item.color}`} strokeWidth={2} />
+                <div
+                  className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center flex-shrink-0`}
+                >
+                  <item.icon
+                    className={`w-4 h-4 ${item.color}`}
+                    strokeWidth={2}
+                  />
                 </div>
-                <span className="text-xs font-semibold text-neutral-700 leading-tight">{item.label}</span>
+                <span className="text-xs font-semibold text-neutral-700 leading-tight">
+                  {item.label}
+                </span>
               </Link>
             ))}
           </div>

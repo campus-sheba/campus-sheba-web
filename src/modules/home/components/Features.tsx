@@ -64,7 +64,7 @@ export function FeaturesSection() {
 
   return (
     <ContentWrapper maxWidth="container" padding="none">
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-8">
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-7">
         {dynamicModules.map((module) => (
           <ModuleButton
             key={module.id}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, User, Wallet, ShoppingCart } from "lucide-react";
+import { ChevronDown, Search, User, ShoppingCart } from "lucide-react";
 import Logo from "./Logo";
 import CampusTopbar from "./CampusTopbar";
 import {
@@ -19,21 +19,22 @@ import {
   NavbarMobileDrawer,
   NavbarMobileToggle,
 } from "./NavbarMobileSections";
+import { useTranslations } from "next-intl";
 
 // ─── Navbar Component ─────────────────────────────────────────
 const Navbar = ({ locale }: { locale: string }) => {
+  const t = useTranslations("common.navbar");
   const pathname = usePathname();
-  const router = useRouter();
   const { state: appState, dispatch: appDispatch } = useAppState();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   // Use global auth state instead of local state
   const isLoggedIn = appState.auth.isAuthenticated;
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [walletPoints] = useState(120);
   const [servicesMenu, setServicesMenu] = useState(fallbackServicesMenu);
   const servicesRef = useRef<HTMLDivElement>(null);
   const selectedUniversityId = appState.university.selected?._id;
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -100,7 +101,7 @@ const Navbar = ({ locale }: { locale: string }) => {
 
   return (
     <>
-      <CampusTopbar locale={locale} onLanguageChange={handleLanguageChange} />
+      <CampusTopbar />
 
       {/* ─── Main Navbar ─── */}
       <nav
@@ -127,15 +128,18 @@ const Navbar = ({ locale }: { locale: string }) => {
             >
               <Logo />
             </Link>
+          </div>
+          {/* ─── Desktop Right CTAs ─── */}
+          <div className="hidden lg:flex items-center gap-3">
             {/* ─── Desktop Navigation ─── */}
-            <div className="hidden lg:flex items-center gap-1 ">
-              <div className="relative w-[320px] xl:w-[480px]">
+            <div className="hidden lg:flex items-center gap-1 me-5">
+              <div className="relative w-[320px] xl:w-[680px]">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="text"
-                  placeholder="Search services, shops, products..."
+                  placeholder={t("searchPlaceholder")}
                   className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-3 text-sm text-neutral-700 outline-none transition-all placeholder:text-neutral-400 focus:border-[#E30A13]/50 focus:ring-2 focus:ring-[#E30A13]/15"
-                  aria-label="Search campus services"
+                  aria-label={t("searchAria")}
                 />
               </div>
               {/* Primary Links */}
@@ -153,7 +157,7 @@ const Navbar = ({ locale }: { locale: string }) => {
                   aria-expanded={servicesOpen}
                   aria-haspopup="true"
                 >
-                  Services
+                  {t("services")}
                   <ChevronDown
                     className={`w-4 h-4 transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`}
                   />
@@ -168,7 +172,7 @@ const Navbar = ({ locale }: { locale: string }) => {
                   >
                     <div className="col-span-2 mb-1">
                       <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                        All Services
+                        {t("allServices")}
                       </p>
                     </div>
 
@@ -203,7 +207,7 @@ const Navbar = ({ locale }: { locale: string }) => {
                     {/* Footer CTA */}
                     <div className="col-span-2 mt-2 pt-3 border-t border-neutral-100 flex items-center justify-between">
                       <p className="text-xs text-neutral-400">
-                        Available at 3+ universities in Bangladesh
+                        {t("availableAtUniversities")}
                       </p>
                       <Link
                         href={isLoggedIn ? `/profile` : "#"}
@@ -220,14 +224,14 @@ const Navbar = ({ locale }: { locale: string }) => {
                         className="btn-primary text-xs px-4 py-2"
                         id="nav-services-cta"
                       >
-                        {isLoggedIn ? "Go to Profile" : "Get Started Free"}
+                        {isLoggedIn ? t("goToProfile") : t("getStartedFree")}
                       </Link>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center gap-1">
+              {/* <div className="flex items-center gap-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.label}
@@ -241,19 +245,24 @@ const Navbar = ({ locale }: { locale: string }) => {
                     {link.label}
                   </Link>
                 ))}
-              </div>
+              </div> */}
             </div>
-          </div>
-          {/* ─── Desktop Right CTAs ─── */}
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="w-px h-5 bg-neutral-200" />
-
+            {/* <div className="w-px h-5 bg-neutral-200" /> */}
+            {/* cart icon */}
+            <Link
+              href="/cart"
+              id="nav-cart-btn"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-green-DEFAULT/30 text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
+            >
+              <ShoppingCart className="h-5 w-5" strokeWidth={2} />
+            </Link>
             {isLoggedIn ? (
               <Link
                 href={`/profile`}
                 id="nav-profile-btn"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-green-DEFAULT/30 text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
                 title="Profile"
+                aria-label={t("profile")}
               >
                 <User className="h-4.5 w-4.5" />
               </Link>
@@ -269,10 +278,24 @@ const Navbar = ({ locale }: { locale: string }) => {
                   id="nav-login-btn"
                   className="inline-flex items-center justify-center rounded-xl border border-brand-green-DEFAULT/30 px-4 py-2 text-sm font-semibold text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
                 >
-                  Log In
+                  {t("login")}
                 </button>
               </>
             )}
+            <select
+              value={locale}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="text-xs font-medium text-neutral-500 bg-transparent border-none focus:outline-none cursor-pointer hover:text-neutral-900 transition-colors appearance-none"
+              aria-label={t("selectLanguage")}
+              id="topbar-language-select"
+            >
+              <option value="en" className="bg-white text-neutral-900">
+                EN
+              </option>
+              <option value="bn" className="bg-white text-neutral-900">
+                বাং
+              </option>
+            </select>
           </div>
 
           {/* ─── Mobile Right: logo + bar icon only ─── */}

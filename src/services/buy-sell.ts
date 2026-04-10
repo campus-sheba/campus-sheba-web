@@ -149,7 +149,6 @@ export async function fetchBuySellCategories(
   const res = await getPublic<unknown>(`${userEndpoints.categories}?${q.toString()}`, {
     includeUniversity: false,
   });
-  console.log(res);
   return unwrapBuySellCategoriesResponse(res);
 }
 

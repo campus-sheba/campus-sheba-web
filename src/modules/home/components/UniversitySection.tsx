@@ -2,8 +2,10 @@ import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { fetchUniversities } from "@/services/universities";
 import { Building2, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function UniversitiesSection() {
+  const t = useTranslations("common.home");
   const [universities, setUniversities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,7 +35,7 @@ export function UniversitiesSection() {
     >
       <ContentWrapper maxWidth="container" padding="none">
         <p className="mb-8 text-center text-xs font-semibold uppercase tracking-widest text-neutral-400">
-          Serving Students at
+          {t("servingStudentsAt")}
         </p>
         {isLoading ? (
           <div className="flex flex-wrap justify-center gap-3">
@@ -60,7 +62,7 @@ export function UniversitiesSection() {
             <div className="flex items-center gap-2 rounded-full border border-brand-green-DEFAULT/30 bg-brand-green-50 px-5 py-2 md:py-2.5">
               <Globe className="h-3.5 w-3.5 text-brand-green-DEFAULT" />
               <span className="text-xs font-semibold text-brand-green-700 md:text-sm">
-                + More Coming
+                {t("moreComing")}
               </span>
             </div>
           </div>

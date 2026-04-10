@@ -1,7 +1,7 @@
 import "@/app/globals.css";
 
 import type { Metadata } from "next";
-import { Sora, Inter, Montserrat } from "next/font/google";
+import { Urbanist } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -14,21 +14,7 @@ import CartButton from "@/modules/cart/CartButton";
 import { Toaster } from "sonner";
 import { LayoutClientProviders } from "@/components/providers/LayoutClientProviders";
 
-const sora = Sora({
-  variable: "--font-sora",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const montserrat = Montserrat({
+const urbanist = Urbanist({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
@@ -94,7 +80,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`  ${montserrat.className}  `}>
+    <html lang={locale} className={`  ${urbanist.className}  `}>
       <body className="antialiased font-body bg-white text-neutral-900">
         <NextIntlClientProvider messages={messages}>
           <LayoutClientProviders locale={locale}>

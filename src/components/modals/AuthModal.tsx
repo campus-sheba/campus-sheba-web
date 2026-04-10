@@ -13,6 +13,7 @@ import { University, UserProfile } from "@/types/global";
 import { Button, Paragraph, Title } from "@/components/ui";
 import { SectionWrapper } from "@/components/wrappers";
 import { cn } from "@/utils/utils";
+import { useTranslations } from "next-intl";
 
 type AuthTab = "login" | "signup";
 type SignupStep = "phone" | "otp" | "details";
@@ -43,15 +44,23 @@ function FieldError({ message }: FieldErrorProps) {
 }
 
 type PhoneInputFieldProps = {
+  label: string;
+  placeholder: string;
   value: string;
   error?: string;
   onChange: (value: string) => void;
 };
 
-function PhoneInputField({ value, error, onChange }: PhoneInputFieldProps) {
+function PhoneInputField({
+  label,
+  placeholder,
+  value,
+  error,
+  onChange,
+}: PhoneInputFieldProps) {
   return (
     <div>
-      <FieldLabel>Phone Number</FieldLabel>
+      <FieldLabel>{label}</FieldLabel>
       <div className="flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100">
         <span className="inline-flex items-center gap-1 border-r border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm font-semibold text-neutral-700">
           <Phone className="h-4 w-4 text-neutral-400" />
@@ -61,7 +70,7 @@ function PhoneInputField({ value, error, onChange }: PhoneInputFieldProps) {
           type="tel"
           inputMode="numeric"
           pattern="[0-9]*"
-          placeholder="01XXXXXXXXX"
+          placeholder={placeholder}
           className="w-full px-3 py-2.5 text-sm outline-none"
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -136,16 +145,16 @@ function AuthSubmitButton({
   );
 }
 
-const validatePhoneNumber = (phoneDigits: string) => {
-  if (!phoneDigits) return "Phone number is required";
-  if (phoneDigits.length !== 11) return "Phone number must be 11 digits";
+const validatePhoneNumber = (phoneDigits: string, requiredMsg: string, invalidMsg: string) => {
+  if (!phoneDigits) return requiredMsg;
+  if (phoneDigits.length !== 11) return invalidMsg;
   return "";
 };
 
-const validatePin = (pin: string, minimumLength = 4) => {
-  if (!pin) return "PIN is required";
+const validatePin = (pin: string, requiredMsg: string, minMsg: string, minimumLength = 4) => {
+  if (!pin) return requiredMsg;
   if (pin.length < minimumLength) {
-    return `PIN must be at least ${minimumLength} digits`;
+    return minMsg.replace("{min}", String(minimumLength));
   }
   return "";
 };
@@ -161,6 +170,7 @@ export default function AuthModal({
   defaultTab = "login",
   onClose,
 }: AuthModalProps) {
+  const t = useTranslations("common.authModal");
   const { state, login, selectUniversity } = useAppState();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<AuthTab>(defaultTab);
@@ -285,8 +295,16 @@ export default function AuthModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     const normalizedPhone = normalizePhoneDigits(loginForm.phone);
-    const phoneError = validatePhoneNumber(normalizedPhone);
-    const pinError = validatePin(loginForm.pin);
+    const phoneError = validatePhoneNumber(
+      normalizedPhone,
+      t("phoneRequired"),
+      t("phoneInvalid"),
+    );
+    const pinError = validatePin(
+      loginForm.pin,
+      t("pinRequired"),
+      t("pinMin"),
+    );
 
     if (phoneError) newErrors.phone = phoneError;
     if (pinError) newErrors.pin = pinError;
@@ -326,7 +344,11 @@ export default function AuthModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     const normalizedPhone = normalizePhoneDigits(signupForm.phone);
-    const phoneError = validatePhoneNumber(normalizedPhone);
+    const phoneError = validatePhoneNumber(
+      normalizedPhone,
+      t("phoneRequired"),
+      t("phoneInvalid"),
+    );
 
     if (phoneError) newErrors.phone = phoneError;
     if (Object.keys(newErrors).length === 0) {
@@ -356,9 +378,9 @@ export default function AuthModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    if (!signupForm.otp) newErrors.otp = "OTP is required";
+    if (!signupForm.otp) newErrors.otp = t("otpRequired");
     if (signupForm.otp && signupForm.otp.length !== OTP_LENGTH)
-      newErrors.otp = `OTP must be ${OTP_LENGTH} digits`;
+      newErrors.otp = t("otpMustBe", { length: OTP_LENGTH });
 
     if (Object.keys(newErrors).length === 0) {
       setErrors({});
@@ -385,15 +407,19 @@ export default function AuthModal({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    if (!signupForm.name) newErrors.name = "Name is required";
-    const pinError = validatePin(signupForm.pin);
+    if (!signupForm.name) newErrors.name = t("nameRequired");
+    const pinError = validatePin(
+      signupForm.pin,
+      t("pinRequired"),
+      t("pinMin"),
+    );
     if (pinError) newErrors.pin = pinError;
     if (!signupForm.confirmPin)
-      newErrors.confirmPin = "Confirm PIN is required";
+      newErrors.confirmPin = t("confirmPinRequired");
     if (signupForm.pin !== signupForm.confirmPin)
-      newErrors.confirmPin = "PINs do not match";
+      newErrors.confirmPin = t("pinsNoMatch");
     if (!state.university.selected?._id) {
-      newErrors.general = "Please select your university before signup.";
+      newErrors.general = t("selectUniversityBeforeSignup");
     }
 
     if (Object.keys(newErrors).length === 0) {
@@ -451,6 +477,7 @@ export default function AuthModal({
               <button
                 onClick={() => setSignupStep("phone")}
                 className="text-neutral-600 hover:text-neutral-900"
+                aria-label={t("back")}
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -459,11 +486,12 @@ export default function AuthModal({
               <div />
             )}
             <Title as="h2" size="lg" weight="semibold" className="text-neutral-900">
-              {activeTab === "login" ? "Sign In" : "Create Account"}
+              {activeTab === "login" ? t("signIn") : t("createAccount")}
             </Title>
             <button
               onClick={onClose}
               className="text-neutral-400 hover:text-neutral-600"
+              aria-label={t("close")}
             >
               ✕
             </button>
@@ -475,6 +503,8 @@ export default function AuthModal({
           {activeTab === "login" && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <PhoneInputField
+                label={t("phoneNumber")}
+                placeholder={t("phonePlaceholder")}
                 value={loginForm.phone}
                 error={errors.phone}
                 onChange={(value) =>
@@ -486,7 +516,7 @@ export default function AuthModal({
               />
 
               <PinInputField
-                label="PIN"
+                label={t("pin")}
                 value={loginForm.pin}
                 error={errors.pin}
                 withIcon
@@ -499,8 +529,8 @@ export default function AuthModal({
 
               <AuthSubmitButton
                 isPending={isPending}
-                pendingText="Signing in..."
-                idleText="Sign In"
+                pendingText={t("signingIn")}
+                idleText={t("signIn")}
               />
             </form>
           )}
@@ -508,6 +538,8 @@ export default function AuthModal({
           {activeTab === "signup" && signupStep === "phone" && (
             <form onSubmit={handleSignupPhoneSubmit} className="space-y-4">
               <PhoneInputField
+                label={t("phoneNumber")}
+                placeholder={t("phonePlaceholder")}
                 value={signupForm.phone}
                 error={errors.phone}
                 onChange={(value) =>
@@ -520,8 +552,8 @@ export default function AuthModal({
 
               <AuthSubmitButton
                 isPending={isPending}
-                pendingText="Sending..."
-                idleText="Send OTP"
+                pendingText={t("sending")}
+                idleText={t("sendOtp")}
               />
             </form>
           )}
@@ -529,7 +561,7 @@ export default function AuthModal({
           {activeTab === "signup" && signupStep === "otp" && (
             <form onSubmit={handleSignupOtpSubmit} className="space-y-4">
               <div>
-                <FieldLabel>Enter OTP</FieldLabel>
+                <FieldLabel>{t("enterOtp")}</FieldLabel>
                 <div className="flex justify-between gap-2">
                   {Array.from({ length: OTP_LENGTH }).map((_, index) => {
                     const otpChars = signupForm.otp
@@ -560,8 +592,8 @@ export default function AuthModal({
 
               <AuthSubmitButton
                 isPending={isPending}
-                pendingText="Verifying..."
-                idleText="Verify OTP"
+                pendingText={t("verifying")}
+                idleText={t("verifyOtp")}
               />
             </form>
           )}
@@ -569,10 +601,10 @@ export default function AuthModal({
           {activeTab === "signup" && signupStep === "details" && (
             <form onSubmit={handleSignupDetailsSubmit} className="space-y-4">
               <div>
-                <FieldLabel>Full Name</FieldLabel>
+                <FieldLabel>{t("fullName")}</FieldLabel>
                 <input
                   type="text"
-                  placeholder="Your name"
+                  placeholder={t("yourName")}
                   className={cn(INPUT_BASE_CLASS, "px-4")}
                   value={signupForm.name}
                   onChange={(e) =>
@@ -583,7 +615,7 @@ export default function AuthModal({
               </div>
 
               <PinInputField
-                label="Create PIN"
+                label={t("createPin")}
                 value={signupForm.pin}
                 error={errors.pin}
                 onChange={(value) =>
@@ -592,7 +624,7 @@ export default function AuthModal({
               />
 
               <PinInputField
-                label="Confirm PIN"
+                label={t("confirmPin")}
                 value={signupForm.confirmPin}
                 error={errors.confirmPin}
                 onChange={(value) =>
@@ -602,8 +634,8 @@ export default function AuthModal({
 
               <AuthSubmitButton
                 isPending={isPending}
-                pendingText="Creating..."
-                idleText="Create Account"
+                pendingText={t("creating")}
+                idleText={t("createAccount")}
               />
 
               <FieldError message={errors.general} />
@@ -613,7 +645,7 @@ export default function AuthModal({
           {/* Tab Switcher */}
           {activeTab === "login" ? (
             <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
-              Don&apos;t have an account?{" "}
+              {t("dontHaveAccount")}{" "}
               <button
                 onClick={() => {
                   setActiveTab("signup");
@@ -621,12 +653,12 @@ export default function AuthModal({
                 }}
                 className="text-emerald-600 font-semibold hover:underline"
               >
-                Sign up
+                {t("signUp")}
               </button>
             </Paragraph>
           ) : (
             <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <button
                 onClick={() => {
                   setActiveTab("login");
@@ -634,7 +666,7 @@ export default function AuthModal({
                 }}
                 className="text-emerald-600 font-semibold hover:underline"
               >
-                Sign in
+                {t("signIn")}
               </button>
             </Paragraph>
           )}

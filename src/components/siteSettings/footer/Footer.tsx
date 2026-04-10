@@ -21,12 +21,14 @@ import {
   SOCIAL,
   SUPPORT_LINKS,
 } from "./footer.constants";
+import { useTranslations } from "next-intl";
 
 interface FooterProps {
   locale?: string;
 }
 
 const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
+  const t = useTranslations("common.footer");
   const currentYear = new Date().getFullYear();
   const [universities, setUniversities] = useState<string[]>(FALLBACK_UNIVERSITIES);
 
@@ -66,10 +68,10 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-xl text-white mb-1">
-                Stay in the loop
+                {t("stayInLoop")}
               </h3>
               <p className="text-sm text-white/50">
-                Get updates on new campuses, features, and student offers.
+                {t("newsletterSubtitle")}
               </p>
             </div>
             <form
@@ -94,7 +96,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                   background: "linear-gradient(135deg, #00A651, #00c460)",
                 }}
               >
-                Subscribe
+                {t("subscribe")}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
@@ -117,14 +119,13 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               <div className="leading-none bg-white p-2 rounded-lg">
                 <Logo />
                 <span className="text-[9px] font-medium text-brand-navy-DEFAULT tracking-widest uppercase">
-                  Your Campus. Your World.
+                  {t("tagline")}
                 </span>
               </div>
             </Link>
 
             <p className="text-sm text-white/50 leading-relaxed mb-6 max-w-[220px]">
-              A 360° campus lifestyle super-app connecting students, educators,
-              and service providers across Bangladesh.
+              {t("description")}
             </p>
 
             {/* Social Links */}
@@ -156,7 +157,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               </a>
               <div className="flex items-center gap-2 text-xs text-white/40">
                 <Globe className="w-3.5 h-3.5 flex-shrink-0 text-brand-green-DEFAULT" />
-                Serving all of Bangladesh
+                {t("servingBangladesh")}
               </div>
             </div>
           </div>
@@ -164,7 +165,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* Services Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              Services
+              {t("services")}
             </h4>
             <ul className="space-y-3">
               {SERVICES.map((s) => (
@@ -188,7 +189,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* Company Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              Company
+              {t("company")}
             </h4>
             <ul className="space-y-3">
               {COMPANY_LINKS.map((l) => (
@@ -208,7 +209,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* Support Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              Support
+              {t("support")}
             </h4>
             <ul className="space-y-3">
               {SUPPORT_LINKS.map((l) => (
@@ -227,7 +228,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
             {/* Universities */}
             <div className="mt-8">
               <h4 className="font-display font-semibold text-sm text-white mb-4 tracking-wide uppercase">
-                Partner Universities
+                {t("partnerUniversities")}
               </h4>
               <ul className="space-y-2">
                 {universities.map((u) => (
@@ -242,11 +243,10 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* App Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              Get the App
+              {t("getApp")}
             </h4>
             <p className="text-sm text-white/40 mb-4 leading-relaxed">
-              Available on iOS and Android with all features accessible on the
-              go.
+              {t("appDescription")}
             </p>
             <div className="space-y-2">
               <a
@@ -259,7 +259,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 </div>
                 <div>
                   <p className="text-[9px] text-white/30 leading-none">
-                    Download on the
+                    {t("downloadOn")}
                   </p>
                   <p className="text-sm font-semibold text-white leading-none mt-0.5">
                     App Store
@@ -276,7 +276,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 </div>
                 <div>
                   <p className="text-[9px] text-white/30 leading-none">
-                    Get it on
+                    {t("getItOn")}
                   </p>
                   <p className="text-sm font-semibold text-white leading-none mt-0.5">
                     Google Play
@@ -290,10 +290,10 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               <Shield className="w-4 h-4 text-brand-green-DEFAULT flex-shrink-0" />
               <div>
                 <p className="text-xs font-semibold text-brand-green-400">
-                  University Verified
+                  {t("universityVerified")}
                 </p>
                 <p className="text-[10px] text-white/30">
-                  Safe & trusted platform
+                  {t("safeTrusted")}
                 </p>
               </div>
             </div>
@@ -306,8 +306,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
         <ContentWrapper maxWidth="container" padding="none" className="py-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">
-              © {currentYear} Campus Sheba. All rights reserved. Made with care in
-              Bangladesh.
+              {t("copyright", { year: currentYear })}
             </p>
             <div className="flex items-center gap-4">
               <Link
@@ -315,7 +314,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 id="footer-bottom-privacy"
                 className="text-xs text-white/30 hover:text-white/60 transition-colors"
               >
-                Privacy
+                {t("privacy")}
               </Link>
               <span className="text-white/15">·</span>
               <Link
@@ -323,7 +322,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 id="footer-bottom-terms"
                 className="text-xs text-white/30 hover:text-white/60 transition-colors"
               >
-                Terms
+                {t("terms")}
               </Link>
               <span className="text-white/15">·</span>
               <Link
@@ -331,7 +330,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 id="footer-bottom-careers"
                 className="text-xs text-white/30 hover:text-white/60 transition-colors"
               >
-                Careers
+                {t("careers")}
               </Link>
             </div>
           </div>

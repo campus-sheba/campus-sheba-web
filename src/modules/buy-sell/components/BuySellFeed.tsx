@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Package } from "lucide-react";
 import { useAppState } from "@/contexts/AppStateContext";
+import { useTranslations } from "next-intl";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { Button } from "@/components/ui";
 import { fetchBuySellCategoriesPublic } from "@/services/buy-sell.public";
@@ -13,8 +14,10 @@ import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import type { BuySellCategory } from "@/types/buy-sell";
 
 export default function BuySellFeed() {
+  const t = useTranslations("common");
   const searchParams = useSearchParams();
   const { state } = useAppState();
+  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
   const universityId = state.university.selected?._id;
   const [searchInput, setSearchInput] = useState(() => searchParams.get("searchKey") || "");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -63,18 +66,17 @@ export default function BuySellFeed() {
       >
         <AppBreadcrumb
           items={[
-            { label: "Home", href: "/" },
-            { label: "Buy & Sell", href: "/buy-sell" },
+            { label: tt("buySellFeed.home", "Home"), href: "/" },
+            { label: tt("buySellFeed.buySell", "Buy & Sell"), href: "/buy-sell" },
           ]}
         />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900 md:text-2xl">
-              Buy &amp; Sell
+              {tt("buySellFeed.buySell", "Buy & Sell")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Browse listings from your campus. Select a university in the
-              header to load items.
+              {tt("buySellFeed.subtitle", "Browse listings from your campus. Select a university in the header to load items.")}
             </p>
           </div>
         </div>
@@ -87,7 +89,7 @@ export default function BuySellFeed() {
                 type="search"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search title, brand, or description…"
+                placeholder={tt("buySellFeed.searchPlaceholder", "Search title, brand, or description...")}
                 disabled={!universityId}
                 className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none ring-[#00A651]/20 focus:border-[#00A651] focus:ring-2 disabled:bg-gray-50"
               />
@@ -99,7 +101,7 @@ export default function BuySellFeed() {
               disabled={!universityId}
               className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
             >
-              <option value="">All categories</option>
+              <option value="">{tt("buySellFeed.allCategories", "All categories")}</option>
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.title}
@@ -113,18 +115,18 @@ export default function BuySellFeed() {
               disabled={!universityId}
               className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
             >
-              <option value="">Any condition</option>
-              <option value="New">New</option>
-              <option value="Used - Like New">Used - Like New</option>
-              <option value="Used - Good">Used - Good</option>
-              <option value="Used - Fair">Used - Fair</option>
+              <option value="">{tt("buySellFeed.anyCondition", "Any condition")}</option>
+              <option value="New">{tt("buySellFeed.conditionNew", "New")}</option>
+              <option value="Used - Like New">{tt("buySellFeed.conditionUsedLikeNew", "Used - Like New")}</option>
+              <option value="Used - Good">{tt("buySellFeed.conditionUsedGood", "Used - Good")}</option>
+              <option value="Used - Fair">{tt("buySellFeed.conditionUsedFair", "Used - Fair")}</option>
             </select>
 
             <input
               type="number"
               inputMode="numeric"
               min={0}
-              placeholder="Min price"
+              placeholder={tt("buySellFeed.minPrice", "Min price")}
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               disabled={!universityId}
@@ -134,7 +136,7 @@ export default function BuySellFeed() {
               type="number"
               inputMode="numeric"
               min={0}
-              placeholder="Max price"
+              placeholder={tt("buySellFeed.maxPrice", "Max price")}
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               disabled={!universityId}
@@ -154,10 +156,10 @@ export default function BuySellFeed() {
                 disabled={!universityId}
                 className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
-                Clear
+                {tt("buySellFeed.clear", "Clear")}
               </button>
               <p className="text-xs text-gray-500">
-                Filters apply automatically.
+                {tt("buySellFeed.filtersAuto", "Filters apply automatically.")}
               </p>
             </div>
           </div>
@@ -167,11 +169,10 @@ export default function BuySellFeed() {
           <div className="mt-10 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 px-6 py-12 text-center">
             <Package className="mx-auto h-10 w-10 text-gray-300" />
             <p className="mt-3 text-sm font-medium text-gray-700">
-              Choose a university
+              {tt("buySellFeed.chooseUniversity", "Choose a university")}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              Use the campus selector in the top bar to see Buy &amp; Sell
-              listings for that campus.
+              {tt("buySellFeed.chooseUniversityHint", "Use the campus selector in the top bar to see Buy & Sell listings for that campus.")}
             </p>
           </div>
         )}
@@ -186,8 +187,8 @@ export default function BuySellFeed() {
           <>
             <p className="mt-4 text-xs text-gray-500">
               {total === 0 && !isLoading
-                ? "No listings match your filters."
-                : `Showing ${items.length} of ${total} listing${total === 1 ? "" : "s"}`}
+                ? tt("buySellFeed.noMatch", "No listings match your filters.")
+                : `${tt("buySellFeed.showing", "Showing")} ${items.length} ${tt("buySellFeed.of", "of")} ${total} ${tt("buySellFeed.listings", "listings")}`}
             </p>
 
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -209,7 +210,7 @@ export default function BuySellFeed() {
 
             {isLoading && items.length > 0 && (
               <p className="mt-6 text-center text-sm text-gray-500">
-                Loading more…
+                {tt("buySellFeed.loadingMore", "Loading more...")}
               </p>
             )}
 
@@ -222,7 +223,7 @@ export default function BuySellFeed() {
                   onClick={loadMore}
                   disabled={isLoading}
                 >
-                  Load more
+                  {tt("buySellFeed.loadMore", "Load more")}
                 </Button>
               </div>
             )}

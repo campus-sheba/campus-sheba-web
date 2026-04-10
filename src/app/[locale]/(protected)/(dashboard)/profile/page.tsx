@@ -1,7 +1,9 @@
 import ProfilePage from "@/modules/dashboard/ProfilePage";
 import { getProfileAction, getUniversityMetadataAction } from "@/services/user";
+import { getTranslations } from "next-intl/server";
 
 export default async function DashboardProfilePage() {
+  const t = await getTranslations("common.profile");
   const profileResult = await getProfileAction();
   const profile =
     profileResult.success && profileResult.data ? profileResult.data : null;
@@ -16,7 +18,7 @@ export default async function DashboardProfilePage() {
   if (!profile) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-gray-600">
-        Unable to load profile right now.
+        {t("unableToLoad")}
       </div>
     );
   }

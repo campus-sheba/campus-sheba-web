@@ -9,12 +9,14 @@ import "../styles/banner-pagination.css";
 import { useAppState } from "@/contexts/AppStateContext";
 import { ContentWrapper } from "@/components/wrappers";
 import { useHomeBanners } from "../hooks/useHomeBanners";
+import { useTranslations } from "next-intl";
 
 interface BannersProps {
   bottomOverlay?: React.ReactNode;
 }
 
 const Banners = ({ bottomOverlay }: BannersProps) => {
+  const t = useTranslations("common.home");
   const { state } = useAppState();
   const selectedUniversityId = state.university.selected?._id;
   const { banners, isLoading, error, allImagesLoaded, handleImageLoad } =
@@ -29,7 +31,7 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
   if (error) {
     return (
       <div className="flex h-[55vh] items-center justify-center text-sm text-gray-400">
-        Unable to load banners.
+        {t("unableToLoadBanners")}
       </div>
     );
   }
