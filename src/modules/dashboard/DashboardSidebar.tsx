@@ -18,16 +18,28 @@ import {
   LogOut,
   X,
   Menu,
+  ClipboardList,
+  Tag,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { logoutAction } from "@/app/[locale]/(protected)/(dashboard)/profile/actions";
 import { Button } from "@/components/ui";
+import { logoutAction } from "@/services/user";
 
 interface SidebarUser {
+  _id?: string;
   name?: string;
   phone?: string;
   email?: string;
+  role?: string;
+  blood?: string;
+  university?:
+    | string
+    | {
+        _id?: string;
+        name?: string;
+        shortName?: string;
+      };
 }
 
 interface Props {
@@ -60,6 +72,12 @@ const primaryItems: NavItem[] = [
     icon: MapPin,
     color: "text-blue-500",
   },
+  {
+    label: "My orders",
+    href: "/my-orders",
+    icon: ClipboardList,
+    color: "text-indigo-600",
+  },
   { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
 
   {
@@ -71,17 +89,62 @@ const primaryItems: NavItem[] = [
 ];
 
 const serviceItems: NavItem[] = [
-  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
-  { label: "Delivery", href: "/my-delivery", icon: Bike, color: "text-purple-600" },
-  { label: "Marketplace", href: "/my-marketplace", icon: ShoppingBag, color: "text-emerald-600" },
+  {
+    label: "Lost & Found",
+    href: "/my-lost-found",
+    icon: MapPin,
+    color: "text-yellow-600",
+  },
+  {
+    label: "Delivery",
+    href: "/my-delivery",
+    icon: Bike,
+    color: "text-purple-600",
+  },
+  {
+    label: "Marketplace",
+    href: "/my-marketplace",
+    icon: ShoppingBag,
+    color: "text-emerald-600",
+  },
+  {
+    label: "My Buy & Sell",
+    href: "/my-buy-sell",
+    icon: Tag,
+    color: "text-teal-600",
+  },
   { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
-  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
-  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
-  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
-  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
-  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
+  {
+    label: "Blood Requests",
+    href: "/my-blood-requests",
+    icon: Droplets,
+    color: "text-red-600",
+  },
+  {
+    label: "Tuition",
+    href: "/my-tuition",
+    icon: GraduationCap,
+    color: "text-amber-600",
+  },
+  {
+    label: "Job Applications",
+    href: "/my-job-applications",
+    icon: Briefcase,
+    color: "text-sky-600",
+  },
+  {
+    label: "Donations",
+    href: "/my-donations",
+    icon: Heart,
+    color: "text-green-600",
+  },
+  {
+    label: "Parcels",
+    href: "/my-parcels",
+    icon: Archive,
+    color: "text-violet-600",
+  },
 ];
-
 
 export default function DashboardSidebar({ user }: Props) {
   const pathname = usePathname();
@@ -105,14 +168,29 @@ export default function DashboardSidebar({ user }: Props) {
           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
       }`}
     >
-      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive(item.href) ? "text-[#E30A13]" : item.color}`} />
+      <item.icon
+        className={`w-4 h-4 flex-shrink-0 ${isActive(item.href) ? "text-[#E30A13]" : item.color}`}
+      />
       {item.label}
     </Link>
   );
 
   const initials = user?.name
-    ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
+    ? user.name
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
     : "U";
+  const universityName =
+    typeof user?.university === "string"
+      ? user.university
+      : user?.university?.name;
+  const universityShortName =
+    typeof user?.university === "object"
+      ? user.university?.shortName
+      : undefined;
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -123,25 +201,39 @@ export default function DashboardSidebar({ user }: Props) {
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-gray-900 truncate">{user?.name || "Student"}</p>
-            <p className="text-xs text-gray-500 truncate">{user?.phone || user?.email || "—"}</p>
+            <p className="font-semibold text-sm text-gray-900 truncate">
+              {user?.name || "Student"}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {user?.phone || user?.email || "—"}
+            </p>
+            {(universityName || user?.blood) && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {universityName && (
+                  <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                    {universityShortName || universityName}
+                  </span>
+                )}
+                {user?.blood && (
+                  <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                    {user.blood}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3">
-        <div className="space-y-0.5">
-          {primaryItems.map(renderNavItem)}
-        </div>
+        <div className="space-y-0.5">{primaryItems.map(renderNavItem)}</div>
 
         <div className="pt-3 mt-3 border-t border-gray-100">
           <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
             Service Centers
           </p>
-          <div className="space-y-0.5">
-            {serviceItems.map(renderNavItem)}
-          </div>
+          <div className="space-y-0.5">{serviceItems.map(renderNavItem)}</div>
         </div>
       </nav>
 
@@ -190,7 +282,10 @@ export default function DashboardSidebar({ user }: Props) {
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <span className="text-sm font-semibold text-gray-700">Dashboard</span>
-          <button onClick={() => setMobileOpen(false)} className="p-1 rounded-lg hover:bg-gray-100">
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-1 rounded-lg hover:bg-gray-100"
+          >
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>

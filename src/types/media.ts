@@ -21,6 +21,8 @@ export enum MediaFileType {
 export interface MediaInterface {
   _id?: string;
   url: string;
+  /** Storage key when returned by upload API */
+  key?: string;
   size: number;
   type: MediaFileType;
   mimetype: string;

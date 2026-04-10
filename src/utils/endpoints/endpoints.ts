@@ -27,9 +27,25 @@ export const authenticationEndpoints = {
 
 export const userEndpoints = {
     me: `${baseURL}/user/me`,
+    update: `${baseURL}/user`,
+    updateLocation: `${baseURL}/user/update-location`,
     categories: `${baseURL}/user/categories`,
     lostAndFound: `${baseURL}/user/lost-and-found`,
     addresses: `${baseURL}/addresses`,
+};
+
+export const addressEndpoints = {
+    base: `${baseURL}/addresses`,
+    byId: (id: string) => `${baseURL}/addresses/${encodeURIComponent(id)}`,
+};
+
+export const userProfileEndpoints = {
+    updateEmailSendCode: `${baseURL}/user/profile/update-email/send-code`,
+    updateEmailVerify: `${baseURL}/user/profile/update-email`,
+};
+
+export const universityMetadataEndpoints = {
+    base: `${baseURL}/university-metadata`,
 };
 
 export const mediaEndpoints = {
@@ -45,6 +61,18 @@ export const cartEndpoints = {
     applyCoupon: `${baseURL}/cart/apply-coupon`,
     removeCoupon: `${baseURL}/cart/remove-coupon`,
     checkout: `${baseURL}/cart/checkout`,
+};
+
+export const chargesEndpoints = {
+    query: `${baseURL}/charges/query`,
+};
+
+export const orderEndpoints = {
+    summary: `${baseURL}/user/orders/summary`,
+    /** POST place order, GET list orders (same path, different method). */
+    base: `${baseURL}/user/orders`,
+    byId: (id: string) => `${baseURL}/user/orders/${encodeURIComponent(id)}`,
+    cancel: (id: string) => `${baseURL}/user/orders/${encodeURIComponent(id)}/cancel`,
 };
 
 export const bookEndpoints = {

@@ -47,3 +47,68 @@ export interface Cart {
     groupedByShop: any[];
     otherItems: CartItem[];
 }
+
+export type ChargeType = "Product" | "BuySell" | "Book";
+
+export interface ChargeConfig {
+  _id: string;
+  type: ChargeType;
+  university: string;
+  shipping?: {
+    basedPrice?: number;
+    shippingRatePerKM?: number;
+  };
+  packagingFee?: number;
+  codFee?: number;
+  returnFee?: number;
+  vat?: { percentage?: number; isPercentage?: boolean; fixedAmount?: number };
+  tax?: { percentage?: number; isPercentage?: boolean; fixedAmount?: number };
+  platformFee?: { percentage?: number; isPercentage?: boolean; fixedAmount?: number };
+  serviceFee?: { percentage?: number; isPercentage?: boolean; fixedAmount?: number };
+  platformCommission?: { percentage?: number; isPercentage?: boolean };
+  paymentGatewayFee?: { percentage?: number; fixedAmount?: number };
+}
+
+export type OrderSummaryItemPayload = {
+  id: string;
+  quantity: number;
+};
+
+export type OrderSummaryPayload = {
+  type: "Book" | "BuySell";
+  rentalType: "Normal" | "Rental";
+  rentalDays?: number;
+  addressId: string;
+  code?: string;
+  items: OrderSummaryItemPayload[];
+  deliveryType: "COD" | "ONLINE";
+  deliveryTip?: number;
+};
+
+export interface OrderSummaryResponse {
+  type: string;
+  subTotal: number;
+  total: number;
+  totalShippingCost?: number;
+  totalVat?: number;
+  totalTax?: number;
+  totalPlatformFee?: number;
+  totalServiceFee?: number;
+  totalPackagingFee?: number;
+  totalCODFee?: number;
+  totalDiscount?: number;
+  totalPaymentGatewayFee?: number;
+  totalPlatformCommission?: number;
+  deliveryTip?: number;
+  address?: { _id?: string; address?: string };
+  items: Array<{
+    _id: string;
+    title: string;
+    quantity: number;
+    price: number;
+    total: number;
+    subTotal?: number;
+    shippingCost?: number;
+    packagingFee?: number;
+  }>;
+}

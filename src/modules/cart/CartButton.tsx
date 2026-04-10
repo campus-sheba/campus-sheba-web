@@ -4,22 +4,37 @@ import { usePathname } from "next/navigation";
 import {
   ShoppingCart,
   X,
-  Plus,
-  Minus,
-  Trash2,
   ArrowRight,
-  Package,
+  MapPin,
+  Tag,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { Link } from "@/i18n/navigation";
+import { CookieHelper } from "@/lib/appStateHelper";
 import { useAppState } from "@/contexts/AppStateContext";
-import { getCartAction } from "@/services/cart";
-import { CartItem } from "@/types/cart";
+import {
+  clearCartAction,
+  createOrderSummaryAction,
+  decreaseCartItemAction,
+  getCartAction,
+  getChargeByTypeAction,
+  increaseCartItemAction,
+  removeCartItemAction,
+} from "@/services/cart";
+import { getAddressesAction } from "@/services/addresses";
+import CartOrderSummary from "@/modules/cart/CartOrderSummary";
+import CartLineItems from "@/modules/cart/CartLineItems";
+import { normalizeCartLineItems } from "@/modules/cart/mergeCartLineItems";
+import { pickDefaultDeliveryAddressId } from "@/modules/cart/deliveryAddress";
+import { CART_UPDATED_EVENT, emitCartUpdated } from "@/lib/cartEvents";
+import type { UserAddress } from "@/types/address";
+import { CartItem, ChargeConfig, ChargeType, type OrderSummaryResponse } from "@/types/cart";
 
 /* ─────────────────────────── types ─────────────────────────── */
 
 
-
-const DELIVERY_FEE = 50;
 
 function getCookieValue(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -42,15 +57,50 @@ const B = {
 /* ═══════════════════════════ component ══════════════════════ */
 export default function CartButton() {
   const pathname = usePathname();
-  const { dispatch } = useAppState();
+  const { dispatch, state } = useAppState();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+  const [chargeConfig, setChargeConfig] = useState<ChargeConfig | null>(null);
+  const [orderSummary, setOrderSummary] = useState<OrderSummaryResponse | null>(null);
+  const [orderSummaryLoading, setOrderSummaryLoading] = useState(false);
+  const [orderSummaryError, setOrderSummaryError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [drawerAddressId, setDrawerAddressId] = useState<string | null>(null);
+  const [couponDraft, setCouponDraft] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showCouponField, setShowCouponField] = useState(false);
 
   const isLoggedIn = Boolean(getCookieValue("user"));
   const hidden = pathname?.includes("/cart") || pathname?.includes("/checkout");
+  const selectedUniversityId =
+    state.university.selected?._id ?? state.user.profile?.university?._id ?? getCookieValue("universityId");
+  const selectedAddressId =
+    state.address.selected?.id ??
+    (typeof state.address.selected === "object" &&
+    state.address.selected &&
+    "_id" in state.address.selected
+      ? String(state.address.selected._id)
+      : null) ??
+    getCookieValue("addressId");
+
+  const deliveryAddresses = useMemo(
+    () => addresses.filter((a) => a.type === "DELIVERY"),
+    [addresses],
+  );
+  const selectedDeliveryAddress = useMemo(
+    () => deliveryAddresses.find((a) => a._id === drawerAddressId) ?? null,
+    [deliveryAddresses, drawerAddressId],
+  );
+  const lineItemType = items[0]?.type ?? "BuySell";
+  const cartType = (lineItemType === "Book" ? "Book" : "BuySell") as "Book" | "BuySell";
+  const chargeType: ChargeType =
+    lineItemType === "Book" ? "Book" : lineItemType === "Product" ? "Product" : "BuySell";
 
   const totalItems = useMemo(
     () => items.reduce((s, i) => s + i.quantity, 0),
@@ -60,33 +110,186 @@ export default function CartButton() {
     () => items.reduce((s, i) => s + i.quantity * (i.content.discountPrice || i.content.price), 0),
     [items],
   );
-  const total = subtotal + DELIVERY_FEE;
+  const deliveryFee = chargeConfig?.shipping?.basedPrice ?? 0;
+  const total =
+    isDrawerOpen && orderSummary && drawerAddressId
+      ? orderSummary.total
+      : subtotal + deliveryFee;
 
-  // Placeholder for remove and updateQty actions (to be implemented with API)
-  const removeItem = (id: string) => {
+  const removeItem = async (id: string) => {
+    const target = items.find((i) => i._id === id);
+    if (!target) return;
     setRemovingId(id);
-    // TODO: Call remove from cart API
-    setTimeout(() => {
-      setItems((p) => p.filter((i) => i._id !== id));
-      setRemovingId(null);
-    }, 260);
+    const response = await removeCartItemAction(id);
+    if (response.success) {
+      setMessage(null);
+      emitCartUpdated();
+    } else {
+      setMessage(response.message ?? "Failed to remove cart item.");
+    }
+    setRemovingId(null);
   };
 
-  const updateQty = (id: string, next: number) => {
-    if (next <= 0) {
-      removeItem(id);
+  const updateQty = async (id: string, next: number) => {
+    const target = items.find((i) => i._id === id);
+    if (!target) return;
+    if (next <= 0 || target.quantity <= 0) {
+      await removeItem(id);
       return;
     }
-    // TODO: Call update quantity API
-    setItems((p) => p.map((i) => (i._id === id ? { ...i, quantity: next } : i)));
+
+    const action = next > target.quantity
+      ? increaseCartItemAction(target.content._id)
+      : decreaseCartItemAction(target.content._id);
+    const response = await action;
+    if (response.success) {
+      setMessage(null);
+      emitCartUpdated();
+    } else {
+      setMessage(response.message ?? "Failed to update quantity.");
+    }
   };
 
-  useEffect(() => {
-    (async () => {
-      const res = await getCartAction();
-      if (res?.data?.items) setItems(res.data.items);
-    })();
+  const loadCartFromServer = useCallback(async () => {
+    const res = await getCartAction();
+    if (res.success && res.data) {
+      setItems(normalizeCartLineItems(res.data));
+    } else {
+      setItems([]);
+    }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      await loadCartFromServer();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadCartFromServer]);
+
+  useEffect(() => {
+    const onCartUpdated = () => {
+      void loadCartFromServer();
+    };
+    window.addEventListener(CART_UPDATED_EVENT, onCartUpdated);
+    return () => window.removeEventListener(CART_UPDATED_EVENT, onCartUpdated);
+  }, [loadCartFromServer]);
+
+  /* Address list + drawer selection: init when drawer opens only. */
+  useEffect(() => {
+    if (!isDrawerOpen || !isLoggedIn) return;
+    let cancelled = false;
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      await loadCartFromServer();
+      const r = await getAddressesAction();
+      if (cancelled || !r.success) return;
+      setAddresses(r.data);
+      const delivery = r.data.filter((a) => a.type === "DELIVERY");
+      const fromApp =
+        selectedAddressId && delivery.some((a) => a._id === selectedAddressId)
+          ? selectedAddressId
+          : null;
+      const cookieId = CookieHelper.getAddressId();
+      const fromCookie =
+        !fromApp && cookieId && delivery.some((a) => a._id === cookieId) ? cookieId : null;
+      const nextId = fromApp ?? fromCookie ?? pickDefaultDeliveryAddressId(r.data);
+      setDrawerAddressId(nextId);
+      if (nextId && !fromApp && !fromCookie) {
+        CookieHelper.setAddressId(nextId);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // selectedAddressId: intentionally read only when drawer opens; omitting avoids resetting radios mid-drawer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDrawerOpen, isLoggedIn, loadCartFromServer]);
+
+  useEffect(() => {
+    if (!selectedUniversityId) return;
+    (async () => {
+      const res = await getChargeByTypeAction(chargeType, selectedUniversityId);
+      if (res.success) setChargeConfig(res.data);
+    })();
+  }, [chargeType, selectedUniversityId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      await Promise.resolve();
+
+      if (!isDrawerOpen || !drawerAddressId || items.length === 0) {
+        if (!cancelled) {
+          setOrderSummary(null);
+          setOrderSummaryError(null);
+          setOrderSummaryLoading(false);
+        }
+        return;
+      }
+
+      if (cancelled) return;
+      setOrderSummaryLoading(true);
+      setOrderSummaryError(null);
+
+      const payload = {
+        type: cartType,
+        rentalType: "Normal" as const,
+        addressId: drawerAddressId,
+        deliveryType: "COD" as const,
+        deliveryTip: 0,
+        ...(appliedCoupon ? { code: appliedCoupon } : {}),
+        items: items.map((item) => ({ id: item.content._id, quantity: item.quantity })),
+      };
+      const summary = await createOrderSummaryAction(payload);
+      if (cancelled) return;
+      setOrderSummaryLoading(false);
+      if (summary.success && summary.data) {
+        setOrderSummary(summary.data);
+        setOrderSummaryError(null);
+      } else {
+        setOrderSummary(null);
+        setOrderSummaryError(summary.message ?? "Could not load order summary.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cartType, isDrawerOpen, items, drawerAddressId, appliedCoupon]);
+
+  const handleClearCart = async () => {
+    setIsBusy(true);
+    const res = await clearCartAction();
+    if (res.success) {
+      setOrderSummary(null);
+      setOrderSummaryError(null);
+      setMessage(null);
+      emitCartUpdated();
+    } else {
+      setMessage(res.message ?? "Failed to clear cart.");
+    }
+    setIsBusy(false);
+  };
+
+  const onSelectDrawerAddress = (id: string) => {
+    setDrawerAddressId(id);
+    CookieHelper.setAddressId(id);
+    setMessage(null);
+  };
+
+  const onApplyCoupon = () => {
+    const code = couponDraft.trim();
+    setAppliedCoupon(code.length ? code : null);
+    if (code.length > 0) setShowCouponField(true);
+    setMessage(null);
+  };
 
   if (hidden) return null;
 
@@ -234,113 +437,126 @@ export default function CartButton() {
           </button>
         </div>
 
-        {/* ── item list ── */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-          {items.length === 0 ? (
-            <div
-              className="mt-8 rounded-2xl flex flex-col items-center text-center py-10 px-6"
-              style={{ background: "#fff", border: "1.5px dashed #E0E3E7" }}
+        {/* ── scroll: line items + address + coupon (same order as /cart) ── */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          <div className="flex justify-end">
+            <Link
+              href="/buy-sell"
+              className="text-[12px] font-semibold text-[#00A651] underline underline-offset-2"
+              onClick={() => setIsDrawerOpen(false)}
             >
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-                style={{ background: B.primaryLight }}
-              >
-                <Package
-                  className="w-6 h-6"
-                  style={{ color: B.primary }}
-                  strokeWidth={1.8}
-                />
-              </div>
-              <p className="text-[13px] font-semibold text-gray-700">
-                Your cart is empty
-              </p>
-              <p className="text-[12px] text-gray-400 mt-1 max-w-[180px] leading-relaxed">
-                Add items from the menu to get started.
-              </p>
-            </div>
-          ) : (
-            items.map((item) => (
-              <div
-                key={item._id}
-                className="flex items-center gap-3 rounded-xl p-3 transition-all duration-[260ms]"
-                style={{
-                  background: "#fff",
-                  border: "1px solid #EAECEF",
-                  opacity: removingId === item._id ? 0 : 1,
-                  transform:
-                    removingId === item._id
-                      ? "translateX(14px)"
-                      : "translateX(0)",
-                }}
-              >
-                {/* product image */}
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 bg-gray-100 overflow-hidden"
-                >
-                  {item.content.photos?.[0]?.url ? (
-                    <img src={item.content.photos[0].url} alt={item.content.title} className="w-full h-full object-cover rounded-xl" />
-                  ) : (
-                    <span className="text-2xl">🛒</span>
-                  )}
-                </div>
+              Add items
+            </Link>
+          </div>
 
-                {/* details */}
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-semibold text-gray-800 truncate">
-                    {item.content.title}
-                  </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
-                    ৳{item.content.discountPrice || item.content.price} each
-                  </p>
+          <CartLineItems
+            items={items}
+            removingId={removingId}
+            onChangeQty={updateQty}
+            onRemove={removeItem}
+          />
 
-                  <div className="mt-2 flex items-center justify-between">
-                    {/* qty stepper */}
-                    <div
-                      className="flex items-center gap-1 rounded-lg px-1 py-[3px]"
-                      style={{
-                        background: "#F3F4F6",
-                        border: "1px solid #E5E7EB",
-                      }}
-                    >
-                      <button
-                        onClick={() => updateQty(item._id, item.quantity - 1)}
-                        className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus className="w-3 h-3" strokeWidth={2.5} />
-                      </button>
-                      <span className="w-5 text-center text-[12px] font-bold text-gray-800 tabular-nums">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQty(item._id, item.quantity + 1)}
-                        className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-gray-500 hover:bg-white hover:shadow-sm transition-all"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus className="w-3 h-3" strokeWidth={2.5} />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[13px] font-bold text-gray-800 tabular-nums">
-                        ৳{(item.content.discountPrice || item.content.price) * item.quantity}
-                      </span>
-                      <button
-                        onClick={() => removeItem(item._id)}
-                        className="
-                          w-7 h-7 rounded-lg flex items-center justify-center
-                          text-gray-300 hover:text-red-500 hover:bg-red-50
-                          transition-all duration-150
-                        "
-                        aria-label="Remove item"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+          {items.length > 0 && (
+            <>
+              <section className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-[12px] font-semibold text-gray-800">
+                    <MapPin className="h-3.5 w-3.5 text-[#00A651]" strokeWidth={2} />
+                    Delivery address
                   </div>
+                  {deliveryAddresses.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddressModal(true)}
+                      className="rounded-lg border border-[#C3E8D5] px-2 py-1 text-[11px] font-semibold text-[#00A651] hover:bg-[#E8F7EF]"
+                    >
+                      Change
+                    </button>
+                  ) : null}
                 </div>
-              </div>
-            ))
+                {selectedDeliveryAddress ? (
+                  <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-2.5">
+                    <p className="line-clamp-2 text-[12px] font-medium text-gray-800">
+                      {selectedDeliveryAddress.address}
+                    </p>
+                    {selectedDeliveryAddress.description ? (
+                      <p className="mt-0.5 text-[10px] text-gray-500">
+                        {selectedDeliveryAddress.description}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+                {deliveryAddresses.length === 0 ? (
+                  <p className="text-[12px] text-gray-600">
+                    No delivery addresses.{" "}
+                    <Link
+                      href="/my-addresses"
+                      className="font-semibold text-[#00A651] underline"
+                      onClick={() => setIsDrawerOpen(false)}
+                    >
+                      Add one
+                    </Link>
+                  </p>
+                ) : null}
+                <Link
+                  href="/my-addresses"
+                  className="mt-2 inline-block text-[11px] font-semibold text-[#00A651] underline"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
+                  Manage addresses
+                </Link>
+              </section>
+
+              <section
+                className="rounded-2xl border p-3"
+                style={{ borderColor: B.primaryBorder, background: B.primaryLight }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowCouponField((v) => !v)}
+                  className="flex w-full items-center justify-between gap-2 text-left"
+                >
+                  <div className="flex items-center gap-2 text-[12px] font-semibold text-gray-800">
+                    <Tag className="h-3.5 w-3.5 text-[#00A651]" strokeWidth={2} />
+                    Have a coupon?
+                  </div>
+                  {showCouponField ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
+                {showCouponField ? (
+                  <div className="mt-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponDraft}
+                        onChange={(e) => setCouponDraft(e.target.value)}
+                        placeholder="e.g. SHUKHEE10"
+                        className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[12px] outline-none focus:border-[#00A651]"
+                      />
+                      <button
+                        type="button"
+                        onClick={onApplyCoupon}
+                        className="shrink-0 rounded-lg bg-[#00A651] px-3 py-2 text-[12px] font-bold text-white active:brightness-95"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {appliedCoupon ? (
+                      <p className="mt-1.5 text-[10px] text-gray-600">
+                        Applied: <span className="font-semibold text-gray-800">{appliedCoupon}</span>
+                      </p>
+                    ) : null}
+                  </div>
+                ) : appliedCoupon ? (
+                  <p className="mt-1.5 text-[10px] text-gray-600">
+                    Applied: <span className="font-semibold text-gray-800">{appliedCoupon}</span>
+                  </p>
+                ) : null}
+              </section>
+            </>
           )}
         </div>
 
@@ -349,77 +565,127 @@ export default function CartButton() {
           className="px-4 pt-3 pb-4 flex-shrink-0"
           style={{ background: "#fff", borderTop: "1px solid #EAECEF" }}
         >
-          {/* order summary */}
-          <div
-            className="rounded-xl px-4 py-3 mb-3 space-y-1.5"
-            style={{
-              background: B.primaryLight,
-              border: `1px solid ${B.primaryBorder}`,
-            }}
+          <Link
+            href="/cart"
+            className="mb-3 block w-full rounded-xl border border-[#C3E8D5] bg-white py-2.5 text-center text-[13px] font-semibold text-[#00A651] transition hover:bg-[#E8F7EF]"
+            onClick={() => setIsDrawerOpen(false)}
           >
-            <div className="flex justify-between items-center">
-              <span className="text-[12px] text-gray-500">Subtotal</span>
-              <span className="text-[12px] font-medium text-gray-700 tabular-nums">
-                ৳{subtotal}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[12px] text-gray-500">Delivery fee</span>
-              <span className="text-[12px] font-medium text-gray-700 tabular-nums">
-                ৳{DELIVERY_FEE}
-              </span>
-            </div>
-            <div
-              className="flex justify-between items-center pt-2"
-              style={{ borderTop: `1px solid ${B.primaryBorder}` }}
-            >
-              <span className="text-[13px] font-semibold text-gray-800">
-                Total
-              </span>
-              <span
-                className="text-[14px] font-bold tabular-nums"
-                style={{ color: B.primary }}
-              >
-                ৳{total}
-              </span>
-            </div>
-          </div>
+            View full cart
+          </Link>
 
-          {/* cta row */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setItems([])}
-              disabled={items.length === 0}
+          <CartOrderSummary
+            hasAddress={Boolean(drawerAddressId && deliveryAddresses.length > 0)}
+            isLoading={orderSummaryLoading}
+            error={orderSummaryError}
+            summary={orderSummary}
+            cartSubtotal={subtotal}
+            deliveryFeeFallback={deliveryFee}
+            totalDisplay={total}
+          />
+
+          {message && (
+            <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+              {message}
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 gap-2">
+            <Link
+              href={drawerAddressId ? "/checkout" : "/cart"}
               className="
-                h-[42px] rounded-xl text-[13px] font-semibold
+                flex h-12 items-center justify-center gap-2 rounded-xl text-[14px] font-bold text-white
+                transition active:brightness-95
+              "
+              style={{
+                background: items.length > 0 && drawerAddressId ? B.primary : "#D1D5DB",
+                boxShadow:
+                  items.length > 0 && drawerAddressId
+                    ? `0 3px 12px rgba(0,166,81,0.28)`
+                    : "none",
+              }}
+              onClick={(e) => {
+                if (items.length === 0 || isBusy) {
+                  e.preventDefault();
+                  return;
+                }
+                if (!drawerAddressId) {
+                  e.preventDefault();
+                  setMessage("Select a delivery address to continue.");
+                }
+              }}
+            >
+              Proceed to checkout
+              <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleClearCart}
+              disabled={items.length === 0 || isBusy}
+              className="
+                h-11 rounded-xl text-[13px] font-semibold
                 text-red-500 border border-red-100 bg-white
                 hover:bg-red-50 active:bg-red-100
                 transition-colors duration-150
                 disabled:opacity-40 disabled:cursor-not-allowed
               "
             >
-              Clear Cart
-            </button>
-            <button
-              disabled={items.length === 0}
-              className="
-                h-[42px] rounded-xl text-[13px] font-bold text-white
-                flex items-center justify-center gap-1.5
-                transition-all duration-150 active:brightness-95
-                disabled:cursor-not-allowed
-              "
-              style={{
-                background: items.length > 0 ? B.primary : "#D1D5DB",
-                boxShadow:
-                  items.length > 0 ? `0 3px 12px rgba(0,166,81,0.28)` : "none",
-              }}
-            >
-              Checkout
-              <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+              Clear cart
             </button>
           </div>
         </div>
       </aside>
+
+      {showAddressModal && isDrawerOpen && (
+        <div className="fixed inset-0 z-[74] grid place-items-center px-4">
+          <div
+            className="absolute inset-0 bg-black/35"
+            onClick={() => setShowAddressModal(false)}
+            aria-hidden="true"
+          />
+          <div className="relative z-10 w-full max-w-[360px] rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold text-gray-900">Select delivery address</p>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(false)}
+                className="rounded-md p-1 text-gray-500 hover:bg-gray-100"
+                aria-label="Close address selection"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {deliveryAddresses.length === 0 ? (
+              <p className="text-sm text-gray-600">No delivery addresses found.</p>
+            ) : (
+              <ul className="max-h-[280px] space-y-2 overflow-y-auto">
+                {deliveryAddresses.map((a) => (
+                  <li key={a._id}>
+                    <label className="flex cursor-pointer gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-2.5 has-[:checked]:border-[#00A651] has-[:checked]:bg-[#E8F7EF]">
+                      <input
+                        type="radio"
+                        name="drawer-cart-address-modal"
+                        className="mt-0.5"
+                        checked={drawerAddressId === a._id}
+                        onChange={() => {
+                          onSelectDrawerAddress(a._id);
+                          setShowAddressModal(false);
+                        }}
+                      />
+                      <span className="min-w-0 text-[12px] text-gray-800">
+                        <span className="line-clamp-2 font-medium">{a.address}</span>
+                        {a.description ? (
+                          <span className="mt-0.5 block text-[10px] text-gray-500">{a.description}</span>
+                        ) : null}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ════════════ AUTH MODAL ════════════ */}
       {showAuthModal && (
