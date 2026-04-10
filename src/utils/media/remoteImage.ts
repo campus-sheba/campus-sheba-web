@@ -7,7 +7,14 @@ export function shouldUnoptimizeRemoteImage(src: string | null | undefined): boo
   try {
     const u = new URL(src);
     if (u.protocol === "http:") return true;
-    if (u.hostname === "example.com") return true;
+    if (
+      u.hostname === "example.com" ||
+      u.hostname === "via.placeholder.com" ||
+      u.hostname === "pngimg.com" ||
+      u.hostname === "placehold.co"
+    ) {
+      return true;
+    }
     return false;
   } catch {
     return true;

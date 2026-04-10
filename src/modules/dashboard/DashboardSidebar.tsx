@@ -7,6 +7,7 @@ import {
   MapPin,
   ClipboardList,
   Tag,
+  BookOpen,
   LogOut,
   X,
   Menu,
@@ -67,6 +68,12 @@ const primaryItems: NavItem[] = [
     href: "/my-buy-sell",
     icon: Tag,
     color: "text-teal-600",
+  },
+  {
+    label: "My Books",
+    href: "/my-books",
+    icon: BookOpen,
+    color: "text-blue-600",
   },
 ];
 

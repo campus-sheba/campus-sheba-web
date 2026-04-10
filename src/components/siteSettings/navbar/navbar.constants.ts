@@ -169,10 +169,15 @@ export const mapUniversityFeaturesToServicesMenu = (
         bg: "bg-brand-green-50",
       };
 
+      const normalizedHref =
+        feature.key === "book"
+          ? feature.routeName.replace(/^\/book(\/|$)/, "/books$1")
+          : feature.routeName;
+
       return {
         label: feature.title,
         description: feature.description,
-        href: feature.routeName,
+        href: normalizedHref,
         icon: visuals.icon,
         color: visuals.color,
         bg: visuals.bg,
@@ -181,7 +186,7 @@ export const mapUniversityFeaturesToServicesMenu = (
 };
 
 export const navLinks = [
-//   { label: "Features", href: "#features" },
+  //   { label: "Features", href: "#features" },
   { label: "How It Works", href: "#how-it-works" },
   { label: "About", href: "about" },
 ];
