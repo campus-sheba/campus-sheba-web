@@ -12,6 +12,7 @@ import {
   ScanSearch,
   Droplets,
   HeartPulse,
+  Store,
   LogOut,
   X,
   Menu,
@@ -102,6 +103,12 @@ const primaryItems: NavItem[] = [
     href: "/my-blood-requests",
     icon: HeartPulse,
     color: "text-rose-600",
+  },
+  {
+    label: "My shop",
+    href: "/my-shop",
+    icon: Store,
+    color: "text-emerald-700",
   },
 ];
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { ChevronDown, MapPin, Siren } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
@@ -23,7 +23,7 @@ export default function CampusTopbar() {
   const handleProviderClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (isLoggedIn) {
-      router.push(`/en/marketplace/shop/create`);
+      router.push("/marketplace/shop/create");
       return;
     }
     dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
