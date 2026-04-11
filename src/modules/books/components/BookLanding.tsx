@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Package, Plus } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -14,8 +13,7 @@ import { fetchBookCategoriesPublic } from "@/services/books.public";
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
 import type { BuySellCategory } from "@/types/buy-sell";
 import BookListingCard from "./BookListingCard";
-import { useHomeBanners } from "@/modules/home/hooks/useHomeBanners";
-import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 
 function CategoryListingsSection({
   category,
@@ -127,52 +125,6 @@ function ListingsSection({
   );
 }
 
-function HeroAds({ universityId }: { universityId?: string }) {
-  const { banners, isLoading, error } = useHomeBanners(universityId);
-
-  if (!universityId) return null;
-  if (error) return null;
-  if (isLoading && banners.length === 0) {
-    return <div className="h-[240px] animate-pulse rounded-2xl bg-gray-100" />;
-  }
-
-  const ads = (banners ?? []).slice(0, 4);
-  if (ads.length === 0) return null;
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <div className="relative h-[260px] overflow-hidden rounded border border-gray-200 bg-gray-50 lg:col-span-2">
-        <Image
-          src={ads[0]?.photo?.url || "/placeholder.jpg"}
-          alt={ads[0]?.title || "Banner"}
-          fill
-          priority
-          className="object-cover"
-          sizes="(max-width: 1024px) 100vw, 66vw"
-          unoptimized={shouldUnoptimizeRemoteImage(ads[0]?.photo?.url || "")}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        {ads.slice(1, 3).map((b) => (
-          <div key={b._id} className="relative h-[122px] overflow-hidden rounded border border-gray-200 bg-gray-50">
-            <Image
-              src={b.photo?.url || "/placeholder.jpg"}
-              alt={b.title || "Banner"}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 50vw, 33vw"
-              unoptimized={shouldUnoptimizeRemoteImage(b.photo?.url || "")}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function BookLanding() {
   const t = useTranslations("common");
   const router = useRouter();
@@ -260,7 +212,7 @@ export default function BookLanding() {
         ) : (
           <>
             <div className="mt-6">
-              <HeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} />
             </div>
 
             <SectionWrapper spacing="sm" background="transparent" className="my-0 mt-8">

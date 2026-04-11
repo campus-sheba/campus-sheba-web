@@ -8,6 +8,10 @@ import {
   ClipboardList,
   Tag,
   BookOpen,
+  Package,
+  ScanSearch,
+  Droplets,
+  HeartPulse,
   LogOut,
   X,
   Menu,
@@ -74,6 +78,30 @@ const primaryItems: NavItem[] = [
     href: "/my-books",
     icon: BookOpen,
     color: "text-blue-600",
+  },
+  {
+    label: "My Lost & Found",
+    href: "/my-lost-found",
+    icon: ScanSearch,
+    color: "text-amber-600",
+  },
+  {
+    label: "My Parcels",
+    href: "/my-parcels",
+    icon: Package,
+    color: "text-orange-600",
+  },
+  {
+    label: "Blood donor",
+    href: "/my-blood-donor",
+    icon: Droplets,
+    color: "text-red-600",
+  },
+  {
+    label: "My blood requests",
+    href: "/my-blood-requests",
+    icon: HeartPulse,
+    color: "text-rose-600",
   },
 ];
 

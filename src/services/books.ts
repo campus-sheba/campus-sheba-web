@@ -161,7 +161,23 @@ export async function fetchBookCategories(page = 1, limit = 100): Promise<BookCa
   const res = await getPublic<unknown>(`${userEndpoints.categories}?${q.toString()}`, {
     includeUniversity: false,
   });
-  console.log(res);
+  return unwrapBookCategoriesResponse(res);
+}
+
+/** GET /api/user/categories?type=… (e.g. Lost and Found, Buy and Sell, Book) */
+export async function fetchUserCategoriesByType(
+  type: string,
+  page = 1,
+  limit = 100,
+): Promise<BookCategoriesResponse> {
+  const q = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    type,
+  });
+  const res = await getPublic<unknown>(`${userEndpoints.categories}?${q.toString()}`, {
+    includeUniversity: false,
+  });
   return unwrapBookCategoriesResponse(res);
 }
 

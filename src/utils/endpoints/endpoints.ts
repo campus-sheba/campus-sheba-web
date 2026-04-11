@@ -34,6 +34,41 @@ export const userEndpoints = {
     addresses: `${baseURL}/addresses`,
 };
 
+export const lostFoundEndpoints = {
+    base: `${baseURL}/user/lost-and-found`,
+    myPosts: `${baseURL}/user/lost-and-found/my-posts`,
+    byId: (id: string) => `${baseURL}/user/lost-and-found/${encodeURIComponent(id)}`,
+    resolve: (id: string) => `${baseURL}/user/lost-and-found/${encodeURIComponent(id)}/resolve`,
+    cancel: (id: string) => `${baseURL}/user/lost-and-found/${encodeURIComponent(id)}/cancel`,
+    resolveRequest: (postId: string) =>
+        `${baseURL}/user/lost-and-found/${encodeURIComponent(postId)}/resolve-request`,
+    resolveRequestsList: (postId: string) =>
+        `${baseURL}/user/lost-and-found/${encodeURIComponent(postId)}/resolve-requests`,
+    resolveRequestRespond: (requestId: string) =>
+        `${baseURL}/user/lost-and-found/resolve-request/${encodeURIComponent(requestId)}`,
+    escalateToParcel: (postId: string) =>
+        `${baseURL}/user/lost-and-found/${encodeURIComponent(postId)}/escalate-to-parcel`,
+};
+
+export const parcelEndpoints = {
+    base: `${baseURL}/user/parcel`,
+    estimate: `${baseURL}/user/parcel/estimate`,
+    byId: (id: string) => `${baseURL}/user/parcel/${encodeURIComponent(id)}`,
+    cancel: (id: string) => `${baseURL}/user/parcel/${encodeURIComponent(id)}/cancel`,
+};
+
+export const bloodDonorEndpoints = {
+    register: `${baseURL}/blood-donor/register`,
+    profile: `${baseURL}/blood-donor/profile`,
+    find: `${baseURL}/blood-donor/find`,
+    request: `${baseURL}/blood-donor/request`,
+    requests: `${baseURL}/blood-donor/requests`,
+    myRequests: `${baseURL}/blood-donor/my-requests`,
+    requestStatus: (id: string) =>
+        `${baseURL}/blood-donor/request/${encodeURIComponent(id)}/status`,
+    stats: `${baseURL}/blood-donor/stats`,
+};
+
 export const addressEndpoints = {
     base: `${baseURL}/addresses`,
     byId: (id: string) => `${baseURL}/addresses/${encodeURIComponent(id)}`,
