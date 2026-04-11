@@ -10,7 +10,9 @@ type Props = {
 export default function BuySellListingCard({ item }: Props) {
   const photo = item.photos?.[0]?.url || "/placeholder.jpg";
   const categoryLabel =
-    typeof item.category === "object" && item.category?.title ? item.category.title : undefined;
+    typeof item.category === "object" && item.category?.title
+      ? item.category.title
+      : undefined;
 
   return (
     <Link
@@ -33,14 +35,20 @@ export default function BuySellListingCard({ item }: Props) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="line-clamp-2 text-sm font-semibold text-gray-900">{item.title}</p>
+        <p className="line-clamp-2 text-sm font-semibold text-gray-900">
+          {item.title}
+        </p>
         {item.condition && (
           <p className="text-[11px] text-gray-500">{item.condition}</p>
         )}
         <div className="mt-auto flex items-baseline justify-between pt-1">
-          <span className="text-base font-bold text-[#00A651]">৳{item.price.toLocaleString()}</span>
+          <span className="text-base font-bold text-[#00A651]">
+            ৳{item.price.toLocaleString()}
+          </span>
           {item.negotiable && (
-            <span className="text-[10px] font-medium text-amber-700">Negotiable</span>
+            <span className="text-[10px] font-medium text-amber-700">
+              Negotiable
+            </span>
           )}
         </div>
       </div>

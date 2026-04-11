@@ -9,14 +9,17 @@ type Props = {
 
 function typeBadge(type: BookListing["type"]) {
   if (type === "Lending") return { label: "Lend", className: "bg-sky-600/90" };
-  if (type === "Donation") return { label: "Donate", className: "bg-violet-600/90" };
+  if (type === "Donation")
+    return { label: "Donate", className: "bg-violet-600/90" };
   return { label: "Sell", className: "bg-[#00A651]/90" };
 }
 
 export default function BookListingCard({ item }: Props) {
   const photo = item.photos?.[0]?.url || "/placeholder.jpg";
   const categoryLabel =
-    typeof item.category === "object" && item.category?.title ? item.category.title : undefined;
+    typeof item.category === "object" && item.category?.title
+      ? item.category.title
+      : undefined;
   const badge = typeBadge(item.type);
 
   const priceLabel =
@@ -50,15 +53,25 @@ export default function BookListingCard({ item }: Props) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="line-clamp-2 text-sm font-semibold text-gray-900">{item.title}</p>
-        {item.author && <p className="line-clamp-1 text-[11px] text-gray-500">{item.author}</p>}
+        <p className="line-clamp-2 text-sm font-semibold text-gray-900">
+          {item.title}
+        </p>
+        {item.author && (
+          <p className="line-clamp-1 text-[11px] text-gray-500">
+            {item.author}
+          </p>
+        )}
         {item.quality && (
           <p className="text-[11px] text-gray-500">{item.quality}</p>
         )}
         <div className="mt-auto flex items-baseline justify-between pt-1">
-          <span className="text-base font-bold text-[#00A651]">{priceLabel}</span>
+          <span className="text-base font-bold text-[#00A651]">
+            {priceLabel}
+          </span>
           {item.type === "Lending" && item.borrowDuration != null && (
-            <span className="text-[10px] font-medium text-sky-800">{item.borrowDuration}d borrow</span>
+            <span className="text-[10px] font-medium text-sky-800">
+              {item.borrowDuration}d borrow
+            </span>
           )}
         </div>
       </div>

@@ -46,7 +46,13 @@ function CategoryListingsSection({
       <SectionWrapper spacing="sm" background="transparent" className="my-0">
         <SectionHeader
           title={category.title}
-          subtitle={category.description || tt("buySellLanding.browseCategoryItems", "Browse items in this category.")}
+          subtitle={
+            category.description ||
+            tt(
+              "buySellLanding.browseCategoryItems",
+              "Browse items in this category.",
+            )
+          }
           viewAllHref={`/buy-sell/all?category=${encodeURIComponent(category._id)}`}
         />
 
@@ -57,22 +63,22 @@ function CategoryListingsSection({
         ) : null}
 
         {!inView ? (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-72 rounded-2xl bg-gray-50" />
+              <div key={i} className="aspect-[4/3] rounded-2xl bg-gray-50" />
             ))}
           </div>
         ) : isLoading && items.length === 0 ? (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="h-72 animate-pulse rounded-2xl bg-gray-100"
+                className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
               />
             ))}
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {items.slice(0, 8).map((item) => (
               <BuySellListingCard key={item._id} item={item} />
             ))}
@@ -118,11 +124,11 @@ function ListingsSection({
         </p>
       ) : null}
       {isLoading && items.length === 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="h-72 animate-pulse rounded-2xl bg-gray-100"
+              className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
             />
           ))}
         </div>
@@ -131,7 +137,7 @@ function ListingsSection({
           No listings found.
         </p>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {items.slice(0, pageSize).map((item) => (
             <BuySellListingCard key={item._id} item={item} />
           ))}
@@ -145,7 +151,8 @@ export default function BuySellLanding() {
   const t = useTranslations("common");
   const { state } = useAppState();
   const universityId = state.university.selected?._id;
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
 
   const [categories, setCategories] = useState<BuySellCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -183,7 +190,10 @@ export default function BuySellLanding() {
         <AppBreadcrumb
           items={[
             { label: tt("buySellLanding.home", "Home"), href: "/" },
-            { label: tt("buySellLanding.buySell", "Buy & Sell"), href: "/buy-sell" },
+            {
+              label: tt("buySellLanding.buySell", "Buy & Sell"),
+              href: "/buy-sell",
+            },
           ]}
         />
 
@@ -193,7 +203,10 @@ export default function BuySellLanding() {
               {tt("buySellLanding.buySell", "Buy & Sell")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("buySellLanding.subtitle", "Campus marketplace deals - browse by featured, latest, and categories.")}
+              {tt(
+                "buySellLanding.subtitle",
+                "Campus marketplace deals - browse by featured, latest, and categories.",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -221,7 +234,10 @@ export default function BuySellLanding() {
               {tt("buySellLanding.chooseUniversity", "Choose a university")}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("buySellLanding.chooseUniversityHint", "Use the campus selector in the top bar to see listings.")}
+              {tt(
+                "buySellLanding.chooseUniversityHint",
+                "Use the campus selector in the top bar to see listings.",
+              )}
             </p>
           </div>
         ) : (
@@ -236,10 +252,19 @@ export default function BuySellLanding() {
               className="my-0 mt-8"
             >
               <SectionHeader
-                title={tt("buySellLanding.popularCategories", "Popular categories")}
-                subtitle={tt("buySellLanding.popularCategoriesSub", "Jump to the category you are looking for.")}
+                title={tt(
+                  "buySellLanding.popularCategories",
+                  "Popular categories",
+                )}
+                subtitle={tt(
+                  "buySellLanding.popularCategoriesSub",
+                  "Jump to the category you are looking for.",
+                )}
                 viewAllHref="/buy-sell/all"
-                viewAllLabel={tt("buySellLanding.seeAllListings", "See all listings")}
+                viewAllLabel={tt(
+                  "buySellLanding.seeAllListings",
+                  "See all listings",
+                )}
               />
               {categoriesLoading && allCategories.length === 0 ? (
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -267,8 +292,14 @@ export default function BuySellLanding() {
 
             <div className="mt-10 space-y-10">
               <ListingsSection
-                title={tt("buySellLanding.featuredProducts", "Featured Products")}
-                subtitle={tt("buySellLanding.featuredProductsSub", "Popular picks from your campus.")}
+                title={tt(
+                  "buySellLanding.featuredProducts",
+                  "Featured Products",
+                )}
+                subtitle={tt(
+                  "buySellLanding.featuredProductsSub",
+                  "Popular picks from your campus.",
+                )}
                 universityId={universityId}
                 viewAllHref="/buy-sell/all"
                 pageSize={8}
@@ -276,7 +307,10 @@ export default function BuySellLanding() {
 
               <ListingsSection
                 title={tt("buySellLanding.latestProducts", "Latest Products")}
-                subtitle={tt("buySellLanding.latestProductsSub", "Freshly posted items.")}
+                subtitle={tt(
+                  "buySellLanding.latestProductsSub",
+                  "Freshly posted items.",
+                )}
                 universityId={universityId}
                 viewAllHref="/buy-sell/all"
                 pageSize={8}
@@ -284,7 +318,12 @@ export default function BuySellLanding() {
 
               {categoriesError ? (
                 <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-700">
-                  <p className="font-semibold">{tt("buySellLanding.categoriesUnavailable", "Categories unavailable")}</p>
+                  <p className="font-semibold">
+                    {tt(
+                      "buySellLanding.categoriesUnavailable",
+                      "Categories unavailable",
+                    )}
+                  </p>
                   <p className="mt-1 text-red-700/90">{categoriesError}</p>
                   <button
                     type="button"
@@ -308,7 +347,10 @@ export default function BuySellLanding() {
                 </div>
               ) : allCategories.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
-                  {tt("buySellLanding.noCategories", "No categories found for Buy & Sell.")}
+                  {tt(
+                    "buySellLanding.noCategories",
+                    "No categories found for Buy & Sell.",
+                  )}
                 </div>
               ) : null}
 

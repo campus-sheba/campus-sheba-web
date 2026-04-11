@@ -19,10 +19,12 @@ export default function BloodLanding() {
   const t = useTranslations("common");
   const router = useRouter();
   const { state, dispatch } = useAppState();
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const universityId =
     state.university.selected?._id ??
-    (typeof state.user.profile?.university === "object" && state.user.profile.university
+    (typeof state.user.profile?.university === "object" &&
+    state.user.profile.university
       ? state.user.profile.university._id
       : undefined);
   const guestMode = !state.auth.isAuthenticated;
@@ -74,12 +76,18 @@ export default function BloodLanding() {
 
   const statEntries =
     stats && typeof stats === "object"
-      ? Object.entries(stats).filter(([, v]) => typeof v === "number" && Number.isFinite(v))
+      ? Object.entries(stats).filter(
+          ([, v]) => typeof v === "number" && Number.isFinite(v),
+        )
       : [];
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-16 pt-2">
+      <ContentWrapper
+        maxWidth="max-w-7xl mx-auto"
+        padding="md"
+        className="pb-16 pt-2"
+      >
         <AppBreadcrumb
           items={[
             { label: tt("bloodLanding.home", "Home"), href: "/" },
@@ -93,7 +101,10 @@ export default function BloodLanding() {
               {tt("bloodLanding.title", "Blood bank")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("bloodLanding.subtitle", "Find donors and post emergency blood needs on your campus.")}
+              {tt(
+                "bloodLanding.subtitle",
+                "Find donors and post emergency blood needs on your campus.",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -123,7 +134,10 @@ export default function BloodLanding() {
               {tt("bloodLanding.chooseCampus", "Choose a university")}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("bloodLanding.chooseCampusHint", "Use the campus selector in the top bar to see donors and requests.")}
+              {tt(
+                "bloodLanding.chooseCampusHint",
+                "Use the campus selector in the top bar to see donors and requests.",
+              )}
             </p>
           </div>
         ) : (
@@ -133,35 +147,61 @@ export default function BloodLanding() {
             </div>
 
             {universityId ? (
-              <SectionWrapper spacing="sm" background="transparent" className="my-0 mt-8">
+              <SectionWrapper
+                spacing="sm"
+                background="transparent"
+                className="my-0 mt-8"
+              >
                 <h3 className="text-sm font-semibold text-gray-900">
                   {tt("bloodLanding.campusStats", "Campus snapshot")}
                 </h3>
                 {statsLoading ? (
-                  <div className="mt-3 h-20 animate-pulse rounded-xl bg-gray-100" />
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 h-fit">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-20 animate-pulse rounded-xl bg-gray-100"
+                      />
+                    ))}
+                  </div>
                 ) : statEntries.length > 0 ? (
-                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {statEntries.map(([k, v]) => (
-                      <div key={k} className="rounded-xl border border-gray-100 bg-white px-3 py-3 shadow-sm">
+                      <div
+                        key={k}
+                        className="rounded-xl border border-gray-100 bg-white px-3 py-3 shadow-sm"
+                      >
                         <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
                           {k.replace(/([A-Z])/g, " $1").trim()}
                         </p>
-                        <p className="mt-1 text-lg font-bold text-gray-900">{Number(v).toLocaleString()}</p>
+                        <p className="mt-1 text-lg font-bold text-gray-900">
+                          {Number(v).toLocaleString()}
+                        </p>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <p className="mt-2 text-xs text-gray-500">
-                    {tt("bloodLanding.statsUnavailable", "Statistics will appear here when available.")}
+                    {tt(
+                      "bloodLanding.statsUnavailable",
+                      "Statistics will appear here when available.",
+                    )}
                   </p>
                 )}
               </SectionWrapper>
             ) : null}
 
-            <SectionWrapper spacing="sm" background="transparent" className="my-0 mt-8">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0 mt-8"
+            >
               <SectionHeader
                 title={tt("bloodLanding.donorsPreview", "Donors near you")}
-                subtitle={tt("bloodLanding.donorsPreviewSub", "Verified donors at your university.")}
+                subtitle={tt(
+                  "bloodLanding.donorsPreviewSub",
+                  "Verified donors at your university.",
+                )}
                 viewAllHref="/blood-bank/donors"
               />
               {donorsPreview.error ? (
@@ -170,9 +210,12 @@ export default function BloodLanding() {
                 </p>
               ) : null}
               {donorsPreview.isLoading && donorsPreview.items.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-40 animate-pulse rounded-2xl bg-gray-100" />
+                    <div
+                      key={i}
+                      className="h-32 animate-pulse rounded-2xl bg-gray-100"
+                    />
                   ))}
                 </div>
               ) : donorsPreview.items.length === 0 ? (
@@ -180,7 +223,7 @@ export default function BloodLanding() {
                   {tt("bloodLanding.noDonors", "No donors listed yet.")}
                 </p>
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                   {donorsPreview.items.map((d) => (
                     <DonorCard key={d._id} donor={d} />
                   ))}
@@ -188,10 +231,17 @@ export default function BloodLanding() {
               )}
             </SectionWrapper>
 
-            <SectionWrapper spacing="sm" background="transparent" className="my-0 mt-10">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0 mt-10"
+            >
               <SectionHeader
                 title={tt("bloodLanding.requestsPreview", "Open requests")}
-                subtitle={tt("bloodLanding.requestsPreviewSub", "Help respond to active campus needs.")}
+                subtitle={tt(
+                  "bloodLanding.requestsPreviewSub",
+                  "Help respond to active campus needs.",
+                )}
                 viewAllHref="/blood-bank/requests"
               />
               {requestsPreview.error ? (
@@ -199,18 +249,22 @@ export default function BloodLanding() {
                   {requestsPreview.error}
                 </p>
               ) : null}
-              {requestsPreview.isLoading && requestsPreview.items.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-36 animate-pulse rounded-2xl bg-gray-100" />
+              {requestsPreview.isLoading &&
+              requestsPreview.items.length === 0 ? (
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-32 animate-pulse rounded-2xl bg-gray-100"
+                    />
                   ))}
                 </div>
               ) : requestsPreview.items.length === 0 ? (
                 <p className="mt-4 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-500">
-                  {tt("bloodLanding.noRequests", "No open requests.")}
+                  {tt("bloodLanding.noRequests", "No open requests yet.")}
                 </p>
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                   {requestsPreview.items.map((r) => (
                     <BloodRequestCard key={r._id} row={r} />
                   ))}

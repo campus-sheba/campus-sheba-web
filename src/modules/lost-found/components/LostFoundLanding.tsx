@@ -40,14 +40,23 @@ function SectionBlock({
 
   return (
     <SectionWrapper spacing="sm" background="transparent" className="my-0">
-      <SectionHeader title={title} subtitle={subtitle} viewAllHref={viewAllHref} />
+      <SectionHeader
+        title={title}
+        subtitle={subtitle}
+        viewAllHref={viewAllHref}
+      />
       {error ? (
-        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
       ) : null}
       {isLoading && items.length === 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+            <div
+              key={i}
+              className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
+            />
           ))}
         </div>
       ) : items.length === 0 ? (
@@ -55,7 +64,7 @@ function SectionBlock({
           {tt("lostFoundLanding.noPosts", "No posts yet.")}
         </p>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {items.slice(0, 8).map((p) => (
             <LostFoundCard key={p._id} post={p} />
           ))}
@@ -69,7 +78,8 @@ export default function LostFoundLanding() {
   const t = useTranslations("common");
   const router = useRouter();
   const { state, dispatch } = useAppState();
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const universityId = state.university.selected?._id;
   const guestMode = !state.auth.isAuthenticated;
 
@@ -83,7 +93,11 @@ export default function LostFoundLanding() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-16 pt-2">
+      <ContentWrapper
+        maxWidth="max-w-7xl mx-auto"
+        padding="md"
+        className="pb-16 pt-2"
+      >
         <AppBreadcrumb
           items={[
             { label: tt("lostFoundLanding.home", "Home"), href: "/" },
@@ -97,7 +111,10 @@ export default function LostFoundLanding() {
               {tt("lostFoundLanding.title", "Lost & Found")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("lostFoundLanding.subtitle", "Report lost items or help others recover what they lost.")}
+              {tt(
+                "lostFoundLanding.subtitle",
+                "Report lost items or help others recover what they lost.",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -109,7 +126,10 @@ export default function LostFoundLanding() {
               <Plus className="mr-2 h-4 w-4" />
               {tt("lostFoundLanding.post", "Post")}
             </button>
-            <Link href="/lost-found/all" className="text-sm font-semibold text-[#00A651] hover:underline">
+            <Link
+              href="/lost-found/all"
+              className="text-sm font-semibold text-[#00A651] hover:underline"
+            >
               {tt("lostFoundLanding.browseAll", "Browse all")} →
             </Link>
           </div>
@@ -122,7 +142,10 @@ export default function LostFoundLanding() {
               {tt("lostFoundLanding.chooseCampus", "Choose a university")}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("lostFoundLanding.chooseCampusHint", "Use the campus selector in the top bar.")}
+              {tt(
+                "lostFoundLanding.chooseCampusHint",
+                "Use the campus selector in the top bar.",
+              )}
             </p>
           </div>
         ) : (
@@ -134,7 +157,10 @@ export default function LostFoundLanding() {
             ) : null}
             <SectionBlock
               title={tt("lostFoundLanding.lost", "Recently lost")}
-              subtitle={tt("lostFoundLanding.lostSub", "Items people are looking for.")}
+              subtitle={tt(
+                "lostFoundLanding.lostSub",
+                "Items people are looking for.",
+              )}
               type="Lost"
               universityId={universityId}
               guestMode={guestMode}
@@ -143,7 +169,10 @@ export default function LostFoundLanding() {
             />
             <SectionBlock
               title={tt("lostFoundLanding.found", "Recently found")}
-              subtitle={tt("lostFoundLanding.foundSub", "Items waiting to be claimed.")}
+              subtitle={tt(
+                "lostFoundLanding.foundSub",
+                "Items waiting to be claimed.",
+              )}
               type="Found"
               universityId={universityId}
               guestMode={guestMode}
