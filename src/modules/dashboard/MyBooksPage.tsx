@@ -74,7 +74,6 @@ export default function MyBooksPage() {
     setError(null);
     try {
       const res = await fetchCreatorOwnBooks(buildApiParams(nextPage));
-      console.log(res);
       const rows = Array.isArray(res.data) ? res.data : [];
       setTotal(typeof res.total === "number" ? res.total : rows.length);
       setItems((prev) => (append ? [...prev, ...rows] : rows));
