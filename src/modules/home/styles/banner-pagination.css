@@ -1,3 +1,10 @@
+/* Fill reserved banner height so slides match skeleton (no layout jump) */
+.banner-swiper.swiper,
+.banner-swiper .swiper-wrapper,
+.banner-swiper .swiper-slide {
+  height: 100%;
+}
+
 /* Banner pagination custom styles */
 .custom-pagination {
   display: flex;

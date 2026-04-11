@@ -376,10 +376,10 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 bg-white  "
+        className="my-0 scroll-mt-6 bg-white pt-8 md:pt-12"
       >
-        <ContentWrapper maxWidth="container" padding="none" className="">
-          <header className="mx-auto max-w-7xl text-center">
+        <ContentWrapper maxWidth="container" padding="none" className="px-4 md:px-8">
+          <header className="mx-auto max-w-3xl text-center">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
               {tt("homeContent.headline", "Your campus, connected")}
             </h1>
