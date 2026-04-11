@@ -101,7 +101,7 @@ export function HomeLostFoundRails() {
   return (
     <section id="home-lost-found" aria-labelledby="home-lost-found-heading">
       <SectionWrapper spacing="none" background="transparent" className="my-0 bg-amber-50/30 py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
           <div className="border-b border-amber-200/50 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-800">
               {tt("homeRails.lostFoundKicker", "Lost & found")}
