@@ -66,7 +66,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
         <ContentWrapper
           maxWidth="container"
           padding="none"
-          className="py-10 px-4 sm:px-6 lg:px-8"
+          className="py-10 "
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
@@ -109,7 +109,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       <ContentWrapper
         maxWidth="container"
         padding="none"
-        className="py-14 px-4 sm:px-6 lg:px-8"
+        className="py-14 "
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
           {/* Brand Column */}
@@ -313,7 +313,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
         <ContentWrapper
           maxWidth="container"
           padding="none"
-          className="py-5 px-4 sm:px-6 lg:px-8"
+          className="py-5 "
         >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">

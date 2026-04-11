@@ -38,7 +38,7 @@ export default function CampusTopbar() {
       <ContentWrapper
         maxWidth="container"
         padding="none"
-        className="flex h-full items-center justify-between w-full px-4 sm:px-6 lg:px-8"
+        className="flex h-full items-center justify-between w-full "
       >
         {/* University Selector */}
         <button
