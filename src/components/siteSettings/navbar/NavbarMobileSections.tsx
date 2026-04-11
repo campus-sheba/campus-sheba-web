@@ -9,6 +9,7 @@ import {
   Search,
   ShoppingCart,
   User,
+  Wallet,
   X,
 } from "lucide-react";
 import Logo from "./Logo";
@@ -230,15 +231,26 @@ export function NavbarMobileDrawer({
 
       <div className="p-5 border-t border-neutral-100 space-y-2.5">
         {isLoggedIn ? (
-          <Link
-            href="/profile"
-            id="mobile-nav-profile"
-            onClick={() => setMobileOpen(false)}
-            className="btn-secondary-lg w-full justify-center"
-          >
-            <User className="w-4 h-4" />
-            Go to Profile
-          </Link>
+          <>
+            <Link
+              href="/wallet"
+              id="mobile-nav-wallet"
+              onClick={() => setMobileOpen(false)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-[#00A651] transition-colors hover:bg-emerald-100"
+            >
+              <Wallet className="w-4 h-4" />
+              Wallet
+            </Link>
+            <Link
+              href="/profile"
+              id="mobile-nav-profile"
+              onClick={() => setMobileOpen(false)}
+              className="btn-secondary-lg w-full justify-center"
+            >
+              <User className="w-4 h-4" />
+              Go to Profile
+            </Link>
+          </>
         ) : (
           <>
             <button

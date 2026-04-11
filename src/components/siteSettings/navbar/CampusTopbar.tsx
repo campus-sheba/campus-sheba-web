@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "@/i18n/navigation";
-import { ChevronDown, MapPin, Siren } from "lucide-react";
+import { ChevronDown, MapPin, Siren, Wallet } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { ContentWrapper } from "@/components/wrappers";
@@ -62,6 +62,16 @@ export default function CampusTopbar() {
         <div className="flex items-center gap-3">
           <div className="w-px h-3.5 bg-neutral-200" />
 
+          {isLoggedIn ? (
+            <Link
+              href="/wallet"
+              className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-[#00A651] transition-colors hover:bg-emerald-100"
+            >
+              <Wallet className="h-3.5 w-3.5" />
+              {t("wallet")}
+            </Link>
+          ) : null}
+
           <button
             type="button"
             onClick={handleProviderClick}
@@ -69,6 +79,17 @@ export default function CampusTopbar() {
           >
             {t("createShop")}
           </button>
+
+          {isLoggedIn ? (
+            <Link
+              href="/wallet"
+              className="sm:hidden inline-flex items-center gap-1 rounded-lg border border-emerald-100 bg-emerald-50 p-1.5 text-[#00A651]"
+              title={t("wallet")}
+              aria-label={t("wallet")}
+            >
+              <Wallet className="h-4 w-4" />
+            </Link>
+          ) : null}
 
           <Link
             href="/emergency-contacts"

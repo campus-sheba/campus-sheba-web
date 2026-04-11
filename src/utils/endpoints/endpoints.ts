@@ -110,6 +110,15 @@ export const chargesEndpoints = {
     query: `${baseURL}/charges/query`,
 };
 
+export const walletEndpoints = {
+    base: `${baseURL}/wallet`,
+    transactions: `${baseURL}/wallet/transactions`,
+    topupInitiate: `${baseURL}/wallet/topup/initiate`,
+    topupList: `${baseURL}/wallet/topup`,
+    withdraw: `${baseURL}/wallet/withdraw`,
+    withdrawList: `${baseURL}/wallet/withdraw`,
+};
+
 export const orderEndpoints = {
     summary: `${baseURL}/user/orders/summary`,
     /** POST place order, GET list orders (same path, different method). */
