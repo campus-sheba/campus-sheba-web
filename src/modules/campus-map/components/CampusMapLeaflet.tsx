@@ -107,5 +107,5 @@ export default function CampusMapLeaflet({ locations, selectedId, onSelect }: Pr
     map.flyTo([loc.latitude, loc.longitude], Math.max(map.getZoom(), 16), { duration: 0.55 });
   }, [selectedId, locations]);
 
-  return <div ref={containerRef} className="z-0 h-[min(52vh,520px)] min-h-[280px] w-full rounded-2xl shadow-inner md:h-full md:min-h-[420px]" />;
+  return <div ref={containerRef} className="z-0 h-[min(52vh,520px)] min-h-[280px] w-full rounded-2xl shadow-inner md:h-full md:min-h-[520px]" />;
 }

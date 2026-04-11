@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import dynamic from "next/dynamic";
@@ -37,7 +38,8 @@ const CampusMapLeaflet = dynamic(() => import("./CampusMapLeaflet"), {
 function resolveUniversityId(state: AppState): string | undefined {
   return (
     state.university.selected?._id ??
-    (typeof state.user.profile?.university === "object" && state.user.profile.university
+    (typeof state.user.profile?.university === "object" &&
+    state.user.profile.university
       ? state.user.profile.university._id
       : undefined)
   );
@@ -60,7 +62,8 @@ function typeColorClass(type?: string): string {
 export default function CampusMapExplorer() {
   const t = useTranslations("common");
   const { state } = useAppState();
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const universityId = resolveUniversityId(state);
 
   const [raw, setRaw] = useState<CampusMapLocation[]>([]);
@@ -102,7 +105,11 @@ export default function CampusMapExplorer() {
     const q = debounced.trim().toLowerCase();
     return raw.filter((loc) => {
       if (popularOnly && !loc.isPopular) return false;
-      if (typeFilter && (loc.type ?? "").toLowerCase() !== typeFilter.toLowerCase()) return false;
+      if (
+        typeFilter &&
+        (loc.type ?? "").toLowerCase() !== typeFilter.toLowerCase()
+      )
+        return false;
       if (!q) return true;
       const name = (loc.name ?? "").toLowerCase();
       const desc = (loc.description ?? "").toLowerCase();
@@ -112,7 +119,11 @@ export default function CampusMapExplorer() {
   }, [raw, debounced, typeFilter, popularOnly]);
 
   const selected = useMemo(
-    () => (selectedId ? filtered.find((l) => l._id === selectedId) ?? raw.find((l) => l._id === selectedId) : null),
+    () =>
+      selectedId
+        ? (filtered.find((l) => l._id === selectedId) ??
+          raw.find((l) => l._id === selectedId))
+        : null,
     [selectedId, filtered, raw],
   );
 
@@ -131,7 +142,11 @@ export default function CampusMapExplorer() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-16 pt-2">
+      <ContentWrapper
+        maxWidth="max-w-7xl mx-auto"
+        padding="md"
+        className="pb-16 pt-2"
+      >
         <AppBreadcrumb
           items={[
             { label: tt("campusMap.home", "Home"), href: "/" },
@@ -164,7 +179,10 @@ export default function CampusMapExplorer() {
               {tt("campusMap.pickCampus", "Pick your university")}
             </p>
             <p className="mx-auto mt-1 max-w-md text-sm text-gray-500">
-              {tt("campusMap.pickCampusHint", "Select your campus from the top bar to load the live map and places.")}
+              {tt(
+                "campusMap.pickCampusHint",
+                "Select your campus from the top bar to load the live map and places.",
+              )}
             </p>
           </div>
         ) : (
@@ -178,7 +196,9 @@ export default function CampusMapExplorer() {
                 type="button"
                 onClick={() => setMobileTab("map")}
                 className={`flex-1 rounded-lg py-2 text-sm font-semibold transition ${
-                  mobileTab === "map" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600"
+                  mobileTab === "map"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600"
                 }`}
               >
                 {tt("campusMap.tabMap", "Map")}
@@ -187,7 +207,9 @@ export default function CampusMapExplorer() {
                 type="button"
                 onClick={() => setMobileTab("list")}
                 className={`flex-1 rounded-lg py-2 text-sm font-semibold transition ${
-                  mobileTab === "list" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600"
+                  mobileTab === "list"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600"
                 }`}
               >
                 {tt("campusMap.tabList", "Places")}
@@ -196,51 +218,48 @@ export default function CampusMapExplorer() {
 
             <div className="mt-4 grid gap-4 lg:grid-cols-5 lg:gap-6">
               <div
-                className={`lg:col-span-3 ${mobileTab === "map" ? "block" : "hidden"} md:block`}
-              >
-                <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm ring-1 ring-black/[0.04]">
-                  <CampusMapLeaflet locations={mapLocations} selectedId={selectedId} onSelect={onSelect} />
-                </div>
-                <p className="mt-2 text-center text-[11px] text-gray-400">
-                  {tt("campusMap.osmNote", "Map data © OpenStreetMap contributors")}
-                </p>
-              </div>
-
-              <div
                 className={`flex flex-col gap-4 lg:col-span-2 ${mobileTab === "list" ? "block" : "hidden"} lg:block`}
               >
-                <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50/80 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[#00A651] focus:bg-white"
-                      placeholder={tt("campusMap.searchPh", "Search places…")}
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <select
-                      className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700"
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value)}
-                    >
-                      {CAMPUS_LOCATION_TYPES.map((x) => (
-                        <option key={x || "all"} value={x}>
-                          {x ? x.charAt(0).toUpperCase() + x.slice(1) : tt("campusMap.allTypes", "All types")}
-                        </option>
-                      ))}
-                    </select>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700">
+                <div className="mb-3 rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+                  <div className="flex flex-col gap-3">
+                    {/* Search */}
+                    <div className="relative w-full">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                       <input
-                        type="checkbox"
-                        checked={popularOnly}
-                        onChange={(e) => setPopularOnly(e.target.checked)}
-                        className="rounded border-gray-300 text-[#00A651] focus:ring-[#00A651]"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-50/80 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[#00A651] focus:bg-white"
+                        placeholder={tt("campusMap.searchPh", "Search places…")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                       />
-                      <Star className="h-3.5 w-3.5 text-amber-500" />
-                      {tt("campusMap.popular", "Popular only")}
-                    </label>
+                    </div>
+
+                    {/* Filters */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700"
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                      >
+                        {CAMPUS_LOCATION_TYPES.map((x) => (
+                          <option key={x || "all"} value={x}>
+                            {x
+                              ? x.charAt(0).toUpperCase() + x.slice(1)
+                              : tt("campusMap.allTypes", "All types")}
+                          </option>
+                        ))}
+                      </select>
+
+                      <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={popularOnly}
+                          onChange={(e) => setPopularOnly(e.target.checked)}
+                          className="rounded border-gray-300 text-[#00A651] focus:ring-[#00A651]"
+                        />
+                        <Star className="h-3.5 w-3.5 text-amber-500" />
+                        {tt("campusMap.popular", "Popular only")}
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -248,7 +267,10 @@ export default function CampusMapExplorer() {
                   {loading ? (
                     <div className="space-y-2 p-2">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="h-16 animate-pulse rounded-xl bg-gray-100" />
+                        <div
+                          key={i}
+                          className="h-16 animate-pulse rounded-xl bg-gray-100"
+                        />
                       ))}
                     </div>
                   ) : filtered.length === 0 ? (
@@ -274,7 +296,9 @@ export default function CampusMapExplorer() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-semibold text-gray-900">{loc.name}</span>
+                            <span className="font-semibold text-gray-900">
+                              {loc.name}
+                            </span>
                             {loc.isPopular ? (
                               <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-900">
                                 Hot
@@ -282,10 +306,14 @@ export default function CampusMapExplorer() {
                             ) : null}
                           </div>
                           {loc.type ? (
-                            <span className="text-xs capitalize text-gray-500">{loc.type}</span>
+                            <span className="text-xs capitalize text-gray-500">
+                              {loc.type}
+                            </span>
                           ) : null}
                           {loc.description ? (
-                            <p className="mt-1 line-clamp-2 text-xs text-gray-600">{loc.description}</p>
+                            <p className="mt-1 line-clamp-2 text-xs text-gray-600">
+                              {loc.description}
+                            </p>
                           ) : null}
                         </div>
                         <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-gray-300" />
@@ -294,56 +322,78 @@ export default function CampusMapExplorer() {
                   )}
                 </div>
               </div>
-            </div>
-
-            {selected ? (
-              <div className="mt-6 rounded-2xl border border-gray-200/80 bg-gradient-to-br from-white to-gray-50/80 p-5 shadow-md ring-1 ring-black/[0.05]">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-bold text-gray-900">{selected.name}</h2>
-                      {selected.type ? (
-                        <span
-                          className={`rounded-lg px-2 py-0.5 text-xs font-semibold capitalize ${typeColorClass(selected.type)}`}
+              <div
+                className={`lg:col-span-3 ${mobileTab === "map" ? "block" : "hidden"} md:block`}
+              >
+                {selected ? (
+                  <div className="mb-5 rounded-2xl border border-gray-200/80 bg-gradient-to-br from-white to-gray-50/80 p-5 shadow-md ring-1 ring-black/[0.05]">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="text-lg font-bold text-gray-900">
+                            {selected.name}
+                          </h2>
+                          {selected.type ? (
+                            <span
+                              className={`rounded-lg px-2 py-0.5 text-xs font-semibold capitalize ${typeColorClass(selected.type)}`}
+                            >
+                              {selected.type}
+                            </span>
+                          ) : null}
+                        </div>
+                        {selected.description ? (
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
+                            {selected.description}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {typeof selected.latitude === "number" &&
+                        typeof selected.longitude === "number" ? (
+                          <a
+                            href={`https://www.google.com/maps?q=${selected.latitude},${selected.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl bg-[#00A651] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-105"
+                          >
+                            <Compass className="h-4 w-4" />
+                            {tt("campusMap.openMaps", "Open in Google Maps")}
+                          </a>
+                        ) : null}
+                        <Link
+                          href={`/campus-map/${selected._id}`}
+                          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
                         >
-                          {selected.type}
-                        </span>
-                      ) : null}
+                          {tt("campusMap.sharePage", "Share page")}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedId(null)}
+                          className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-2 text-gray-500 hover:bg-gray-50"
+                          aria-label="Clear"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                    {selected.description ? (
-                      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">{selected.description}</p>
-                    ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {typeof selected.latitude === "number" && typeof selected.longitude === "number" ? (
-                      <a
-                        href={`https://www.google.com/maps?q=${selected.latitude},${selected.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-xl bg-[#00A651] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-105"
-                      >
-                        <Compass className="h-4 w-4" />
-                        {tt("campusMap.openMaps", "Open in Google Maps")}
-                      </a>
-                    ) : null}
-                    <Link
-                      href={`/campus-map/${selected._id}`}
-                      className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
-                    >
-                      {tt("campusMap.sharePage", "Share page")}
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedId(null)}
-                      className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-2 text-gray-500 hover:bg-gray-50"
-                      aria-label="Clear"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
+                ) : null}
+
+                <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm ring-1 ring-black/[0.04]">
+                  <CampusMapLeaflet
+                    locations={mapLocations}
+                    selectedId={selectedId}
+                    onSelect={onSelect}
+                  />
                 </div>
+                <p className="mt-2 text-center text-[11px] text-gray-400">
+                  {tt(
+                    "campusMap.osmNote",
+                    "Map data © OpenStreetMap contributors",
+                  )}
+                </p>
               </div>
-            ) : null}
+            </div>
           </>
         )}
       </ContentWrapper>
