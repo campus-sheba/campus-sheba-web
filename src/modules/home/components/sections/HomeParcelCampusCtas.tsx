@@ -8,7 +8,8 @@ import { useTranslations } from "next-intl";
 
 export function HomeParcelCampusCtas() {
   const t = useTranslations("common");
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const router = useRouter();
   const { state, dispatch } = useAppState();
   const universityId = state.university.selected?._id;
@@ -22,11 +23,25 @@ export function HomeParcelCampusCtas() {
   };
 
   return (
-    <section id="home-parcel-campus" aria-labelledby="home-parcel-campus-heading">
-      <SectionWrapper spacing="none" background="transparent" className="my-0 bg-white py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+    <section
+      id="home-parcel-campus"
+      aria-labelledby="home-parcel-campus-heading"
+    >
+      <SectionWrapper
+        spacing="none"
+        background="transparent"
+        className="my-0 bg-white py-12 md:py-16"
+      >
+        <ContentWrapper
+          maxWidth="max-w-7xl mx-auto"
+          padding="none"
+          className=""
+        >
           <h2 id="home-parcel-campus-heading" className="sr-only">
-            {tt("homeRails.parcelCampusSr", "Parcel delivery, campus map, and emergency contacts")}
+            {tt(
+              "homeRails.parcelCampusSr",
+              "Parcel delivery, campus map, and emergency contacts",
+            )}
           </h2>
 
           <div className="overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-white p-8 shadow-sm md:p-10">
@@ -66,7 +81,10 @@ export function HomeParcelCampusCtas() {
                 </div>
                 {!universityId ? (
                   <p className="mt-4 text-xs text-amber-800">
-                    {tt("homeRails.parcelCampusHint", "Tip: select your university for localized routing and banners.")}
+                    {tt(
+                      "homeRails.parcelCampusHint",
+                      "Tip: select your university for localized routing and banners.",
+                    )}
                   </p>
                 ) : null}
               </div>
@@ -92,7 +110,10 @@ export function HomeParcelCampusCtas() {
               </p>
               <span className="mt-4 inline-flex items-center text-sm font-bold text-[#00A651] group-hover:underline">
                 {tt("homeRails.mapCtaLink", "Open campus map")}
-                <ArrowRight className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden />
+                <ArrowRight
+                  className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5"
+                  aria-hidden
+                />
               </span>
             </Link>
 
@@ -114,7 +135,10 @@ export function HomeParcelCampusCtas() {
               </p>
               <span className="mt-4 inline-flex items-center text-sm font-bold text-[#00A651] group-hover:underline">
                 {tt("homeRails.emergencyCtaLink", "View emergency directory")}
-                <ArrowRight className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden />
+                <ArrowRight
+                  className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5"
+                  aria-hidden
+                />
               </span>
             </Link>
           </div>
