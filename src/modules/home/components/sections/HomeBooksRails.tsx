@@ -69,7 +69,7 @@ export function HomeBooksRails() {
     return (
       <section id="home-books" aria-labelledby="home-books-heading">
         <SectionWrapper spacing="none" background="transparent" className="my-0 bg-white py-12 md:py-16">
-          <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+          <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
             <div className="flex items-start gap-4 rounded-2xl border border-dashed border-gray-200 bg-sky-50/40 p-8">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-800">
                 <BookOpen className="h-6 w-6" aria-hidden />
@@ -95,7 +95,7 @@ export function HomeBooksRails() {
   return (
     <section id="home-books" aria-labelledby="home-books-heading">
       <SectionWrapper spacing="none" background="transparent" className="my-0 bg-white py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
           <div className="border-b border-gray-100 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700">
               {tt("homeRails.booksKicker", "Book Sheba")}

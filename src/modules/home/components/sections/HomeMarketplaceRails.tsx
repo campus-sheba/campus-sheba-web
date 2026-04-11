@@ -141,7 +141,7 @@ export function HomeMarketplaceRails() {
   return (
     <section id="home-used-marketplace" aria-labelledby="home-used-marketplace-heading">
       <SectionWrapper spacing="none" background="transparent" className="my-0 bg-gray-50/90 py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
           <div className="flex flex-col gap-2 border-b border-gray-200/80 pb-8 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">

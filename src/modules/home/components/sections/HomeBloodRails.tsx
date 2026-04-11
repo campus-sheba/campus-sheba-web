@@ -70,7 +70,7 @@ export function HomeBloodRails() {
     return (
       <section id="home-blood" aria-labelledby="home-blood-heading">
         <SectionWrapper spacing="none" background="transparent" className="my-0 bg-red-50/40 py-12 md:py-16">
-          <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+          <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
             <div className="flex items-start gap-4 rounded-2xl border border-dashed border-red-200/80 bg-white p-8">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
                 <Droplets className="h-6 w-6" aria-hidden />
@@ -96,7 +96,7 @@ export function HomeBloodRails() {
   return (
     <section id="home-blood" aria-labelledby="home-blood-heading">
       <SectionWrapper spacing="none" background="transparent" className="my-0 bg-red-50/40 py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
           <div className="border-b border-red-100 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-700">
               {tt("homeRails.bloodKicker", "Blood bank")}
