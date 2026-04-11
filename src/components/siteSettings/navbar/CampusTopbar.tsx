@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronDown, MapPin } from "lucide-react";
+import { ChevronDown, MapPin, Siren } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { ContentWrapper } from "@/components/wrappers";
 import { useTranslations } from "next-intl";
@@ -73,15 +74,15 @@ export default function CampusTopbar() {
             {t("createShop")}
           </button>
 
-          {/* <Link
-            href={`/blood-bank`}
-            id="topbar-sos-btn"
-            className="hidden lg:flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
-            title="Emergency Blood Request"
+          <Link
+            href="/emergency-contacts"
+            id="topbar-emergency-btn"
+            className="flex items-center gap-1 rounded-lg border border-red-100 bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700 sm:px-2.5 sm:py-1 sm:text-xs"
+            title="Emergency contacts"
           >
-            <Droplets className="w-3 h-3" />
+            <Siren className="h-3 w-3" />
             <span>SOS</span>
-          </Link> */}
+          </Link>
         </div>
       </ContentWrapper>
     </div>
