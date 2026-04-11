@@ -9,6 +9,9 @@ import {
   Package,
   Trash2,
   MapPin,
+  MapPinned,
+  Siren,
+  Compass,
   FacebookIcon,
   Twitter,
   Instagram,
@@ -16,6 +19,7 @@ import {
 } from "lucide-react";
 
 export const SERVICES = [
+  { label: "Explore campus", href: "/explore", icon: Compass },
   { label: "Delivery Sheba", href: "/delivery", icon: Bike },
   { label: "Book Sheba", href: "/books", icon: BookOpen },
   { label: "Buy & Sell", href: "/marketplace", icon: ShoppingBag },
@@ -26,6 +30,8 @@ export const SERVICES = [
   { label: "Parcel Delivery", href: "/parcel", icon: Package },
   { label: "Eco Pickup", href: "/garbage", icon: Trash2 },
   { label: "Lost & Found", href: "/lost-found", icon: MapPin },
+  { label: "Campus Map", href: "/campus-map", icon: MapPinned },
+  { label: "Emergency", href: "/emergency-contacts", icon: Siren },
 ];
 
 export const COMPANY_LINKS = [

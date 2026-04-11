@@ -2,12 +2,15 @@ import {
   Bike,
   BookOpen,
   Briefcase,
+  Compass,
   Droplets,
   GraduationCap,
   Heart,
   MapPin,
+  MapPinned,
   Package,
   ShoppingBag,
+  Siren,
   Store,
   Trash2,
 } from "lucide-react";
@@ -126,6 +129,7 @@ export const CAMPUS_LOCATION_GROUPS: Record<string, CampusLocationGroup[]> = {
 };
 
 export const servicesMenu: ServiceMenuItem[] = [
+  { label: "Explore campus", description: "All services, maps & safety in one hub", href: "/explore", icon: Compass, color: "text-emerald-700", bg: "bg-emerald-50" },
   { label: "Delivery Sheba", description: "Food & courier delivery", href: "/delivery", icon: Bike, color: "text-purple-600", bg: "bg-purple-50" },
   { label: "Buy & Sell", description: "Campus marketplace", href: "/marketplace", icon: ShoppingBag, color: "text-emerald-600", bg: "bg-emerald-50" },
   { label: "Entrepreneurship", description: "Student shops & skill services", href: "/marketplace/shop/create", icon: Store, color: "text-red-600", bg: "bg-red-50" },
@@ -137,6 +141,8 @@ export const servicesMenu: ServiceMenuItem[] = [
   { label: "Parcel Delivery", description: "Send packages on campus", href: "/parcel", icon: Package, color: "text-violet-600", bg: "bg-violet-50" },
   { label: "Garbage Collector", description: "Eco-friendly waste pickup", href: "/garbage", icon: Trash2, color: "text-slate-600", bg: "bg-slate-50" },
   { label: "Lost & Found", description: "Recover lost items", href: "/lost-found", icon: MapPin, color: "text-yellow-600", bg: "bg-yellow-50" },
+  { label: "Campus Map", description: "Explore places on your campus", href: "/campus-map", icon: MapPinned, color: "text-teal-600", bg: "bg-teal-50" },
+  { label: "Emergency", description: "Security, hospitals & helplines", href: "/emergency-contacts", icon: Siren, color: "text-red-600", bg: "bg-red-50" },
 ];
 
 const FEATURE_VISUALS: Record<

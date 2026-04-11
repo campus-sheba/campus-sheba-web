@@ -13,7 +13,15 @@ export const landingPageEndpoints = {
 export const careersEndpoints = {
     universities: `${baseURL}/universities`,
     universityLocations: `${baseURL}/university-locations`,
+    universityLocationById: (id: string) =>
+        `${baseURL}/university-locations/${encodeURIComponent(id)}`,
     sendApplication: `${baseURL}/career/send-cv`,
+};
+
+export const emergencyEndpoints = {
+    contacts: `${baseURL}/emergency/contacts`,
+    contactsByCategory: `${baseURL}/emergency/contacts/by-category`,
+    contactById: (id: string) => `${baseURL}/emergency/contacts/${encodeURIComponent(id)}`,
 };
 
 export const authenticationEndpoints = {
