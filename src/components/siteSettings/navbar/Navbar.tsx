@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, User, ShoppingCart } from "lucide-react";
+import { ChevronDown, Search, User, ShoppingCart, Wallet } from "lucide-react";
 import Logo from "./Logo";
 import CampusTopbar from "./CampusTopbar";
 import {
@@ -256,6 +256,17 @@ const Navbar = ({ locale }: { locale: string }) => {
             >
               <ShoppingCart className="h-5 w-5" strokeWidth={2} />
             </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/wallet"
+                id="nav-wallet-btn"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200/80 text-[#00A651] transition-colors hover:bg-emerald-50"
+                title={t("wallet")}
+                aria-label={t("wallet")}
+              >
+                <Wallet className="h-5 w-5" strokeWidth={2} />
+              </Link>
+            ) : null}
             {isLoggedIn ? (
               <Link
                 href={`/profile`}

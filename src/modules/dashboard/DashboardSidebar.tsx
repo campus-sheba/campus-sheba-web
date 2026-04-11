@@ -13,6 +13,7 @@ import {
   Droplets,
   HeartPulse,
   Store,
+  Wallet,
   LogOut,
   X,
   Menu,
@@ -61,6 +62,12 @@ const primaryItems: NavItem[] = [
     href: "/my-addresses",
     icon: MapPin,
     color: "text-blue-500",
+  },
+  {
+    label: "Wallet",
+    href: "/wallet",
+    icon: Wallet,
+    color: "text-[#00A651]",
   },
   {
     label: "My orders",
