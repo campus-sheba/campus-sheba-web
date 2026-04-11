@@ -19,15 +19,20 @@ export default function LostFoundFeed() {
   const t = useTranslations("common");
   const searchParams = useSearchParams();
   const { state } = useAppState();
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const universityId = state.university.selected?._id;
   const isAuthenticated = state.auth.isAuthenticated;
   const guestMode = !isAuthenticated;
 
-  const [searchInput, setSearchInput] = useState(() => searchParams.get("title") || "");
+  const [searchInput, setSearchInput] = useState(
+    () => searchParams.get("title") || "",
+  );
   const [debouncedTitle, setDebouncedTitle] = useState("");
   const [categories, setCategories] = useState<BuySellCategory[]>([]);
-  const [categoryId, setCategoryId] = useState(() => searchParams.get("category") || "");
+  const [categoryId, setCategoryId] = useState(
+    () => searchParams.get("category") || "",
+  );
   const [lfType, setLfType] = useState(() => searchParams.get("type") || "");
 
   useEffect(() => {
@@ -48,23 +53,34 @@ export default function LostFoundFeed() {
 
   const canLoad = guestMode ? Boolean(universityId) : true;
 
-  const { items, total, isLoading, error, hasMore, loadMore } = useLostFoundBrowse({
-    guestMode,
-    universityId,
-    debouncedTitle,
-    category: categoryId || undefined,
-    type: (lfType === "Lost" || lfType === "Found" ? lfType : "") as "" | "Lost" | "Found",
-    pageSize: 12,
-    enabled: canLoad,
-  });
+  const { items, total, isLoading, error, hasMore, loadMore } =
+    useLostFoundBrowse({
+      guestMode,
+      universityId,
+      debouncedTitle,
+      category: categoryId || undefined,
+      type: (lfType === "Lost" || lfType === "Found" ? lfType : "") as
+        | ""
+        | "Lost"
+        | "Found",
+      pageSize: 12,
+      enabled: canLoad,
+    });
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-16 pt-2">
+      <ContentWrapper
+        maxWidth="max-w-7xl mx-auto"
+        padding="md"
+        className="pb-16 pt-2"
+      >
         <AppBreadcrumb
           items={[
             { label: tt("lostFoundFeed.home", "Home"), href: "/" },
-            { label: tt("lostFoundFeed.lostFound", "Lost & Found"), href: "/lost-found" },
+            {
+              label: tt("lostFoundFeed.lostFound", "Lost & Found"),
+              href: "/lost-found",
+            },
           ]}
         />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -73,7 +89,10 @@ export default function LostFoundFeed() {
               {tt("lostFoundFeed.title", "Campus Lost & Found")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("lostFoundFeed.subtitle", "Browse lost and found posts from your university.")}
+              {tt(
+                "lostFoundFeed.subtitle",
+                "Browse lost and found posts from your university.",
+              )}
             </p>
           </div>
         </div>
@@ -85,7 +104,10 @@ export default function LostFoundFeed() {
               {tt("lostFoundFeed.chooseCampus", "Choose your campus")}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("lostFoundFeed.chooseCampusHint", "Use the campus selector in the top bar to browse posts.")}
+              {tt(
+                "lostFoundFeed.chooseCampusHint",
+                "Use the campus selector in the top bar to browse posts.",
+              )}
             </p>
           </div>
         ) : (
@@ -98,7 +120,10 @@ export default function LostFoundFeed() {
                     type="search"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder={tt("lostFoundFeed.searchPlaceholder", "Search by title…")}
+                    placeholder={tt(
+                      "lostFoundFeed.searchPlaceholder",
+                      "Search by title…",
+                    )}
                     className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none ring-[#00A651]/20 focus:border-[#00A651] focus:ring-2"
                   />
                 </div>
@@ -107,7 +132,9 @@ export default function LostFoundFeed() {
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651]"
                 >
-                  <option value="">{tt("lostFoundFeed.allCategories", "All categories")}</option>
+                  <option value="">
+                    {tt("lostFoundFeed.allCategories", "All categories")}
+                  </option>
                   {categories.map((c) => (
                     <option key={c._id} value={c._id}>
                       {c.title}
@@ -129,13 +156,18 @@ export default function LostFoundFeed() {
             </div>
 
             {error ? (
-              <p className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+              <p className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </p>
             ) : null}
 
             {isLoading && items.length === 0 ? (
-              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+                  <div
+                    key={i}
+                    className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
+                  />
                 ))}
               </div>
             ) : items.length === 0 ? (
@@ -145,17 +177,25 @@ export default function LostFoundFeed() {
             ) : (
               <>
                 <p className="mt-4 text-xs text-gray-500">
-                  {tt("lostFoundFeed.showing", "Showing")} {items.length} / {total}
+                  {tt("lostFoundFeed.showing", "Showing")} {items.length} /{" "}
+                  {total}
                 </p>
-                <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {items.map((p) => (
                     <LostFoundCard key={p._id} post={p} />
                   ))}
                 </div>
                 {hasMore ? (
                   <div className="mt-6 flex justify-center">
-                    <Button type="button" variant="outline" onClick={loadMore} disabled={isLoading}>
-                      {isLoading ? tt("lostFoundFeed.loading", "Loading…") : tt("lostFoundFeed.loadMore", "Load more")}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={loadMore}
+                      disabled={isLoading}
+                    >
+                      {isLoading
+                        ? tt("lostFoundFeed.loading", "Loading…")
+                        : tt("lostFoundFeed.loadMore", "Load more")}
                     </Button>
                   </div>
                 ) : null}

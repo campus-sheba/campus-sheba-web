@@ -38,7 +38,7 @@ export default function CampusTopbar() {
       <ContentWrapper
         maxWidth="container"
         padding="none"
-        className="flex h-full items-center justify-between w-full"
+        className="flex h-full items-center justify-between w-full px-4 sm:px-6 lg:px-8"
       >
         {/* University Selector */}
         <button
@@ -49,11 +49,7 @@ export default function CampusTopbar() {
               ? "cursor-not-allowed text-neutral-400"
               : "hover:text-emerald-600"
           }`}
-          title={
-            isLoggedIn
-              ? t("disabledAfterLogin")
-              : t("changeUniversity")
-          }
+          title={isLoggedIn ? t("disabledAfterLogin") : t("changeUniversity")}
         >
           <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span className="text-neutral-700 font-semibold">

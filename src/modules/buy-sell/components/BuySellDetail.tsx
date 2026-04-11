@@ -71,7 +71,8 @@ export default function BuySellDetail() {
   });
   const related = relatedRaw.filter((x) => x._id !== item?._id).slice(0, 8);
 
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
 
   const addCurrentToCart = async () => {
     if (!item) return;
@@ -85,7 +86,10 @@ export default function BuySellDetail() {
       setCartMsg(tt("buySellDetail.addedToCart", "Added to cart."));
       return true;
     }
-    setCartMsg(res.message ?? tt("buySellDetail.couldNotAddToCart", "Could not add to cart."));
+    setCartMsg(
+      res.message ??
+        tt("buySellDetail.couldNotAddToCart", "Could not add to cart."),
+    );
     return false;
   };
 
@@ -109,7 +113,9 @@ export default function BuySellDetail() {
   if (!id) {
     return (
       <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="lg">
-        <p className="text-sm text-gray-600">{tt("buySellDetail.invalidListing", "Invalid listing.")}</p>
+        <p className="text-sm text-gray-600">
+          {tt("buySellDetail.invalidListing", "Invalid listing.")}
+        </p>
       </ContentWrapper>
     );
   }
@@ -146,7 +152,9 @@ export default function BuySellDetail() {
     typeof item.category === "object" && item.category?.title
       ? item.category.title
       : tt("buySellDetail.campusMarketplace", "Campus Marketplace");
-  const sellerName = item.contactName || tt("buySellDetail.verifiedCampusSeller", "Verified campus seller");
+  const sellerName =
+    item.contactName ||
+    tt("buySellDetail.verifiedCampusSeller", "Verified campus seller");
   const sellerPhone = item.contactPhone || "+880 1XXX-XXXXXX";
   const sellerEmail = item.contactEmail || "seller@campus.example";
   const description =
@@ -155,11 +163,21 @@ export default function BuySellDetail() {
       "buySellDetail.defaultDescription",
       "Good condition item from a trusted campus seller. Contact seller for inspection or pickup details.",
     );
-  const condition = item.condition || tt("buySellDetail.usedGood", "Used - Good");
+  const condition =
+    item.condition || tt("buySellDetail.usedGood", "Used - Good");
   const stock = Math.max(0, item.quantity ?? 1);
-  const warranty = tt("buySellDetail.noOfficialWarranty", "No official warranty");
-  const returns = tt("buySellDetail.noReturnsAfterHandover", "No returns after handover");
-  const delivery = tt("buySellDetail.campusPickupLocalDelivery", "Campus pickup / local delivery");
+  const warranty = tt(
+    "buySellDetail.noOfficialWarranty",
+    "No official warranty",
+  );
+  const returns = tt(
+    "buySellDetail.noReturnsAfterHandover",
+    "No returns after handover",
+  );
+  const delivery = tt(
+    "buySellDetail.campusPickupLocalDelivery",
+    "Campus pickup / local delivery",
+  );
   const postedOn = item.createdAt
     ? new Date(item.createdAt).toLocaleDateString()
     : tt("buySellDetail.recently", "Recently");
@@ -171,7 +189,10 @@ export default function BuySellDetail() {
       <AppBreadcrumb
         items={[
           { label: tt("buySellDetail.home", "Home"), href: "/" },
-          { label: tt("buySellDetail.buySell", "Buy & Sell"), href: "/buy-sell" },
+          {
+            label: tt("buySellDetail.buySell", "Buy & Sell"),
+            href: "/buy-sell",
+          },
           { label: item.title },
         ]}
       />
@@ -208,7 +229,8 @@ export default function BuySellDetail() {
                 <span className="text-sm text-gray-500">{condition}</span>
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                {tt("buySellDetail.posted", "Posted")} {postedOn} · {rating} ({reviews} {tt("buySellDetail.reviews", "reviews")})
+                {tt("buySellDetail.posted", "Posted")} {postedOn} · {rating} (
+                {reviews} {tt("buySellDetail.reviews", "reviews")})
               </p>
             </div>
 
@@ -225,7 +247,9 @@ export default function BuySellDetail() {
             </div>
 
             <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-700">
-              <p className="font-medium text-gray-900">{tt("buySellDetail.seller", "Seller")}</p>
+              <p className="font-medium text-gray-900">
+                {tt("buySellDetail.seller", "Seller")}
+              </p>
               <p>{sellerName}</p>
               <p>{sellerPhone}</p>
               <p>{sellerEmail}</p>
@@ -321,26 +345,44 @@ export default function BuySellDetail() {
               </summary>
               <div className="mt-3 grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
                 <p>
-                  <span className="text-gray-500">{tt("buySellDetail.brand", "Brand")}:</span>{" "}
+                  <span className="text-gray-500">
+                    {tt("buySellDetail.brand", "Brand")}:
+                  </span>{" "}
                   {item.brand || tt("buySellDetail.generic", "Generic")}
                 </p>
                 <p>
-                  <span className="text-gray-500">{tt("buySellDetail.model", "Model")}:</span>{" "}
-                  {item.modelName || tt("buySellDetail.standardModel", "Standard model")}
+                  <span className="text-gray-500">
+                    {tt("buySellDetail.model", "Model")}:
+                  </span>{" "}
+                  {item.modelName ||
+                    tt("buySellDetail.standardModel", "Standard model")}
                 </p>
                 <p>
-                  <span className="text-gray-500">{tt("buySellDetail.condition", "Condition")}:</span> {condition}
+                  <span className="text-gray-500">
+                    {tt("buySellDetail.condition", "Condition")}:
+                  </span>{" "}
+                  {condition}
                 </p>
                 <p>
-                  <span className="text-gray-500">{tt("buySellDetail.quantityAvailable", "Quantity available")}:</span>{" "}
+                  <span className="text-gray-500">
+                    {tt(
+                      "buySellDetail.quantityAvailable",
+                      "Quantity available",
+                    )}
+                    :
+                  </span>{" "}
                   {stock}
                 </p>
                 <p>
-                  <span className="text-gray-500">{tt("buySellDetail.returnPolicy", "Return policy")}:</span>{" "}
+                  <span className="text-gray-500">
+                    {tt("buySellDetail.returnPolicy", "Return policy")}:
+                  </span>{" "}
                   {returns}
                 </p>
                 <p>
-                  <span className="text-gray-500">{tt("buySellDetail.deliveryType", "Delivery type")}:</span>{" "}
+                  <span className="text-gray-500">
+                    {tt("buySellDetail.deliveryType", "Delivery type")}:
+                  </span>{" "}
                   {delivery}
                 </p>
               </div>
@@ -370,13 +412,22 @@ export default function BuySellDetail() {
               </h3>
               <div className="mt-3 space-y-2 text-xs text-gray-600">
                 <p className="rounded bg-gray-50 px-3 py-2">
-                  {tt("buySellDetail.canINegotiate", "Can I negotiate?")} {item.negotiable ? tt("buySellDetail.yes", "Yes") : tt("buySellDetail.no", "No")}
+                  {tt("buySellDetail.canINegotiate", "Can I negotiate?")}{" "}
+                  {item.negotiable
+                    ? tt("buySellDetail.yes", "Yes")
+                    : tt("buySellDetail.no", "No")}
                 </p>
                 <p className="rounded bg-gray-50 px-3 py-2">
-                  {tt("buySellDetail.inspectionPossible", "Is inspection possible? Yes, before payment.")}
+                  {tt(
+                    "buySellDetail.inspectionPossible",
+                    "Is inspection possible? Yes, before payment.",
+                  )}
                 </p>
                 <p className="rounded bg-gray-50 px-3 py-2">
-                  {tt("buySellDetail.paymentMethod", "Payment method: Cash / agreed transfer.")}
+                  {tt(
+                    "buySellDetail.paymentMethod",
+                    "Payment method: Cash / agreed transfer.",
+                  )}
                 </p>
               </div>
             </div>
@@ -387,7 +438,10 @@ export default function BuySellDetail() {
       <SectionWrapper spacing="sm" background="transparent" className="mt-6">
         <SectionHeader
           title={tt("buySellDetail.relatedItems", "Related items")}
-          subtitle={tt("buySellDetail.relatedItemsSub", "More listings you may like.")}
+          subtitle={tt(
+            "buySellDetail.relatedItemsSub",
+            "More listings you may like.",
+          )}
           viewAllHref={
             relatedCategoryId
               ? `/buy-sell/all?category=${encodeURIComponent(relatedCategoryId)}`
@@ -399,7 +453,7 @@ export default function BuySellDetail() {
             {tt("buySellDetail.noRelatedItems", "No related items found yet.")}
           </p>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {related.map((r) => (
               <BuySellListingCard key={r._id} item={r} />
             ))}

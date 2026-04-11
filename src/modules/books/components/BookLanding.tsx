@@ -24,7 +24,9 @@ function CategoryListingsSection({
   universityId?: string;
   tt: (key: string, fallback: string) => string;
 }) {
-  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: "600px 0px" });
+  const { ref, inView } = useInView<HTMLDivElement>({
+    rootMargin: "600px 0px",
+  });
 
   const { items, isLoading, error } = useBooksList({
     enabled: inView,
@@ -43,28 +45,36 @@ function CategoryListingsSection({
       <SectionWrapper spacing="sm" background="transparent" className="my-0">
         <SectionHeader
           title={category.title}
-          subtitle={category.description || tt("bookLanding.browseCategory", "Browse books in this category.")}
+          subtitle={
+            category.description ||
+            tt("bookLanding.browseCategory", "Browse books in this category.")
+          }
           viewAllHref={`/books/all?category=${encodeURIComponent(category._id)}`}
         />
 
         {error ? (
-          <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+          <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
         ) : null}
 
         {!inView ? (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-72 rounded-2xl bg-gray-50" />
+              <div key={i} className="aspect-[3/4] rounded-2xl bg-gray-50" />
             ))}
           </div>
         ) : isLoading && items.length === 0 ? (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+              <div
+                key={i}
+                className="aspect-[3/4] animate-pulse rounded-2xl bg-gray-100"
+              />
             ))}
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {items.slice(0, 8).map((item) => (
               <BookListingCard key={item._id} item={item} />
             ))}
@@ -100,14 +110,23 @@ function ListingsSection({
 
   return (
     <SectionWrapper spacing="sm" background="transparent" className="my-0">
-      <SectionHeader title={title} subtitle={subtitle} viewAllHref={viewAllHref} />
+      <SectionHeader
+        title={title}
+        subtitle={subtitle}
+        viewAllHref={viewAllHref}
+      />
       {error ? (
-        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
       ) : null}
       {isLoading && items.length === 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+            <div
+              key={i}
+              className="aspect-[3/4] animate-pulse rounded-2xl bg-gray-100"
+            />
           ))}
         </div>
       ) : items.length === 0 ? (
@@ -115,7 +134,7 @@ function ListingsSection({
           No listings found.
         </p>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {items.slice(0, pageSize).map((item) => (
             <BookListingCard key={item._id} item={item} />
           ))}
@@ -130,7 +149,8 @@ export default function BookLanding() {
   const router = useRouter();
   const { state, dispatch } = useAppState();
   const universityId = state.university.selected?._id;
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const isLoggedIn = state.auth.isAuthenticated;
 
   const [categories, setCategories] = useState<BuySellCategory[]>([]);
@@ -145,7 +165,9 @@ export default function BookLanding() {
       setCategories(res.data ?? []);
     } catch (e) {
       setCategories([]);
-      setCategoriesError(e instanceof Error ? e.message : "Failed to load categories");
+      setCategoriesError(
+        e instanceof Error ? e.message : "Failed to load categories",
+      );
     } finally {
       setCategoriesLoading(false);
     }
@@ -167,7 +189,11 @@ export default function BookLanding() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-16 pt-2">
+      <ContentWrapper
+        maxWidth="max-w-7xl mx-auto"
+        padding="md"
+        className="pb-16 pt-2"
+      >
         <AppBreadcrumb
           items={[
             { label: tt("bookLanding.home", "Home"), href: "/" },
@@ -181,7 +207,10 @@ export default function BookLanding() {
               {tt("bookLanding.title", "Book Sheba")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("bookLanding.subtitle", "Sell, lend, or donate textbooks on your campus.")}
+              {tt(
+                "bookLanding.subtitle",
+                "Sell, lend, or donate textbooks on your campus.",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -193,7 +222,10 @@ export default function BookLanding() {
               <Plus className="mr-2 h-4 w-4" />
               {tt("bookLanding.listBook", "List a book")}
             </button>
-            <Link href="/books/all" className="text-sm font-semibold text-[#00A651] hover:underline">
+            <Link
+              href="/books/all"
+              className="text-sm font-semibold text-[#00A651] hover:underline"
+            >
               {tt("bookLanding.browseAll", "Browse all")} →
             </Link>
           </div>
@@ -206,7 +238,10 @@ export default function BookLanding() {
               {tt("bookLanding.chooseUniversity", "Choose a university")}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              {tt("bookLanding.chooseUniversityHint", "Use the campus selector in the top bar.")}
+              {tt(
+                "bookLanding.chooseUniversityHint",
+                "Use the campus selector in the top bar.",
+              )}
             </p>
           </div>
         ) : (
@@ -215,17 +250,30 @@ export default function BookLanding() {
               <FeatureHeroAds universityId={universityId} />
             </div>
 
-            <SectionWrapper spacing="sm" background="transparent" className="my-0 mt-8">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0 mt-8"
+            >
               <SectionHeader
-                title={tt("bookLanding.popularCategories", "Popular categories")}
-                subtitle={tt("bookLanding.popularCategoriesSub", "Jump to a subject or genre.")}
+                title={tt(
+                  "bookLanding.popularCategories",
+                  "Popular categories",
+                )}
+                subtitle={tt(
+                  "bookLanding.popularCategoriesSub",
+                  "Jump to a subject or genre.",
+                )}
                 viewAllHref="/books/all"
                 viewAllLabel={tt("bookLanding.seeAll", "See all")}
               />
               {categoriesLoading && allCategories.length === 0 ? (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {Array.from({ length: 10 }).map((_, i) => (
-                    <span key={i} className="h-9 w-28 animate-pulse rounded-full bg-gray-100" />
+                    <span
+                      key={i}
+                      className="h-9 w-28 animate-pulse rounded-full bg-gray-100"
+                    />
                   ))}
                 </div>
               ) : allCategories.length > 0 ? (
@@ -246,7 +294,10 @@ export default function BookLanding() {
             <div className="mt-10 space-y-10">
               <ListingsSection
                 title={tt("bookLanding.sectionSell", "Books for sale")}
-                subtitle={tt("bookLanding.sectionSellSub", "Buy textbooks from students on your campus.")}
+                subtitle={tt(
+                  "bookLanding.sectionSellSub",
+                  "Buy textbooks from students on your campus.",
+                )}
                 universityId={universityId}
                 viewAllHref="/books/all?type=Selling"
                 pageSize={8}
@@ -255,7 +306,10 @@ export default function BookLanding() {
 
               <ListingsSection
                 title={tt("bookLanding.sectionLend", "Books to borrow")}
-                subtitle={tt("bookLanding.sectionLendSub", "Borrow for a period — great for short-term needs.")}
+                subtitle={tt(
+                  "bookLanding.sectionLendSub",
+                  "Borrow for a period — great for short-term needs.",
+                )}
                 universityId={universityId}
                 viewAllHref="/books/all?type=Lending"
                 pageSize={8}
@@ -264,7 +318,10 @@ export default function BookLanding() {
 
               <ListingsSection
                 title={tt("bookLanding.sectionDonate", "Free books")}
-                subtitle={tt("bookLanding.sectionDonateSub", "Donations from the community — grab what you need.")}
+                subtitle={tt(
+                  "bookLanding.sectionDonateSub",
+                  "Donations from the community — grab what you need.",
+                )}
                 universityId={universityId}
                 viewAllHref="/books/all?type=Donation"
                 pageSize={8}
@@ -273,7 +330,12 @@ export default function BookLanding() {
 
               {categoriesError ? (
                 <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-700">
-                  <p className="font-semibold">{tt("bookLanding.categoriesUnavailable", "Categories unavailable")}</p>
+                  <p className="font-semibold">
+                    {tt(
+                      "bookLanding.categoriesUnavailable",
+                      "Categories unavailable",
+                    )}
+                  </p>
                   <p className="mt-1 text-red-700/90">{categoriesError}</p>
                   <button
                     type="button"
@@ -288,7 +350,10 @@ export default function BookLanding() {
                   <div className="h-6 w-48 rounded bg-gray-100" />
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+                      <div
+                        key={i}
+                        className="h-72 animate-pulse rounded-2xl bg-gray-100"
+                      />
                     ))}
                   </div>
                 </div>
@@ -299,7 +364,12 @@ export default function BookLanding() {
               ) : null}
 
               {allCategories.map((c) => (
-                <CategoryListingsSection key={c._id} category={c} universityId={universityId} tt={tt} />
+                <CategoryListingsSection
+                  key={c._id}
+                  category={c}
+                  universityId={universityId}
+                  tt={tt}
+                />
               ))}
             </div>
           </>

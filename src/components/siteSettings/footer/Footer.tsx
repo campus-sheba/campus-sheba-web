@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import {
-  Package,
-  Mail,
-  Phone,
-  ArrowRight,
-  Shield,
-  Globe,
-} from "lucide-react";
+import { Package, Mail, Phone, ArrowRight, Shield, Globe } from "lucide-react";
 import Logo from "../navbar/Logo";
 import { Button } from "@/components/ui";
 import { fetchUniversities } from "@/services/universities";
@@ -30,7 +23,9 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
   const t = useTranslations("common.footer");
   const currentYear = new Date().getFullYear();
-  const [universities, setUniversities] = useState<string[]>(FALLBACK_UNIVERSITIES);
+  const [universities, setUniversities] = useState<string[]>(
+    FALLBACK_UNIVERSITIES,
+  );
 
   const href = (path: string) => {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -63,16 +58,22 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       aria-label="Site footer"
     >
       {/* ─── Newsletter Band ─── */}
-      <SectionWrapper spacing="none" background="transparent" className="my-0 border-b border-white/8">
-        <ContentWrapper maxWidth="container" padding="none" className="py-10">
+      <SectionWrapper
+        spacing="none"
+        background="transparent"
+        className="my-0 border-b border-white/8"
+      >
+        <ContentWrapper
+          maxWidth="container"
+          padding="none"
+          className="py-10 px-4 sm:px-6 lg:px-8"
+        >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-xl text-white mb-1">
                 {t("stayInLoop")}
               </h3>
-              <p className="text-sm text-white/50">
-                {t("newsletterSubtitle")}
-              </p>
+              <p className="text-sm text-white/50">{t("newsletterSubtitle")}</p>
             </div>
             <form
               onSubmit={(e) => e.preventDefault()}
@@ -105,7 +106,11 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       </SectionWrapper>
 
       {/* ─── Main Footer Grid ─── */}
-      <ContentWrapper maxWidth="container" padding="none" className="py-14">
+      <ContentWrapper
+        maxWidth="container"
+        padding="none"
+        className="py-14 px-4 sm:px-6 lg:px-8"
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
@@ -292,9 +297,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 <p className="text-xs font-semibold text-brand-green-400">
                   {t("universityVerified")}
                 </p>
-                <p className="text-[10px] text-white/30">
-                  {t("safeTrusted")}
-                </p>
+                <p className="text-[10px] text-white/30">{t("safeTrusted")}</p>
               </div>
             </div>
           </div>
@@ -302,8 +305,16 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       </ContentWrapper>
 
       {/* ─── Bottom Bar ─── */}
-      <SectionWrapper spacing="none" background="transparent" className="my-0 border-t border-white/8">
-        <ContentWrapper maxWidth="container" padding="none" className="py-5">
+      <SectionWrapper
+        spacing="none"
+        background="transparent"
+        className="my-0 border-t border-white/8"
+      >
+        <ContentWrapper
+          maxWidth="container"
+          padding="none"
+          className="py-5 px-4 sm:px-6 lg:px-8"
+        >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">
               {t("copyright", { year: currentYear })}

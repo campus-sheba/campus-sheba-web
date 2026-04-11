@@ -34,7 +34,8 @@ export default function BookDetail() {
   const [borrowNote, setBorrowNote] = useState("");
   const isLoggedIn = state.auth.isAuthenticated;
 
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
 
   useEffect(() => {
     if (!id) return;
@@ -93,7 +94,10 @@ export default function BookDetail() {
       setCartMsg(tt("bookDetail.addedToCart", "Added to cart."));
       return true;
     }
-    setCartMsg(res.message ?? tt("bookDetail.couldNotAddToCart", "Could not add to cart."));
+    setCartMsg(
+      res.message ??
+        tt("bookDetail.couldNotAddToCart", "Could not add to cart."),
+    );
     return false;
   };
 
@@ -134,9 +138,14 @@ export default function BookDetail() {
         securityDeposit: 0,
       });
       if (res.success) {
-        setBorrowMsg(tt("bookDetail.borrowRequestSent", "Borrow request sent."));
+        setBorrowMsg(
+          tt("bookDetail.borrowRequestSent", "Borrow request sent."),
+        );
       } else {
-        setBorrowMsg(res.message ?? tt("bookDetail.borrowFailed", "Could not send request."));
+        setBorrowMsg(
+          res.message ??
+            tt("bookDetail.borrowFailed", "Could not send request."),
+        );
       }
     });
   };
@@ -144,7 +153,9 @@ export default function BookDetail() {
   if (!id) {
     return (
       <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="lg">
-        <p className="text-sm text-gray-600">{tt("bookDetail.invalid", "Invalid book.")}</p>
+        <p className="text-sm text-gray-600">
+          {tt("bookDetail.invalid", "Invalid book.")}
+        </p>
       </ContentWrapper>
     );
   }
@@ -152,8 +163,13 @@ export default function BookDetail() {
   if (error && !item) {
     return (
       <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="lg">
-        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
-        <Link href="/books" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#00A651]">
+        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+        <Link
+          href="/books"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#00A651]"
+        >
           <ArrowLeft className="h-4 w-4" />
           {tt("bookDetail.backToBooks", "Back to books")}
         </Link>
@@ -179,7 +195,10 @@ export default function BookDetail() {
   const sellerName = item.contactName || tt("bookDetail.seller", "Seller");
   const description =
     item.description ||
-    tt("bookDetail.defaultDescription", "Campus textbook listing. Contact the seller for pickup or details.");
+    tt(
+      "bookDetail.defaultDescription",
+      "Campus textbook listing. Contact the seller for pickup or details.",
+    );
   const quality = item.quality || "—";
   const deptLabel =
     typeof item.department === "object" && item.department?.name
@@ -190,8 +209,10 @@ export default function BookDetail() {
 
   const badge = (() => {
     const type = item.type;
-    if (type === "Lending") return { label: "Lending", color: "bg-sky-50 text-sky-800" };
-    if (type === "Donation") return { label: "Donation", color: "bg-violet-50 text-violet-800" };
+    if (type === "Lending")
+      return { label: "Lending", color: "bg-sky-50 text-sky-800" };
+    if (type === "Donation")
+      return { label: "Donation", color: "bg-violet-50 text-violet-800" };
     return { label: "Selling", color: "bg-emerald-50 text-emerald-800" };
   })();
 
@@ -205,34 +226,52 @@ export default function BookDetail() {
         ]}
       />
 
-      <SectionWrapper spacing="sm" background="white" className="mt-6 rounded-2xl border border-gray-100 p-4 md:p-6">
+      <SectionWrapper
+        spacing="sm"
+        background="white"
+        className="mt-6 rounded-2xl border border-gray-100 p-4 md:p-6"
+      >
         <div className="grid gap-8 lg:grid-cols-2">
           <ImageGallery title={item.title} images={images} />
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
-              <span className={`w-fit rounded-md px-2 py-1 text-xs font-semibold ${badge.color}`}>{badge.label}</span>
+              <span
+                className={`w-fit rounded-md px-2 py-1 text-xs font-semibold ${badge.color}`}
+              >
+                {badge.label}
+              </span>
               <span className="w-fit rounded-md bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-800">
                 {categoryLabel}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">{item.title}</h1>
-            {item.author && <p className="text-sm text-gray-600">{item.author}</p>}
+            <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+              {item.title}
+            </h1>
+            {item.author && (
+              <p className="text-sm text-gray-600">{item.author}</p>
+            )}
             <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
               <div className="flex flex-wrap items-baseline gap-3">
                 {item.type === "Donation" || item.price === 0 ? (
-                  <span className="text-3xl font-bold text-[#00A651]">Free</span>
+                  <span className="text-3xl font-bold text-[#00A651]">
+                    Free
+                  </span>
                 ) : (
                   <>
                     <span className="text-3xl font-bold text-[#00A651]">
                       ৳
-                      {(item.discountPrice != null && item.discountPrice < item.price
+                      {(item.discountPrice != null &&
+                      item.discountPrice < item.price
                         ? item.discountPrice
                         : item.price
                       ).toLocaleString()}
                     </span>
-                    {item.discountPrice != null && item.discountPrice < item.price && (
-                      <span className="text-lg text-gray-400 line-through">৳{item.price.toLocaleString()}</span>
-                    )}
+                    {item.discountPrice != null &&
+                      item.discountPrice < item.price && (
+                        <span className="text-lg text-gray-400 line-through">
+                          ৳{item.price.toLocaleString()}
+                        </span>
+                      )}
                   </>
                 )}
                 <span className="text-sm text-gray-500">{quality}</span>
@@ -243,14 +282,22 @@ export default function BookDetail() {
                     <span>Borrow up to {item.borrowDuration} days. </span>
                   )}
                   {item.allowsExtension && (
-                    <span>Extensions allowed{item.maxExtensionDuration != null ? ` (max +${item.maxExtensionDuration}d)` : ""}.</span>
+                    <span>
+                      Extensions allowed
+                      {item.maxExtensionDuration != null
+                        ? ` (max +${item.maxExtensionDuration}d)`
+                        : ""}
+                      .
+                    </span>
                   )}
                 </p>
               )}
             </div>
 
             <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-700">
-              <p className="font-medium text-gray-900">{tt("bookDetail.contact", "Contact")}</p>
+              <p className="font-medium text-gray-900">
+                {tt("bookDetail.contact", "Contact")}
+              </p>
               <p>{sellerName}</p>
               {item.contactPhone && <p>{item.contactPhone}</p>}
               {item.contactEmail && <p>{item.contactEmail}</p>}
@@ -258,7 +305,9 @@ export default function BookDetail() {
 
             {item.type === "Lending" ? (
               <div className="space-y-3 rounded-xl border border-sky-100 bg-sky-50/50 p-4">
-                <p className="text-sm font-semibold text-gray-900">{tt("bookDetail.requestBorrow", "Request to borrow")}</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {tt("bookDetail.requestBorrow", "Request to borrow")}
+                </p>
                 <label className="block text-xs font-medium text-gray-600">
                   {tt("bookDetail.returnBy", "Preferred return date")}
                   <input
@@ -277,10 +326,19 @@ export default function BookDetail() {
                     className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
                   />
                 </label>
-                <Button type="button" uppercase={false} onClick={onRequestBorrow} disabled={isPending}>
-                  {isPending ? tt("bookDetail.sending", "Sending…") : tt("bookDetail.sendBorrowRequest", "Send borrow request")}
+                <Button
+                  type="button"
+                  uppercase={false}
+                  onClick={onRequestBorrow}
+                  disabled={isPending}
+                >
+                  {isPending
+                    ? tt("bookDetail.sending", "Sending…")
+                    : tt("bookDetail.sendBorrowRequest", "Send borrow request")}
                 </Button>
-                {borrowMsg && <p className="text-sm text-gray-700">{borrowMsg}</p>}
+                {borrowMsg && (
+                  <p className="text-sm text-gray-700">{borrowMsg}</p>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-4">
@@ -293,10 +351,14 @@ export default function BookDetail() {
                     >
                       -
                     </button>
-                    <span className="min-w-6 text-center text-sm font-semibold">{quantity}</span>
+                    <span className="min-w-6 text-center text-sm font-semibold">
+                      {quantity}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                      onClick={() =>
+                        setQuantity((q) => Math.min(maxQty, q + 1))
+                      }
                       className="rounded border border-gray-300 px-2.5 py-1 text-sm"
                     >
                       +
@@ -319,8 +381,16 @@ export default function BookDetail() {
                         ? tt("bookDetail.outOfStock", "Out of stock")
                         : tt("bookDetail.addToCart", "Add to cart")}
                   </Button>
-                  <Button type="button" uppercase={false} className="gap-2" onClick={onBuyNow} disabled={isPending || stock < 1}>
-                    {isPending ? tt("bookDetail.processing", "Processing…") : tt("bookDetail.buyNow", "Buy now")}
+                  <Button
+                    type="button"
+                    uppercase={false}
+                    className="gap-2"
+                    onClick={onBuyNow}
+                    disabled={isPending || stock < 1}
+                  >
+                    {isPending
+                      ? tt("bookDetail.processing", "Processing…")
+                      : tt("bookDetail.buyNow", "Buy now")}
                   </Button>
                 </div>
               </div>
@@ -335,27 +405,51 @@ export default function BookDetail() {
       </SectionWrapper>
 
       <SectionWrapper spacing="sm" background="transparent" className="mt-6">
-        <details open className="rounded-xl border border-gray-100 bg-white p-4">
-          <summary className="cursor-pointer list-none font-semibold text-gray-900">{tt("bookDetail.description", "Description")}</summary>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{description}</p>
+        <details
+          open
+          className="rounded-xl border border-gray-100 bg-white p-4"
+        >
+          <summary className="cursor-pointer list-none font-semibold text-gray-900">
+            {tt("bookDetail.description", "Description")}
+          </summary>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+            {description}
+          </p>
         </details>
         <details className="mt-3 rounded-xl border border-gray-100 bg-white p-4">
-          <summary className="cursor-pointer list-none font-semibold text-gray-900">{tt("bookDetail.details", "Details")}</summary>
+          <summary className="cursor-pointer list-none font-semibold text-gray-900">
+            {tt("bookDetail.details", "Details")}
+          </summary>
           <div className="mt-3 grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
             <p>
-              <span className="text-gray-500">{tt("bookDetail.subject", "Subject")}:</span> {item.subject || "—"}
+              <span className="text-gray-500">
+                {tt("bookDetail.subject", "Subject")}:
+              </span>{" "}
+              {item.subject || "—"}
             </p>
             <p>
-              <span className="text-gray-500">{tt("bookDetail.edition", "Edition")}:</span> {item.edition || "—"}
+              <span className="text-gray-500">
+                {tt("bookDetail.edition", "Edition")}:
+              </span>{" "}
+              {item.edition || "—"}
             </p>
             <p>
-              <span className="text-gray-500">{tt("bookDetail.publisher", "Publisher")}:</span> {item.publisher || "—"}
+              <span className="text-gray-500">
+                {tt("bookDetail.publisher", "Publisher")}:
+              </span>{" "}
+              {item.publisher || "—"}
             </p>
             <p>
-              <span className="text-gray-500">{tt("bookDetail.buyingYear", "Year")}:</span> {item.buyingYear || "—"}
+              <span className="text-gray-500">
+                {tt("bookDetail.buyingYear", "Year")}:
+              </span>{" "}
+              {item.buyingYear || "—"}
             </p>
             <p>
-              <span className="text-gray-500">{tt("bookDetail.department", "Department")}:</span> {deptLabel}
+              <span className="text-gray-500">
+                {tt("bookDetail.department", "Department")}:
+              </span>{" "}
+              {deptLabel}
             </p>
           </div>
         </details>
@@ -365,14 +459,18 @@ export default function BookDetail() {
         <SectionHeader
           title={tt("bookDetail.related", "Related books")}
           subtitle={tt("bookDetail.relatedSub", "More you may like.")}
-          viewAllHref={relatedCategoryId ? `/books/all?category=${encodeURIComponent(relatedCategoryId)}` : "/books/all"}
+          viewAllHref={
+            relatedCategoryId
+              ? `/books/all?category=${encodeURIComponent(relatedCategoryId)}`
+              : "/books/all"
+          }
         />
         {related.length === 0 ? (
           <p className="mt-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
             {tt("bookDetail.noRelated", "No related books yet.")}
           </p>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {related.map((r) => (
               <BookListingCard key={r._id} item={r} />
             ))}

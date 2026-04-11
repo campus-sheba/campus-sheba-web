@@ -116,7 +116,7 @@ const Navbar = ({ locale }: { locale: string }) => {
         <ContentWrapper
           maxWidth="container"
           padding="none"
-          className="h-full flex items-center justify-between"
+          className="h-full flex items-center justify-between px-4 sm:px-6 lg:px-8"
         >
           <div className="flex items-center gap-4">
             {/* ─── Logo ─── */}
