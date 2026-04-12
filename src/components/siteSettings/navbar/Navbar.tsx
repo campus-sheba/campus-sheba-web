@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, User, ShoppingCart, Wallet } from "lucide-react";
+import { ChevronDown, Search, User, Wallet } from "lucide-react";
 import Logo from "./Logo";
 import CampusTopbar from "./CampusTopbar";
 import {
@@ -13,6 +13,7 @@ import {
 } from "./navbar.constants";
 import { useAppState } from "@/contexts/AppStateContext";
 import { fetchUniversityFeatures } from "@/services/home";
+import { getWalletAction } from "@/services/wallet";
 import { ContentWrapper } from "@/components/wrappers";
 import {
   NavbarMobileBottom,
@@ -35,6 +36,27 @@ const Navbar = ({ locale }: { locale: string }) => {
   const servicesRef = useRef<HTMLDivElement>(null);
   const selectedUniversityId = appState.university.selected?._id;
   const router = useRouter();
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [walletLoading, setWalletLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let cancelled = false;
+    void (async () => {
+      setWalletLoading(true);
+      const res = await getWalletAction();
+      if (cancelled) return;
+      if (res.success && res.data) {
+        setWalletBalance(typeof res.data.balance === "number" ? res.data.balance : 0);
+      } else {
+        setWalletBalance(null);
+      }
+      setWalletLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -99,6 +121,9 @@ const Navbar = ({ locale }: { locale: string }) => {
   const openSignup = () =>
     appDispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "signup" } });
 
+  const walletDisplayBalance = isLoggedIn ? walletBalance : null;
+  const walletDisplayLoading = isLoggedIn && walletLoading;
+
   return (
     <>
       <CampusTopbar />
@@ -116,7 +141,7 @@ const Navbar = ({ locale }: { locale: string }) => {
         <ContentWrapper
           maxWidth="container"
           padding="none"
-          className="h-full flex items-center justify-between "
+          className="h-full flex items-center justify-between px-6 lg:px-0"
         >
           <div className="flex items-center gap-4">
             {/* ─── Logo ─── */}
@@ -247,24 +272,18 @@ const Navbar = ({ locale }: { locale: string }) => {
                 ))}
               </div> */}
             </div>
-            {/* <div className="w-px h-5 bg-neutral-200" /> */}
-            {/* cart icon */}
-            <Link
-              href="/cart"
-              id="nav-cart-btn"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-green-DEFAULT/30 text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
-            >
-              <ShoppingCart className="h-5 w-5" strokeWidth={2} />
-            </Link>
             {isLoggedIn ? (
               <Link
                 href="/wallet"
                 id="nav-wallet-btn"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200/80 text-[#00A651] transition-colors hover:bg-emerald-50"
+                className="inline-flex h-10 max-w-[9.5rem] items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/90 px-3 text-[#00A651] transition-colors hover:bg-emerald-50"
                 title={t("wallet")}
-                aria-label={t("wallet")}
+                aria-label={`${t("wallet")}: ${walletDisplayLoading ? "…" : walletDisplayBalance != null ? `৳${walletDisplayBalance.toLocaleString()}` : "—"}`}
               >
-                <Wallet className="h-5 w-5" strokeWidth={2} />
+                <Wallet className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                <span className="truncate text-xs font-bold tabular-nums">
+                  {walletDisplayLoading ? "…" : walletDisplayBalance != null ? `৳${walletDisplayBalance.toLocaleString()}` : "—"}
+                </span>
               </Link>
             ) : null}
             {isLoggedIn ? (
@@ -275,7 +294,7 @@ const Navbar = ({ locale }: { locale: string }) => {
                 title="Profile"
                 aria-label={t("profile")}
               >
-                <User className="h-4.5 w-4.5" />
+                <User className="h-5 w-5" strokeWidth={2} />
               </Link>
             ) : (
               <>
@@ -331,6 +350,8 @@ const Navbar = ({ locale }: { locale: string }) => {
         pathname={pathname}
         isLoggedIn={isLoggedIn}
         onOpenLogin={openLogin}
+        walletBalance={walletDisplayBalance}
+        walletLoading={walletDisplayLoading}
       />
 
       <NavbarMobileDrawer

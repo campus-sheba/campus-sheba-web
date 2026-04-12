@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { getPrivate, getPublic } from "@/utils/api/get";
 import { postPrivate, postPublic } from "@/utils/api/post";
 import { authenticationEndpoints, userEndpoints } from "@/utils/endpoints/endpoints";
+import { parseRefreshTokens } from "@/utils/auth/refreshTokens";
 import type {
   ApiEnvelope,
   AuthMe,
@@ -106,21 +107,23 @@ export async function refreshAuth() {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
-  const response = await getPublic<ApiEnvelope<AuthTokens>>(
-    authenticationEndpoints.refresh,
-    {
-      headers: refreshToken
-        ? {
-            Authorization: `Bearer ${refreshToken}`,
-            "x-refresh-token": refreshToken,
-          }
-        : undefined,
-    },
-  );
+  const raw = await getPublic<unknown>(authenticationEndpoints.refresh, {
+    headers: refreshToken
+      ? {
+          Authorization: `Bearer ${refreshToken}`,
+          "x-refresh-token": refreshToken,
+        }
+      : undefined,
+  });
 
-  await setAuthCookies(response.data);
+  const tokens = parseRefreshTokens(raw);
+  if (!tokens) {
+    throw new Error("Refresh did not return valid tokens");
+  }
 
-  return response;
+  await setAuthCookies(tokens);
+
+  return { data: tokens } as ApiEnvelope<AuthTokens>;
 }
 
 export async function logout() {

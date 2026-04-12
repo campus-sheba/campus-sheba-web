@@ -1,10 +1,11 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { parseRefreshTokens } from '@/utils/auth/refreshTokens';
+import { authenticationEndpoints } from '@/utils/endpoints/endpoints';
 import { mergeHeaders, request } from './request';
 import type { ApiBody, ApiRequestOptions, HttpMethod } from './types';
 
-const BASE = process.env.BASE_URL || process.env.NEXT_PUBLIC_API_URL;
 const THIRTY_DAYS = 60 * 60 * 24 * 30;
 
 /**
@@ -17,8 +18,11 @@ async function attemptTokenRefresh(): Promise<string | null> {
   const refreshToken = cookieStore.get('refreshToken')?.value;
   if (!refreshToken) return null;
 
+  const refreshUrl = authenticationEndpoints.refresh;
+  if (!refreshUrl || refreshUrl.includes('undefined')) return null;
+
   try {
-    const res = await fetch(`${BASE}/auth/refresh`, {
+    const res = await fetch(refreshUrl, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${refreshToken}`,
@@ -31,8 +35,8 @@ async function attemptTokenRefresh(): Promise<string | null> {
     if (!res.ok) return null;
 
     const json = await res.json();
-    const tokens = json?.data as { accessToken?: string; refreshToken?: string } | undefined;
-    if (!tokens?.accessToken || !tokens?.refreshToken) return null;
+    const tokens = parseRefreshTokens(json);
+    if (!tokens) return null;
 
     const cookieOpts = {
       httpOnly: true,
@@ -59,11 +63,15 @@ function isUnauthorized(error: unknown): boolean {
   const msg = error.message.toLowerCase();
   return (
     msg.includes('(401)') ||
+    msg.includes('(403)') ||
     msg.includes('unauthorized') ||
     msg.includes('unauthenticated') ||
+    msg.includes('forbidden') ||
     msg.includes('jwt expired') ||
     msg.includes('invalid token') ||
-    msg.includes('token expired')
+    msg.includes('token expired') ||
+    msg.includes('session expired') ||
+    msg.includes('invalid session')
   );
 }
 
@@ -97,8 +105,9 @@ export async function privateRequest<T = unknown>(
   }
 
   let finalUrl = url;
+  const baseForRelative = process.env.BASE_URL || process.env.NEXT_PUBLIC_API_URL || '';
   if (includeUniversity && resolvedUniversityId) {
-    const urlObj = new URL(finalUrl.startsWith('http') ? finalUrl : `${BASE}${finalUrl}`);
+    const urlObj = new URL(finalUrl.startsWith('http') ? finalUrl : `${baseForRelative}${finalUrl}`);
     if (!urlObj.searchParams.has('university')) {
       urlObj.searchParams.set('university', resolvedUniversityId);
       finalUrl = urlObj.toString();

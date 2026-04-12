@@ -5,6 +5,8 @@ export const landingPageEndpoints = {
     heroBanner: `${baseURL}/banners`,
     heroBannerByUniversity: (universityId: string) =>
         `${baseURL}/banners?page=1&limit=10&isActive=true&type=home&university=${universityId}`,
+    heroBannerByUniversityAndType: (universityId: string, bannerType: string) =>
+        `${baseURL}/banners?page=1&limit=10&isActive=true&type=${encodeURIComponent(bannerType)}&university=${universityId}`,
     universityFeatures: (universityId: string) =>
         `${baseURL}/user/features/university/${universityId}`,
 };
@@ -159,4 +161,17 @@ export const buySellEndpoints = {
     userBase: `${baseURL}/user/buy-sell`,
     userMyListed: `${baseURL}/user/buy-sell/my-listed`,
     userById: (id: string) => `${baseURL}/user/buy-sell/${id}`,
+};
+
+/** Browse shops, products, and food (guest or authenticated; university from cookie or query). */
+export const marketplaceEndpoints = {
+    shops: `${baseURL}/user/shops`,
+    shopById: (id: string) => `${baseURL}/user/shops/${encodeURIComponent(id)}`,
+    products: `${baseURL}/user/products`,
+    productsFeatured: `${baseURL}/user/products/featured`,
+    productsByShop: (shopId: string) =>
+        `${baseURL}/user/products/shop/${encodeURIComponent(shopId)}`,
+    productById: (id: string) => `${baseURL}/user/products/${encodeURIComponent(id)}`,
+    foods: `${baseURL}/user/foods`,
+    foodById: (id: string) => `${baseURL}/user/foods/${encodeURIComponent(id)}`,
 };

@@ -5,6 +5,8 @@ const COOKIE_NAMES = {
   REFRESH_TOKEN: "refreshToken",
   USER_PROFILE: "user",
   UNIVERSITY: "university",
+  /** Plain id mirror for server-side `cookies().get("universityId")` resolution */
+  UNIVERSITY_ID: "universityId",
   ADDRESS_ID: "addressId",
 } as const;
 
@@ -61,6 +63,9 @@ export const CookieHelper = {
     const expires = `expires=${date.toUTCString()}`;
     const encodedUniversity = encodeURIComponent(JSON.stringify(university));
     document.cookie = `${COOKIE_NAMES.UNIVERSITY}=${encodedUniversity}; ${expires}; path=/`;
+    if (university?._id) {
+      document.cookie = `${COOKIE_NAMES.UNIVERSITY_ID}=${encodeURIComponent(university._id)}; ${expires}; path=/`;
+    }
   },
 
   /**
@@ -135,6 +140,7 @@ export const CookieHelper = {
   clearUniversity: (): void => {
     if (typeof document === "undefined") return;
     document.cookie = `${COOKIE_NAMES.UNIVERSITY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    document.cookie = `${COOKIE_NAMES.UNIVERSITY_ID}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     document.cookie = `${COOKIE_NAMES.ADDRESS_ID}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   },
 

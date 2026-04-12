@@ -9,10 +9,12 @@ import {
   MapPin,
   MapPinned,
   Package,
+  LayoutGrid,
   ShoppingBag,
   Siren,
   Store,
   Trash2,
+  UtensilsCrossed,
 } from "lucide-react";
 
 export type Campus = {
@@ -131,8 +133,10 @@ export const CAMPUS_LOCATION_GROUPS: Record<string, CampusLocationGroup[]> = {
 export const servicesMenu: ServiceMenuItem[] = [
   { label: "Explore campus", description: "All services, maps & safety in one hub", href: "/explore", icon: Compass, color: "text-emerald-700", bg: "bg-emerald-50" },
   { label: "Delivery Sheba", description: "Food & courier delivery", href: "/delivery", icon: Bike, color: "text-purple-600", bg: "bg-purple-50" },
-  { label: "Buy & Sell", description: "Campus marketplace", href: "/marketplace", icon: ShoppingBag, color: "text-emerald-600", bg: "bg-emerald-50" },
-  { label: "Entrepreneurship", description: "Student shops & skill services", href: "/marketplace/shop/create", icon: Store, color: "text-red-600", bg: "bg-red-50" },
+  { label: "Campus Mart", description: "Official shops & retail products on campus", href: "/marketplace", icon: LayoutGrid, color: "text-emerald-700", bg: "bg-emerald-50" },
+  { label: "Food", description: "Campus kitchens & food outlets", href: "/food", icon: UtensilsCrossed, color: "text-rose-600", bg: "bg-rose-50" },
+  { label: "Buy & Sell", description: "Preloved items — student to student", href: "/buy-sell", icon: ShoppingBag, color: "text-teal-700", bg: "bg-teal-50" },
+  { label: "Entrepreneurship", description: "Open your shop on Campus Mart", href: "/marketplace/shop/create", icon: Store, color: "text-red-600", bg: "bg-red-50" },
   { label: "Book Sheba", description: "Buy, sell, loan & swap", href: "/books", icon: BookOpen, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "Blood Bank", description: "Emergency blood network", href: "/blood-bank", icon: Droplets, color: "text-red-600", bg: "bg-red-50" },
   { label: "Tuition Sheba", description: "Find or become a tutor", href: "/tuition", icon: GraduationCap, color: "text-amber-600", bg: "bg-amber-50" },

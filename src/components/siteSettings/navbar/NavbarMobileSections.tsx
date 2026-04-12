@@ -7,7 +7,6 @@ import {
   MapPin,
   Menu,
   Search,
-  ShoppingCart,
   User,
   Wallet,
   X,
@@ -25,6 +24,9 @@ type MobileSectionsProps = {
   selectedUniversityName?: string;
   onOpenLogin: () => void;
   onOpenSignup: () => void;
+  /** Bottom bar only — optional for drawer. */
+  walletBalance?: number | null;
+  walletLoading?: boolean;
 };
 
 export function NavbarMobileToggle({
@@ -50,7 +52,12 @@ export function NavbarMobileBottom({
   pathname,
   isLoggedIn,
   onOpenLogin,
-}: Pick<MobileSectionsProps, "pathname" | "isLoggedIn" | "onOpenLogin">) {
+  walletBalance = null,
+  walletLoading = false,
+}: Pick<
+  MobileSectionsProps,
+  "pathname" | "isLoggedIn" | "onOpenLogin" | "walletBalance" | "walletLoading"
+>) {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/60 backdrop-blur-md border-t border-white/20 pb-[env(safe-area-inset-bottom)]"
@@ -79,21 +86,31 @@ export function NavbarMobileBottom({
           <LayoutGrid className="w-5 h-5" strokeWidth={2} />
           <span className="text-[10px] font-medium">Service</span>
         </Link>
-        <Link
-          href="/cart"
-          id="bottom-nav-cart"
-          className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
-            pathname?.includes("/cart") ? "text-[#E30A13]" : "text-neutral-600"
-          }`}
-        >
-          <span className="relative inline-flex">
-            <ShoppingCart className="w-5 h-5" strokeWidth={2} />
-            <span className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#E30A13] px-0.5 text-[9px] font-bold leading-none text-white">
-              0
+        {isLoggedIn ? (
+          <Link
+            href="/wallet"
+            id="bottom-nav-wallet"
+            className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
+              pathname?.includes("/wallet") ? "text-[#00A651]" : "text-neutral-600"
+            }`}
+          >
+            <Wallet className="w-5 h-5" strokeWidth={2} aria-hidden />
+            <span className="text-[10px] font-medium leading-none">Wallet</span>
+            <span className="max-w-[4.25rem] truncate text-center text-[9px] font-bold tabular-nums leading-tight text-[#00A651]">
+              {walletLoading ? "…" : walletBalance != null ? `৳${walletBalance.toLocaleString()}` : "—"}
             </span>
-          </span>
-          <span className="text-[10px] font-medium">Cart</span>
-        </Link>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            id="bottom-nav-wallet"
+            onClick={onOpenLogin}
+            className="flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 text-neutral-600 transition-colors hover:text-[#00A651]"
+          >
+            <Wallet className="w-5 h-5" strokeWidth={2} aria-hidden />
+            <span className="text-[10px] font-medium">Wallet</span>
+          </button>
+        )}
         {isLoggedIn ? (
           <Link
             href="/profile"

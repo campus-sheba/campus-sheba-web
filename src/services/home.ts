@@ -21,6 +21,28 @@ export async function fetchHomeBannersByUniversity(universityId: string): Promis
   return response.data ?? [];
 }
 
+/** Promotional banners for feature hubs (e.g. home, mart, food). Falls back to empty if type unsupported. */
+export async function fetchBannersByUniversityAndType(
+  universityId: string,
+  bannerType: "home" | "mart" | "food" | string = "home",
+): Promise<Banner[]> {
+  if (!universityId) return [];
+  try {
+    const response = await getPublic<{ data?: Banner[] }>(
+      landingPageEndpoints.heroBannerByUniversityAndType(universityId, bannerType),
+      { universityId },
+    );
+    const rows = response.data ?? [];
+    if (rows.length > 0) return rows;
+  } catch {
+    /* type may not exist on API */
+  }
+  if (bannerType !== "home") {
+    return fetchHomeBannersByUniversity(universityId);
+  }
+  return [];
+}
+
 export async function fetchUniversityFeatures(universityId: string): Promise<UniversityFeature[]> {
   if (!universityId) return [];
   const response = await getPublic<{ data?: Array<{ feature?: UniversityFeature }> }>(

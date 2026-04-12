@@ -26,6 +26,8 @@ import { useTranslations } from "next-intl";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { HomeBloodRails } from "./sections/HomeBloodRails";
 import { HomeBooksRails } from "./sections/HomeBooksRails";
+import { HomeCampusMartRails } from "./sections/HomeCampusMartRails";
+import { HomeFoodRails } from "./sections/HomeFoodRails";
 import { HomeLostFoundRails } from "./sections/HomeLostFoundRails";
 import { HomeMarketplaceRails } from "./sections/HomeMarketplaceRails";
 import { HomeParcelCampusCtas } from "./sections/HomeParcelCampusCtas";
@@ -51,6 +53,24 @@ const LIVE_SERVICES: ServiceCard[] = [
     icon: ShoppingBag,
     accent: "from-emerald-500/20 to-teal-500/10 border-emerald-200/60",
     keyword: "campus marketplace",
+  },
+  {
+    href: "/food",
+    title: "Campus food",
+    description:
+      "Dining outlets, halls, and menu items from approved vendors on your campus.",
+    icon: UtensilsCrossed,
+    accent: "from-amber-500/15 to-orange-500/10 border-amber-200/60",
+    keyword: "campus dining",
+  },
+  {
+    href: "/marketplace",
+    title: "Campus Mart",
+    description:
+      "Official shops and retail products — separate from student Buy & Sell listings.",
+    icon: Store,
+    accent: "from-emerald-500/15 to-green-500/10 border-emerald-200/60",
+    keyword: "campus retail",
   },
   {
     href: "/books",
@@ -110,18 +130,6 @@ const LIVE_SERVICES: ServiceCard[] = [
 
 const COMING_SOON: { title: string; description: string; icon: CardIcon }[] = [
   {
-    title: "Food & dining",
-    description:
-      "Campus kitchens, menus, and delivery windows tuned to class breaks.",
-    icon: UtensilsCrossed,
-  },
-  {
-    title: "Shops & products",
-    description:
-      "Product-based marketplace and verified campus shops in one flow.",
-    icon: Store,
-  },
-  {
     title: "Skills & services",
     description:
       "Book tutors, designers, and fixers from your student community.",
@@ -160,6 +168,8 @@ const JSON_LD = {
 
 const HOME_JUMP_LINKS: { href: string; label: string }[] = [
   { href: "#home-used-marketplace", label: "Used items" },
+  { href: "#home-campus-mart", label: "Campus Mart" },
+  { href: "#home-food", label: "Food" },
   { href: "#home-books", label: "Books" },
   { href: "#home-lost-found", label: "Lost & found" },
   { href: "#home-blood", label: "Blood" },
@@ -411,6 +421,8 @@ export function HomePageContent() {
       </SectionWrapper>
 
       <HomeMarketplaceRails />
+      <HomeCampusMartRails />
+      <HomeFoodRails />
       <HomeBooksRails />
       <HomeLostFoundRails />
       <HomeBloodRails />
