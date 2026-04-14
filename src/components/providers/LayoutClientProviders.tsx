@@ -6,6 +6,7 @@ import { AppStateProvider, useAppState } from "@/contexts/AppStateContext";
 import { AppInitializer } from "@/components/AppInitializer";
 import AuthModal from "@/components/modals/AuthModal";
 import UniversitySelectorModal from "@/components/modals/UniversitySelectorModal";
+import { useNotificationBootstrap } from "@/hooks/useNotificationBootstrap";
 
 /**
  * Client-side providers and modals wrapper
@@ -14,11 +15,12 @@ import UniversitySelectorModal from "@/components/modals/UniversitySelectorModal
  * 2. Initializing app state on mount (AppInitializer)
  * 3. Rendering global modals (AuthModal, UniversitySelectorModal)
  */
-function LayoutContent({ children, locale }: { children: ReactNode; locale: string }) {
+function LayoutContent({ children }: { children: ReactNode }) {
   const { state, dispatch } = useAppState();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  useNotificationBootstrap();
 
   useEffect(() => {
     const authParam = searchParams.get("auth");
@@ -54,14 +56,14 @@ function LayoutContent({ children, locale }: { children: ReactNode; locale: stri
 
 export function LayoutClientProviders({
   children,
-  locale,
+  locale: _locale,
 }: {
   children: ReactNode;
   locale: string;
 }) {
   return (
     <AppStateProvider>
-      <LayoutContent locale={locale}>{children}</LayoutContent>
+      <LayoutContent>{children}</LayoutContent>
     </AppStateProvider>
   );
 }

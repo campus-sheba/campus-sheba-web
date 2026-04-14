@@ -8,12 +8,19 @@ import {
   sendOtpAction,
   verifyOtpAction,
 } from "@/app/[locale]/(auth)/signup/actions";
+import { subscribeUserNotificationsAction } from "@/app/actions/notifications";
 import { useAppState } from "@/contexts/AppStateContext";
 import { University, UserProfile } from "@/types/global";
 import { Button, Paragraph, Title } from "@/components/ui";
 import { SectionWrapper } from "@/components/wrappers";
 import { cn } from "@/utils/utils";
 import { useTranslations } from "next-intl";
+import {
+  getOrCreateDeviceId,
+  getStoredPushToken,
+  setStoredPushToken,
+} from "@/lib/notifications/device";
+import { getWebPushToken } from "@/lib/notifications/push";
 
 type AuthTab = "login" | "signup";
 type SignupStep = "phone" | "otp" | "details";
@@ -110,7 +117,11 @@ function PinInputField({
         <input
           type="password"
           placeholder={placeholder}
-          className={cn(INPUT_BASE_CLASS, withIcon ? "pl-10 pr-4" : "px-4", className)}
+          className={cn(
+            INPUT_BASE_CLASS,
+            withIcon ? "pl-10 pr-4" : "px-4",
+            className,
+          )}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
@@ -145,17 +156,24 @@ function AuthSubmitButton({
   );
 }
 
-const validatePhoneNumber = (phoneDigits: string, requiredMsg: string, invalidMsg: string) => {
+const validatePhoneNumber = (
+  phoneDigits: string,
+  requiredMsg: string,
+  invalidMsg: string,
+) => {
   if (!phoneDigits) return requiredMsg;
   if (phoneDigits.length !== 11) return invalidMsg;
   return "";
 };
 
-const validatePin = (pin: string, requiredMsg: string, minMsg: string, minimumLength = 4) => {
+const validatePin = (
+  pin: string,
+  requiredMsg: string,
+  minMsg: string,
+  minimumLength = 4,
+) => {
   if (!pin) return requiredMsg;
-  if (pin.length < minimumLength) {
-    return minMsg.replace("{min}", String(minimumLength));
-  }
+  if (pin.length < minimumLength) return minMsg;
   return "";
 };
 
@@ -216,7 +234,10 @@ export default function AuthModal({
 
   const handleOtpDigitChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
-    const current = signupForm.otp.padEnd(OTP_LENGTH, " ").slice(0, OTP_LENGTH).split("");
+    const current = signupForm.otp
+      .padEnd(OTP_LENGTH, " ")
+      .slice(0, OTP_LENGTH)
+      .split("");
     current[index] = digit || " ";
     const nextOtp = current.join("").replace(/\s/g, "");
 
@@ -227,10 +248,16 @@ export default function AuthModal({
     }
   };
 
-  const handleOtpKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleOtpKeyDown = (
+    index: number,
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (event.key !== "Backspace") return;
 
-    const current = signupForm.otp.padEnd(OTP_LENGTH, " ").slice(0, OTP_LENGTH).split("");
+    const current = signupForm.otp
+      .padEnd(OTP_LENGTH, " ")
+      .slice(0, OTP_LENGTH)
+      .split("");
 
     if (current[index] !== " ") {
       current[index] = " ";
@@ -291,7 +318,7 @@ export default function AuthModal({
 
   if (!isOpen) return null;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     const normalizedPhone = normalizePhoneDigits(loginForm.phone);
@@ -303,7 +330,7 @@ export default function AuthModal({
     const pinError = validatePin(
       loginForm.pin,
       t("pinRequired"),
-      t("pinMin"),
+      t("pinMin", { min: 4 }),
     );
 
     if (phoneError) newErrors.phone = phoneError;
@@ -315,6 +342,14 @@ export default function AuthModal({
     }
 
     setErrors({});
+    const deviceId = getOrCreateDeviceId();
+    const fallbackToken = await getWebPushToken({
+      requestPermission: true,
+    }).catch(() => null);
+    if (fallbackToken) {
+      setStoredPushToken(fallbackToken);
+    }
+
     startTransition(async () => {
       const result = await loginAction({
         phone: buildFullPhone(normalizedPhone),
@@ -333,6 +368,20 @@ export default function AuthModal({
       };
 
       login(profileForState, "session", "session");
+      const tokenToSubscribe = getStoredPushToken() ?? fallbackToken;
+      if (tokenToSubscribe) {
+        await subscribeUserNotificationsAction({
+          token: tokenToSubscribe,
+          fcmToken: tokenToSubscribe,
+          fcm_token: tokenToSubscribe,
+          platform: "web",
+          appChannel: "customer",
+          deviceId,
+        }).catch((error) => {
+          console.error("[notifications] Post-login subscribe failed.", error);
+        });
+      }
+
       if (profileForState.university) {
         selectUniversity(profileForState.university);
       }
@@ -411,11 +460,10 @@ export default function AuthModal({
     const pinError = validatePin(
       signupForm.pin,
       t("pinRequired"),
-      t("pinMin"),
+      t("pinMin", { min: 4 }),
     );
     if (pinError) newErrors.pin = pinError;
-    if (!signupForm.confirmPin)
-      newErrors.confirmPin = t("confirmPinRequired");
+    if (!signupForm.confirmPin) newErrors.confirmPin = t("confirmPinRequired");
     if (signupForm.pin !== signupForm.confirmPin)
       newErrors.confirmPin = t("pinsNoMatch");
     if (!state.university.selected?._id) {
@@ -441,7 +489,9 @@ export default function AuthModal({
 
         const profileForState: UserProfile = {
           ...result.profile,
-          university: getUniversityFromProfile(result.profile) ?? state.university.selected,
+          university:
+            getUniversityFromProfile(result.profile) ??
+            state.university.selected,
         };
 
         login(profileForState, "session", "session");
@@ -482,10 +532,13 @@ export default function AuthModal({
                 <ChevronLeft className="h-5 w-5" />
               </button>
             )}
-            {!(activeTab === "signup" && signupStep !== "phone") && (
-              <div />
-            )}
-            <Title as="h2" size="lg" weight="semibold" className="text-neutral-900">
+            {!(activeTab === "signup" && signupStep !== "phone") && <div />}
+            <Title
+              as="h2"
+              size="lg"
+              weight="semibold"
+              className="text-neutral-900"
+            >
               {activeTab === "login" ? t("signIn") : t("createAccount")}
             </Title>
             <button
@@ -499,7 +552,11 @@ export default function AuthModal({
         </SectionWrapper>
 
         {/* Body */}
-        <SectionWrapper spacing="none" background="transparent" className="my-0 p-6">
+        <SectionWrapper
+          spacing="none"
+          background="transparent"
+          className="my-0 p-6"
+        >
           {activeTab === "login" && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <PhoneInputField
@@ -580,7 +637,9 @@ export default function AuthModal({
                         maxLength={1}
                         className="h-11 w-11 rounded-lg border border-neutral-300 text-center text-base font-semibold text-neutral-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                         value={otpChars[index] === " " ? "" : otpChars[index]}
-                        onChange={(e) => handleOtpDigitChange(index, e.target.value)}
+                        onChange={(e) =>
+                          handleOtpDigitChange(index, e.target.value)
+                        }
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={handleOtpPaste}
                       />
@@ -644,7 +703,10 @@ export default function AuthModal({
 
           {/* Tab Switcher */}
           {activeTab === "login" ? (
-            <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
+            <Paragraph
+              className="mt-4 text-center text-xs text-neutral-600"
+              color="default"
+            >
               {t("dontHaveAccount")}{" "}
               <button
                 onClick={() => {
@@ -657,7 +719,10 @@ export default function AuthModal({
               </button>
             </Paragraph>
           ) : (
-            <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
+            <Paragraph
+              className="mt-4 text-center text-xs text-neutral-600"
+              color="default"
+            >
               {t("alreadyHaveAccount")}{" "}
               <button
                 onClick={() => {

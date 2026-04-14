@@ -21,6 +21,7 @@ import {
   NavbarMobileToggle,
 } from "./NavbarMobileSections";
 import { useTranslations } from "next-intl";
+import NotificationDropdown from "./NotificationDropdown";
 
 // ─── Navbar Component ─────────────────────────────────────────
 const Navbar = ({ locale }: { locale: string }) => {
@@ -47,7 +48,9 @@ const Navbar = ({ locale }: { locale: string }) => {
       const res = await getWalletAction();
       if (cancelled) return;
       if (res.success && res.data) {
-        setWalletBalance(typeof res.data.balance === "number" ? res.data.balance : 0);
+        setWalletBalance(
+          typeof res.data.balance === "number" ? res.data.balance : 0,
+        );
       } else {
         setWalletBalance(null);
       }
@@ -272,6 +275,20 @@ const Navbar = ({ locale }: { locale: string }) => {
                 ))}
               </div> */}
             </div>
+            <select
+              value={locale}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="text-xs font-medium text-neutral-500 bg-transparent border-none focus:outline-none cursor-pointer hover:text-neutral-900 transition-colors appearance-none"
+              aria-label={t("selectLanguage")}
+              id="topbar-language-select"
+            >
+              <option value="en" className="bg-white text-neutral-900">
+                EN
+              </option>
+              <option value="bn" className="bg-white text-neutral-900">
+                বাং
+              </option>
+            </select>
             {isLoggedIn ? (
               <Link
                 href="/wallet"
@@ -280,9 +297,17 @@ const Navbar = ({ locale }: { locale: string }) => {
                 title={t("wallet")}
                 aria-label={`${t("wallet")}: ${walletDisplayLoading ? "…" : walletDisplayBalance != null ? `৳${walletDisplayBalance.toLocaleString()}` : "—"}`}
               >
-                <Wallet className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                <Wallet
+                  className="h-5 w-5 shrink-0"
+                  strokeWidth={2}
+                  aria-hidden
+                />
                 <span className="truncate text-xs font-bold tabular-nums">
-                  {walletDisplayLoading ? "…" : walletDisplayBalance != null ? `৳${walletDisplayBalance.toLocaleString()}` : "—"}
+                  {walletDisplayLoading
+                    ? "…"
+                    : walletDisplayBalance != null
+                      ? `৳${walletDisplayBalance.toLocaleString()}`
+                      : "—"}
                 </span>
               </Link>
             ) : null}
@@ -312,20 +337,10 @@ const Navbar = ({ locale }: { locale: string }) => {
                 </button>
               </>
             )}
-            <select
-              value={locale}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              className="text-xs font-medium text-neutral-500 bg-transparent border-none focus:outline-none cursor-pointer hover:text-neutral-900 transition-colors appearance-none"
-              aria-label={t("selectLanguage")}
-              id="topbar-language-select"
-            >
-              <option value="en" className="bg-white text-neutral-900">
-                EN
-              </option>
-              <option value="bn" className="bg-white text-neutral-900">
-                বাং
-              </option>
-            </select>
+
+            <div className="flex items-center">
+              <NotificationDropdown isAuthenticated={isLoggedIn} />
+            </div>
           </div>
 
           {/* ─── Mobile Right: logo + bar icon only ─── */}
