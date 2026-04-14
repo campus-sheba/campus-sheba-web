@@ -44,6 +44,17 @@ export const userEndpoints = {
     addresses: `${baseURL}/addresses`,
 };
 
+export const notificationEndpoints = {
+    userBase: `${baseURL}/user/notifications`,
+    userById: (id: string) => `${baseURL}/user/notifications/${encodeURIComponent(id)}`,
+    userRead: (id: string) => `${baseURL}/user/notifications/${encodeURIComponent(id)}/read`,
+    userSubscribe: `${baseURL}/user/notifications/subscribe`,
+    userUnsubscribe: `${baseURL}/user/notifications/unsubscribe`,
+    guestBase: `${baseURL}/guest/notifications`,
+    guestSubscribe: `${baseURL}/guest/notifications/subscribe`,
+    guestUnsubscribe: `${baseURL}/guest/notifications/unsubscribe`,
+};
+
 export const lostFoundEndpoints = {
     base: `${baseURL}/user/lost-and-found`,
     myPosts: `${baseURL}/user/lost-and-found/my-posts`,

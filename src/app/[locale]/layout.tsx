@@ -80,7 +80,11 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`  ${urbanist.className}  `}>
+    <html
+      lang={locale}
+      className={`  ${urbanist.className}  `}
+      data-scroll-behavior="smooth"
+    >
       <body className="antialiased font-body bg-white text-neutral-900">
         <NextIntlClientProvider messages={messages}>
           <LayoutClientProviders locale={locale}>

@@ -2,10 +2,12 @@
 
 import { redirect } from "@/i18n/navigation";
 import { logout } from "@/services/auth";
+import { unsubscribeUserNotifications } from "@/services/notifications";
 import { getPrivate } from "@/utils/api/get";
 import { patchPrivate } from "@/utils/api/patch";
 import { postPrivate } from "@/utils/api/post";
 import { putPrivate } from "@/utils/api/put";
+import { cookies } from "next/headers";
 import {
     universityMetadataEndpoints,
     userEndpoints,
@@ -15,7 +17,23 @@ import type { ApiEnvelope, AuthMe } from "@/types/auth";
 import type { University } from "@/types/global";
 
 export async function logoutAction(locale: string) {
+    const cookieStore = await cookies();
+    const webPushToken = cookieStore.get("webPushToken")?.value;
+    const webPushDeviceId = cookieStore.get("webPushDeviceId")?.value;
+
+    if (webPushToken) {
+        await unsubscribeUserNotifications({
+            token: webPushToken,
+            fcmToken: webPushToken,
+            platform: "web",
+            appChannel: "customer",
+            deviceId: webPushDeviceId,
+        }).catch(() => undefined);
+    }
+
     await logout();
+    cookieStore.delete("webPushToken");
+    cookieStore.delete("webPushDeviceId");
     redirect({ href: "/", locale });
 }
 
