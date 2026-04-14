@@ -106,7 +106,6 @@ export default function NotificationDropdown({ isAuthenticated }: NotificationDr
             ? notification.image
             : undefined,
       });
-      setIsOpen(true);
       setRefreshKey((prev) => prev + 1);
     };
 

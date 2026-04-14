@@ -38,19 +38,37 @@ export async function getWebPushToken(options?: { requestPermission?: boolean })
     !("serviceWorker" in navigator) ||
     !window.isSecureContext
   ) {
+    console.warn("[notifications] Push prerequisites missing.", {
+      hasWindow: typeof window !== "undefined",
+      hasNotification: typeof window !== "undefined" && "Notification" in window,
+      hasServiceWorker: typeof window !== "undefined" && "serviceWorker" in navigator,
+      isSecureContext: typeof window !== "undefined" ? window.isSecureContext : false,
+    });
     return null;
   }
 
-  if (isLikelyInAppWebView()) return null;
-  if (Notification.permission === "denied") return null;
+  if (isLikelyInAppWebView()) {
+    console.warn("[notifications] In-app webview detected; push disabled.");
+    return null;
+  }
+  if (Notification.permission === "denied") {
+    console.warn("[notifications] Notification permission denied.");
+    return null;
+  }
   if (Notification.permission !== "granted" && shouldRequestPermission) {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return null;
   }
-  if (Notification.permission !== "granted") return null;
+  if (Notification.permission !== "granted") {
+    console.warn("[notifications] Notification permission not granted.");
+    return null;
+  }
 
   const messaging = await getMessagingInstance();
-  if (!messaging) return null;
+  if (!messaging) {
+    console.warn("[notifications] Firebase messaging instance unavailable.");
+    return null;
+  }
 
   try {
     const registration = await navigator.serviceWorker.register(

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { toast } from "sonner";
 import {
   subscribeGuestNotificationsAction,
   subscribeUserNotificationsAction,
@@ -24,24 +23,6 @@ export function useNotificationBootstrap() {
     let mounted = true;
     let removeListener: (() => void) | undefined;
     const emitIncoming = (incoming: Record<string, unknown>) => {
-      const title =
-        typeof incoming?.notification === "object" &&
-        incoming.notification &&
-        "title" in incoming.notification
-          ? String((incoming.notification as { title?: string }).title ?? "New notification")
-          : "New notification";
-      const message =
-        typeof incoming?.notification === "object" &&
-        incoming.notification &&
-        "body" in incoming.notification
-          ? String((incoming.notification as { body?: string }).body ?? "You have a new notification")
-          : "You have a new notification";
-
-      toast.info(message, {
-        description: title,
-        duration: 4000,
-      });
-
       if (typeof window !== "undefined") {
         window.dispatchEvent(
           new CustomEvent("campus-sheba:notification-received", {

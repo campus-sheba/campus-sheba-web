@@ -368,7 +368,15 @@ export default function AuthModal({
       };
 
       login(profileForState, "session", "session");
-      const tokenToSubscribe = getStoredPushToken() ?? fallbackToken;
+      let tokenToSubscribe = getStoredPushToken() ?? fallbackToken;
+      if (!tokenToSubscribe) {
+        tokenToSubscribe = await getWebPushToken({
+          requestPermission: true,
+        }).catch(() => null);
+        if (tokenToSubscribe) {
+          setStoredPushToken(tokenToSubscribe);
+        }
+      }
       if (tokenToSubscribe) {
         await subscribeUserNotificationsAction({
           token: tokenToSubscribe,
@@ -380,6 +388,8 @@ export default function AuthModal({
         }).catch((error) => {
           console.error("[notifications] Post-login subscribe failed.", error);
         });
+      } else {
+        console.warn("[notifications] Post-login token still null; subscribe skipped.");
       }
 
       if (profileForState.university) {
