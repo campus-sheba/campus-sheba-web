@@ -317,19 +317,19 @@ function HeroCoreCtas({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:col-span-7 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-2 lg:col-span-7 lg:grid-cols-3">
           {utilityCards.map((c) => {
             const Icon = c.icon;
             return (
               <Link
                 key={c.href}
                 href={c.href}
-                className={`group flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition ${c.borderHover} hover:shadow-md`}
+                className={`group flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-3 md:p-5 shadow-sm transition ${c.borderHover} hover:shadow-md`}
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.iconWrap}`}
+                  className={`flex h-8 md:h-10 w-8 md:w-10 items-center justify-center rounded-lg ${c.iconWrap}`}
                 >
-                  <Icon className="h-5 w-5" aria-hidden />
+                  <Icon className="h-4 md:h-5 w-4 md:w-5" aria-hidden />
                 </div>
                 <h3 className="mt-4 text-sm font-bold text-gray-900">
                   {c.title}
@@ -388,7 +388,11 @@ export function HomePageContent() {
         background="transparent"
         className="my-0 scroll-mt-6 bg-white pt-8 md:pt-12"
       >
-        <ContentWrapper maxWidth="container" padding="none" className="px-4 md:px-8">
+        <ContentWrapper
+          maxWidth="container"
+          padding="none"
+          className="px-4 md:px-8"
+        >
           <header className="mx-auto max-w-3xl text-center">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
               {tt("homeContent.headline", "Your campus, connected")}
@@ -436,7 +440,7 @@ export function HomePageContent() {
         <ContentWrapper
           maxWidth="container"
           padding="none"
-          className=""
+          className="px-4 md:px-8 lg:px-0"
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -472,13 +476,9 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 bg-white py-14 md:py-20"
+        className="my-0 bg-white py-14 md:py-20 px-4 md:px-8 lg:px-0"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className=""
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="">
           <div className="grid gap-10 lg:grid-cols-3 lg:gap-12">
             <div className="lg:col-span-1">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 ring-1 ring-emerald-100">
@@ -498,7 +498,7 @@ export function HomePageContent() {
                 )}
               </p>
             </div>
-            <ul className="grid gap-6 sm:grid-cols-2 lg:col-span-2">
+            <ul className="grid gap-4 md:gap-6 grid-cols-2 lg:col-span-2">
               {[
                 {
                   title: tt("homeContent.benefit1Title", "Campus-first"),
@@ -531,7 +531,7 @@ export function HomePageContent() {
               ].map((b) => (
                 <li
                   key={b.title}
-                  className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5 ring-1 ring-black/[0.02]"
+                  className="rounded-xl md:rounded-2xl border border-gray-100 bg-gray-50/80 p-3 md:p-5 ring-1 ring-black/[0.02]"
                 >
                   <h3 className="font-bold text-gray-900">{b.title}</h3>
                   <p className="mt-2 text-sm text-gray-600">{b.text}</p>
@@ -545,13 +545,9 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 bg-gradient-to-b from-gray-900 to-gray-950 py-14 text-white md:py-20"
+        className="my-0 bg-gradient-to-b from-gray-900 to-gray-950 py-14 text-white md:py-20 px-4 md:px-8 lg:px-0"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className=""
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-bold md:text-3xl">
@@ -570,13 +566,13 @@ export function HomePageContent() {
               </span>
             </div>
           </div>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid gap-4 grid-cols-2 lg:grid-cols-3">
             {COMING_SOON.map((item) => {
               const Icon = item.icon;
               return (
                 <li
                   key={item.title}
-                  className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+                  className="flex flex-col md:flex-row gap-4 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5 backdrop-blur-sm"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
                     <Icon className="h-5 w-5 text-emerald-400" aria-hidden />
@@ -597,13 +593,9 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 border-t border-gray-100 bg-white py-12 md:py-16"
+        className="my-0 border-t border-gray-100 bg-white py-12 md:py-16 px-4 md:px-8 lg:px-0"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-            className=""
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="">
           <div className="mx-auto max-w-3xl text-center">
             <Sparkles className="mx-auto h-8 w-8 text-[#00A651]" aria-hidden />
             <h2 className="mt-4 text-xl font-bold text-gray-900 md:text-2xl">
@@ -631,7 +623,7 @@ export function HomePageContent() {
             <h2 className="text-center text-sm font-bold uppercase tracking-wider text-gray-400">
               {tt("homeContent.seoNavTitle", "Popular links")}
             </h2>
-            <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
+            <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] md:text-sm">
               {LIVE_SERVICES.map((s) => (
                 <li key={s.href}>
                   <Link

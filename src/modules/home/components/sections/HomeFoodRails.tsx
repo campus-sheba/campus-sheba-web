@@ -7,10 +7,17 @@ import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { useAppState } from "@/contexts/AppStateContext";
 import { useTranslations } from "next-intl";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import FoodListingCard from "@/modules/food/components/FoodListingCard";
 import CampusShopCard from "@/modules/marketplace/components/CampusShopCard";
-import { fetchFoodOutletShops, fetchMarketplaceFoods } from "@/services/marketplace";
-import type { MarketplaceFood, MarketplaceShopListItem } from "@/types/marketplace";
+import {
+  fetchFoodOutletShops,
+  fetchMarketplaceFoods,
+} from "@/services/marketplace";
+import type {
+  MarketplaceFood,
+  MarketplaceShopListItem,
+} from "@/types/marketplace";
 
 const ROW = 4;
 
@@ -20,7 +27,8 @@ function foodTitle(f: MarketplaceFood): string {
 
 export function HomeFoodRails() {
   const t = useTranslations("common");
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const { state } = useAppState();
   const universityId = state.university.selected?._id;
 
@@ -71,14 +79,25 @@ export function HomeFoodRails() {
   if (!universityId) {
     return (
       <section id="home-food" aria-labelledby="home-food-heading">
-        <SectionWrapper spacing="none" background="transparent" className="my-0 bg-amber-50/40 py-12 md:py-16">
-          <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+        <SectionWrapper
+          spacing="none"
+          background="transparent"
+          className="my-0 bg-amber-50/40 py-12 md:py-16"
+        >
+          <ContentWrapper
+            maxWidth="max-w-7xl mx-auto"
+            padding="none"
+            className="px-4 md:px-8"
+          >
             <div className="flex items-start gap-4 rounded-2xl border border-dashed border-amber-200/80 bg-white p-8">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
                 <UtensilsCrossed className="h-6 w-6" aria-hidden />
               </div>
               <div>
-                <h2 id="home-food-heading" className="text-lg font-bold text-gray-900 md:text-xl">
+                <h2
+                  id="home-food-heading"
+                  className="text-lg font-bold text-gray-900 md:text-xl"
+                >
                   {tt("homeRails.foodTitle", "Campus food & dining")}
                 </h2>
                 <p className="mt-2 text-sm text-gray-600">
@@ -97,15 +116,29 @@ export function HomeFoodRails() {
 
   return (
     <section id="home-food" aria-labelledby="home-food-heading">
-      <SectionWrapper spacing="none" background="transparent" className="my-0 bg-amber-50/40 py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="px-4 md:px-8">
+      <SectionWrapper
+        spacing="none"
+        background="transparent"
+        className="my-0 bg-amber-50/40 py-12 md:py-16"
+      >
+        <ContentWrapper
+          maxWidth="max-w-7xl mx-auto"
+          padding="none"
+          className="px-4 md:px-8"
+        >
           <div className="flex flex-col gap-2 border-b border-amber-200/60 pb-8 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-800">
                 {tt("homeRails.foodKicker", "Food")}
               </p>
-              <h2 id="home-food-heading" className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
-                {tt("homeRails.foodHeadline", "Restaurants, halls & menu items")}
+              <h2
+                id="home-food-heading"
+                className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
+              >
+                {tt(
+                  "homeRails.foodHeadline",
+                  "Restaurants, halls & menu items",
+                )}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
                 {tt(
@@ -114,70 +147,160 @@ export function HomeFoodRails() {
                 )}
               </p>
             </div>
-            <Link href="/food" className="text-sm font-bold text-[#00A651] hover:underline">
+            <Link
+              href="/food"
+              className="text-sm font-bold text-[#00A651] hover:underline"
+            >
               {tt("homeRails.foodViewAll", "Browse all food")} →
             </Link>
           </div>
 
           {error ? (
-            <p className="mt-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+            <p className="mt-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
           ) : null}
 
           <div className="mt-10 space-y-12">
-            <SectionWrapper spacing="sm" background="transparent" className="my-0">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0"
+            >
               <SectionHeader
                 title={tt("homeRails.foodOutletsTitle", "Places to eat")}
-                subtitle={tt("homeRails.foodOutletsSub", "Dining outlets on your campus.")}
+                subtitle={tt(
+                  "homeRails.foodOutletsSub",
+                  "Dining outlets on your campus.",
+                )}
                 viewAllHref="/food"
               />
               {loading && outlets.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {Array.from({ length: ROW }).map((_, i) => (
-                    <div key={i} className="h-56 animate-pulse rounded-2xl bg-white/80" />
-                  ))}
-                </div>
-              ) : outlets.length === 0 ? (
-                <p className="mt-4 rounded-xl border border-dashed border-amber-200/80 bg-white px-4 py-10 text-center text-sm text-gray-500">
-                  {tt("homeRails.foodEmptyOutlets", "No food outlets listed yet.")}
-                </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {outlets.slice(0, ROW).map((s) => (
-                    <CampusShopCard
-                      key={s._id}
-                      shop={s}
-                      openLabel={openLabel}
-                      closedLabel={closedLabel}
-                      minOrderLabel={minOrderLabel}
+                <div className="mt-4 hidden md:grid lg:hidden gap-3 grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-56 animate-pulse rounded-2xl bg-white/80"
                     />
                   ))}
                 </div>
-              )}
+              ) : null}
+              {loading && outlets.length === 0 ? (
+                <div className="mt-4 hidden lg:grid gap-3 grid-cols-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-56 animate-pulse rounded-2xl bg-white/80"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {loading && outlets.length === 0 ? (
+                <div className="mt-4 md:hidden">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-56 animate-pulse rounded-2xl bg-white/80"
+                      style={{
+                        display: "inline-block",
+                        width: "calc(42.86% - 10px)",
+                        marginRight: "16px",
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {outlets.length === 0 && !loading ? (
+                <p className="mt-4 rounded-xl border border-dashed border-amber-200/80 bg-white px-4 py-10 text-center text-sm text-gray-500">
+                  {tt(
+                    "homeRails.foodEmptyOutlets",
+                    "No food outlets listed yet.",
+                  )}
+                </p>
+              ) : null}
+              {outlets.length > 0 ? (
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {outlets.slice(0, ROW).map((s) => (
+                      <CampusShopCard
+                        key={s._id}
+                        shop={s}
+                        openLabel={openLabel}
+                        closedLabel={closedLabel}
+                        minOrderLabel={minOrderLabel}
+                      />
+                    ))}
+                  </ResponsiveCardsGrid>
+                </div>
+              ) : null}
             </SectionWrapper>
 
-            <SectionWrapper spacing="sm" background="transparent" className="my-0">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0"
+            >
               <SectionHeader
                 title={tt("homeRails.foodMenuTitle", "From the menu")}
-                subtitle={tt("homeRails.foodMenuSub", "Dishes and items you can order.")}
+                subtitle={tt(
+                  "homeRails.foodMenuSub",
+                  "Dishes and items you can order.",
+                )}
                 viewAllHref="/food"
               />
               {loading && foods.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {Array.from({ length: ROW }).map((_, i) => (
-                    <div key={i} className="h-72 animate-pulse rounded-2xl bg-white/80" />
+                <div className="mt-4 hidden md:grid lg:hidden gap-3 grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-72 animate-pulse rounded-2xl bg-white/80"
+                    />
                   ))}
                 </div>
-              ) : foods.length === 0 ? (
+              ) : null}
+              {loading && foods.length === 0 ? (
+                <div className="mt-4 hidden lg:grid gap-3 grid-cols-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-72 animate-pulse rounded-2xl bg-white/80"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {loading && foods.length === 0 ? (
+                <div className="mt-4 md:hidden">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-72 animate-pulse rounded-2xl bg-white/80"
+                      style={{
+                        display: "inline-block",
+                        width: "calc(42.86% - 10px)",
+                        marginRight: "16px",
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {foods.length === 0 && !loading ? (
                 <p className="mt-4 rounded-xl border border-dashed border-amber-200/80 bg-white px-4 py-10 text-center text-sm text-gray-500">
                   {tt("homeRails.foodEmptyMenu", "No menu items to show yet.")}
                 </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {foods.slice(0, ROW).map((f) => (
-                    <FoodListingCard key={f._id} item={f} title={foodTitle(f)} />
-                  ))}
+              ) : null}
+              {foods.length > 0 ? (
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {foods.slice(0, ROW).map((f) => (
+                      <FoodListingCard
+                        key={f._id}
+                        item={f}
+                        title={foodTitle(f)}
+                      />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
-              )}
+              ) : null}
             </SectionWrapper>
           </div>
         </ContentWrapper>

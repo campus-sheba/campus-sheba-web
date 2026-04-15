@@ -54,7 +54,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
 
   return (
     <footer
-      className="bg-brand-navy-DEFAULT text-white"
+      className="bg-brand-navy-DEFAULT text-white px-4 md:px-8 lg:px-0"
       aria-label="Site footer"
     >
       {/* ─── Newsletter Band ─── */}
@@ -63,11 +63,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
         background="transparent"
         className="my-0 border-b border-white/8"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className="py-10 "
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="py-10 ">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-xl text-white mb-1">
@@ -106,11 +102,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       </SectionWrapper>
 
       {/* ─── Main Footer Grid ─── */}
-      <ContentWrapper
-        maxWidth="container"
-        padding="none"
-        className="py-14 "
-      >
+      <ContentWrapper maxWidth="container" padding="none" className="py-14 ">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
@@ -310,11 +302,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
         background="transparent"
         className="my-0 border-t border-white/8"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className="py-5 "
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="py-5 ">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">
               {t("copyright", { year: currentYear })}
