@@ -355,14 +355,14 @@ function HeroCoreCtas({
           href="/explore"
           className="font-semibold text-[#00A651] hover:underline"
         >
-          {tt("homeContent.heroExploreLink", "Browse all campus services")}
+          {tt("landing.browseAllServices", "Browse all campus services")}
         </Link>
         <span className="text-gray-400"> · </span>
         <Link
           href="/buy-sell"
           className="font-semibold text-gray-700 hover:text-[#00A651] hover:underline"
         >
-          {tt("homeContent.heroMarketplaceLink", "Marketplace")}
+          {tt("landing.marketplace", "Marketplace")}
         </Link>
       </p>
     </div>
@@ -395,7 +395,7 @@ export function HomePageContent() {
         >
           <header className="mx-auto max-w-3xl text-center">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-              {tt("homeContent.headline", "Your campus, connected")}
+              {tt("landing.title", "Your campus, connected")}
             </h1>
             {/* <p className="mt-3 text-base leading-relaxed text-gray-600 md:text-lg">
               {tt(
@@ -405,7 +405,7 @@ export function HomePageContent() {
             </p> */}
             {campus ? (
               <p className="mt-4 text-sm text-gray-500">
-                {tt("homeContent.showingFor", "Personalized for")}{" "}
+                {tt("landing.subtitle", "Personalized for")}{" "}
                 <span className="font-semibold text-gray-900">{campus}</span>
               </p>
             ) : (
@@ -445,14 +445,11 @@ export function HomePageContent() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900 md:text-2xl">
-                {tt(
-                  "homeContent.quickServicesTitle",
-                  "Every live module — one tap away",
-                )}
+                {tt("landing.oneTapAway", "Every live module — one tap away")}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600">
                 {tt(
-                  "homeContent.quickServicesSub",
+                  "landing.preferATraditionalDirectory",
                   "Prefer a traditional directory? Jump straight into any service; the sections above show real listings when your campus is selected.",
                 )}
               </p>
@@ -461,7 +458,7 @@ export function HomePageContent() {
               href="/explore"
               className="text-sm font-bold text-[#00A651] hover:underline"
             >
-              {tt("homeContent.viewHub", "View service hub")} →
+              {tt("landing.viewServiceHub", "View service hub")} →
             </Link>
           </div>
 
@@ -483,17 +480,17 @@ export function HomePageContent() {
             <div className="lg:col-span-1">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 ring-1 ring-emerald-100">
                 <HeartHandshake className="h-4 w-4" aria-hidden />
-                {tt("homeContent.whyTitle", "Why students use us")}
+                {tt("landing.WhyStudentsUseUs", "Why students use us")}
               </div>
               <h2 className="mt-4 text-2xl font-bold text-gray-900">
                 {tt(
-                  "homeContent.whyHeadline",
+                  "landing.BuiltForRealCampusRoutines",
                   "Built for real campus routines",
                 )}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-gray-600">
                 {tt(
-                  "homeContent.whyBody",
+                  "landing.fromNightBefore",
                   "From night-before exams to sudden emergencies, Campus Sheba keeps essential tools in one trusted place — with your university at the center.",
                 )}
               </p>
@@ -501,30 +498,30 @@ export function HomePageContent() {
             <ul className="grid gap-4 md:gap-6 grid-cols-2 lg:col-span-2">
               {[
                 {
-                  title: tt("homeContent.benefit1Title", "Campus-first"),
+                  title: tt("landing.campusFirst", "Campus-first"),
                   text: tt(
-                    "homeContent.benefit1Text",
+                    "landing.mapsContactsAndMore",
                     "Maps, contacts, and listings respect your institution — not generic city results.",
                   ),
                 },
                 {
-                  title: tt("homeContent.benefit2Title", "Peer-powered"),
+                  title: tt("landing.peerPowered", "Peer-powered"),
                   text: tt(
-                    "homeContent.benefit2Text",
+                    "landing.peerPoweredText",
                     "Books, buy & sell, and blood networks grow from students helping students.",
                   ),
                 },
                 {
-                  title: tt("homeContent.benefit3Title", "Safety aware"),
+                  title: tt("landing.safetyAware", "Safety aware"),
                   text: tt(
-                    "homeContent.benefit3Text",
+                    "landing.emergencyDirectories",
                     "Emergency directories and lost & found reduce friction when minutes count.",
                   ),
                 },
                 {
-                  title: tt("homeContent.benefit4Title", "Always evolving"),
+                  title: tt("landing.alwaysEvolving", "Always evolving"),
                   text: tt(
-                    "homeContent.benefit4Text",
+                    "landing.evolvingText",
                     "Food, shops, jobs, and tuition tools are rolling out — your feedback shapes the roadmap.",
                   ),
                 },
@@ -551,11 +548,11 @@ export function HomePageContent() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-bold md:text-3xl">
-                {tt("homeContent.roadmapTitle", "Coming soon to your campus")}
+                {tt("landing.comingSoonToYourCampus", "Coming soon to your campus")}
               </h2>
               <p className="mt-2 max-w-xl text-sm text-gray-300 md:text-base">
                 {tt(
-                  "homeContent.roadmapSub",
+                  "landing.shippingFood",
                   "We are shipping food ordering, shop-wise selling, skill bookings, jobs, tuition matching, and sustainable waste pickup — day by day.",
                 )}
               </p>
@@ -599,11 +596,11 @@ export function HomePageContent() {
           <div className="mx-auto max-w-3xl text-center">
             <Sparkles className="mx-auto h-8 w-8 text-[#00A651]" aria-hidden />
             <h2 className="mt-4 text-xl font-bold text-gray-900 md:text-2xl">
-              {tt("homeContent.deliveryTitle", "Food delivery on the way")}
+              {tt("landing.foodDeliveryOnTheWay", "Food delivery on the way")}
             </h2>
             <p className="mt-2 text-sm text-gray-600 md:text-base">
               {tt(
-                "homeContent.deliveryBody",
+                "landing.deliveryShebaWillTieInto",
                 "Delivery Sheba will tie into the same account and campus context you use for parcels and maps — stay tuned for launch announcements.",
               )}
             </p>
@@ -612,7 +609,7 @@ export function HomePageContent() {
               className="mt-6 inline-flex items-center gap-2 rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-bold text-gray-800 hover:bg-gray-50"
             >
               <Bike className="h-4 w-4 text-purple-600" aria-hidden />
-              {tt("homeContent.deliveryCta", "Delivery hub")}
+              {tt("landing.deliveryHub", "Delivery hub")}
             </Link>
           </div>
 

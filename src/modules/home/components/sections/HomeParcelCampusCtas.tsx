@@ -51,14 +51,17 @@ export function HomeParcelCampusCtas() {
                   <Package className="h-6 w-6" aria-hidden />
                 </div>
                 <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
-                  {tt("homeRails.parcelKicker", "Parcel Sheba")}
+                  {tt("landing.parcelSheba", "Parcel Sheba")}
                 </p>
                 <h3 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
-                  {tt("homeRails.parcelTitle", "Send a parcel across campus")}
+                  {tt(
+                    "landing.sendAPercelAcrossCampus",
+                    "Send a parcel across campus",
+                  )}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-gray-600 md:text-base">
                   {tt(
-                    "homeRails.parcelBody",
+                    "landing.parcelShebaIntro",
                     "Book pickup and drop-off between halls and landmarks. Track status from handover to delivery — same account as the rest of Campus Sheba.",
                   )}
                 </p>
@@ -69,13 +72,13 @@ export function HomeParcelCampusCtas() {
                     className="inline-flex items-center rounded-xl bg-[#00A651] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-900/10 hover:brightness-105"
                   >
                     <Plus className="mr-2 h-4 w-4" aria-hidden />
-                    {tt("homeRails.parcelCtaPrimary", "Request a parcel")}
+                    {tt("landing.reqAParcel", "Request a parcel")}
                   </button>
                   <Link
                     href="/parcel"
                     className="inline-flex items-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-800 hover:bg-gray-50"
                   >
-                    {tt("homeRails.parcelCtaSecondary", "How it works")}
+                    {tt("landing.howItWorks", "How it works")}
                     <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
                   </Link>
                 </div>
@@ -100,16 +103,16 @@ export function HomeParcelCampusCtas() {
                 <MapPinned className="h-5 w-5" aria-hidden />
               </div>
               <h3 className="mt-4 text-sm font-bold text-gray-900 md:text-xl">
-                {tt("homeRails.mapCtaTitle", "Interactive campus map")}
+                {tt("landing.interactiveCampusMap", "Interactive campus map")}
               </h3>
               <p className="mt-2 flex-1 text-[11px] md:text-sm leading-relaxed text-gray-600">
                 {tt(
-                  "homeRails.mapCtaBody",
+                  "landing.hallsDeptFoodZones",
                   "Halls, departments, food zones, and landmarks — explore what matters for your timetable and routes.",
                 )}
               </p>
               <span className="mt-4 inline-flex items-center text-[12px] md:text-sm font-bold text-[#00A651] group-hover:underline">
-                {tt("homeRails.mapCtaLink", "Open campus map")}
+                {tt("landing.openCampusMap", "Open campus map")}
                 <ArrowRight
                   className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5"
                   aria-hidden
@@ -125,16 +128,16 @@ export function HomeParcelCampusCtas() {
                 <Siren className="h-5 w-5" aria-hidden />
               </div>
               <h3 className="mt-4 text-sm font-bold text-gray-900 md:text-xl">
-                {tt("homeRails.emergencyCtaTitle", "Emergency contacts")}
+                {tt("landing.emergencyContacts", "Emergency contacts")}
               </h3>
               <p className="mt-2 flex-1 text-[11px] md:text-sm leading-relaxed text-gray-600">
                 {tt(
-                  "homeRails.emergencyCtaBody",
+                  "landing.emergencyDirectory",
                   "Security desks, hospitals, ambulance, police, and fire — verified numbers for your institution.",
                 )}
               </p>
               <span className="mt-4 inline-flex items-center text-[12px] md:text-sm font-bold text-[#00A651] group-hover:underline">
-                {tt("homeRails.emergencyCtaLink", "View emergency directory")}
+                {tt("landing.emergencyDirectory", "View emergency directory")}
                 <ArrowRight
                   className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5"
                   aria-hidden

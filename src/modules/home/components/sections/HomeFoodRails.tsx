@@ -129,20 +129,17 @@ export function HomeFoodRails() {
           <div className="flex flex-col gap-2 border-b border-amber-200/60 pb-8 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-800">
-                {tt("homeRails.foodKicker", "Food")}
+                {tt("landing.food", "Food")}
               </p>
               <h2
                 id="home-food-heading"
                 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
               >
-                {tt(
-                  "homeRails.foodHeadline",
-                  "Restaurants, halls & menu items",
-                )}
+                {tt("landing.foodIntro", "Restaurants, halls & menu items")}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
                 {tt(
-                  "homeRails.foodIntro",
+                  "landing.foodOutlets",
                   "Food outlets and dishes from approved campus vendors — separate from general retail on Campus Mart.",
                 )}
               </p>
@@ -151,7 +148,7 @@ export function HomeFoodRails() {
               href="/food"
               className="text-sm font-bold text-[#00A651] hover:underline"
             >
-              {tt("homeRails.foodViewAll", "Browse all food")} →
+              {tt("landing.browseAllFood", "Browse all food")} →
             </Link>
           </div>
 
@@ -168,9 +165,9 @@ export function HomeFoodRails() {
               className="my-0"
             >
               <SectionHeader
-                title={tt("homeRails.foodOutletsTitle", "Places to eat")}
+                title={tt("landing.placesToEat", "Places to eat")}
                 subtitle={tt(
-                  "homeRails.foodOutletsSub",
+                  "landing.foodOutlets",
                   "Dining outlets on your campus.",
                 )}
                 viewAllHref="/food"
@@ -241,9 +238,9 @@ export function HomeFoodRails() {
               className="my-0"
             >
               <SectionHeader
-                title={tt("homeRails.foodMenuTitle", "From the menu")}
+                title={tt("landing.fromTheMenu", "From the menu")}
                 subtitle={tt(
-                  "homeRails.foodMenuSub",
+                  "landing.dishesAndItems",
                   "Dishes and items you can order.",
                 )}
                 viewAllHref="/food"
@@ -285,7 +282,7 @@ export function HomeFoodRails() {
               ) : null}
               {foods.length === 0 && !loading ? (
                 <p className="mt-4 rounded-xl border border-dashed border-amber-200/80 bg-white px-4 py-10 text-center text-sm text-gray-500">
-                  {tt("homeRails.foodEmptyMenu", "No menu items to show yet.")}
+                  {tt("landing.foodEmptyMenu", "No menu items to show yet.")}
                 </p>
               ) : null}
               {foods.length > 0 ? (

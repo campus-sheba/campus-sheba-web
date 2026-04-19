@@ -163,20 +163,20 @@ export function HomeLostFoundRails() {
         >
           <div className="border-b border-amber-200/50 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-800">
-              {tt("homeRails.lostFoundKicker", "Lost & found")}
+              {tt("landing.lost&Found", "Lost & found")}
             </p>
             <h2
               id="home-lost-found-heading"
               className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
             >
               {tt(
-                "homeRails.lostFoundHeadline",
+                "landing.recoverItems",
                 "Recover items — or help someone else",
               )}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
               {tt(
-                "homeRails.lostFoundIntro",
+                "landing.lostReports",
                 "Latest lost reports and found posts from your university, refreshed as the community posts them.",
               )}
             </p>
@@ -184,28 +184,29 @@ export function HomeLostFoundRails() {
 
           <div className="mt-10 space-y-12">
             <LostFoundRow
-              title={tt("homeRails.lostLatest", "Latest lost items")}
+              title={tt("landing.latestLostItems", "Latest lost items")}
               subtitle={tt(
-                "homeRails.lostLatestSub",
+                "landing.recentlyReported",
                 "Recently reported missing on campus.",
               )}
               type="Lost"
               universityId={universityId}
               guestMode={guestMode}
               viewAllHref="/lost-found?type=Lost"
-              emptyHint={tt("homeRails.lostEmpty", "No lost posts yet.")}
+              emptyHint={tt("landing.noLostPosts", "No lost posts yet.")}
             />
             <LostFoundRow
-              title={tt("homeRails.foundLatest", "Latest found items")}
+              title={tt("landing.latestFoundItems", "Latest found items")}
               subtitle={tt(
-                "homeRails.foundLatestSub",
+                "landing.recentlyFoundTitle",
+
                 "Good samaritan finds waiting to be claimed.",
               )}
               type="Found"
               universityId={universityId}
               guestMode={guestMode}
               viewAllHref="/lost-found?type=Found"
-              emptyHint={tt("homeRails.foundEmpty", "No found posts yet.")}
+              emptyHint={tt("landing.noPostFoundYet", "No found posts yet.")}
             />
           </div>
         </ContentWrapper>

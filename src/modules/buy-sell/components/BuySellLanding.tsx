@@ -7,6 +7,8 @@ import { useAppState } from "@/contexts/AppStateContext";
 import { useTranslations } from "next-intl";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
+import { ResponsiveCategoryRow } from "@/components/marketplace/ResponsiveCategoryRow";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { useInView } from "@/components/marketplace/useInView";
 import { fetchBuySellCategoriesPublic } from "@/services/buy-sell.public";
@@ -63,25 +65,31 @@ function CategoryListingsSection({
         ) : null}
 
         {!inView ? (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[4/3] rounded-2xl bg-gray-50" />
-            ))}
+          <div className="mt-4">
+            <ResponsiveCardsGrid>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="aspect-[4/3] rounded-2xl bg-gray-50" />
+              ))}
+            </ResponsiveCardsGrid>
           </div>
         ) : isLoading && items.length === 0 ? (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
-              />
-            ))}
+          <div className="mt-4">
+            <ResponsiveCardsGrid>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
+                />
+              ))}
+            </ResponsiveCardsGrid>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {items.slice(0, 8).map((item) => (
-              <BuySellListingCard key={item._id} item={item} />
-            ))}
+          <div className="mt-4">
+            <ResponsiveCardsGrid>
+              {items.slice(0, 8).map((item) => (
+                <BuySellListingCard key={item._id} item={item} />
+              ))}
+            </ResponsiveCardsGrid>
           </div>
         )}
       </SectionWrapper>
@@ -124,23 +132,27 @@ function ListingsSection({
         </p>
       ) : null}
       {isLoading && items.length === 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
-            />
-          ))}
+        <div className="mt-4">
+          <ResponsiveCardsGrid>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
+              />
+            ))}
+          </ResponsiveCardsGrid>
         </div>
       ) : items.length === 0 ? (
         <p className="mt-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
           No listings found.
         </p>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {items.slice(0, pageSize).map((item) => (
-            <BuySellListingCard key={item._id} item={item} />
-          ))}
+        <div className="mt-4">
+          <ResponsiveCardsGrid>
+            {items.slice(0, pageSize).map((item) => (
+              <BuySellListingCard key={item._id} item={item} />
+            ))}
+          </ResponsiveCardsGrid>
         </div>
       )}
     </SectionWrapper>
@@ -267,25 +279,29 @@ export default function BuySellLanding() {
                 )}
               />
               {categoriesLoading && allCategories.length === 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className="h-9 w-28 animate-pulse rounded-full bg-gray-100"
-                    />
-                  ))}
+                <div className="mt-4">
+                  <ResponsiveCategoryRow>
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className="h-9 w-28 animate-pulse rounded-full bg-gray-100"
+                      />
+                    ))}
+                  </ResponsiveCategoryRow>
                 </div>
               ) : allCategories.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {allCategories.slice(0, 14).map((c) => (
-                    <Link
-                      key={c._id}
-                      href={`/buy-sell/all?category=${encodeURIComponent(c._id)}`}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#00A651] hover:text-[#00A651]"
-                    >
-                      {c.title}
-                    </Link>
-                  ))}
+                <div className="mt-4">
+                  <ResponsiveCategoryRow>
+                    {allCategories.slice(0, 14).map((c) => (
+                      <Link
+                        key={c._id}
+                        href={`/buy-sell/all?category=${encodeURIComponent(c._id)}`}
+                        className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#00A651] hover:text-[#00A651]"
+                      >
+                        {c.title}
+                      </Link>
+                    ))}
+                  </ResponsiveCategoryRow>
                 </div>
               ) : null}
             </SectionWrapper>
