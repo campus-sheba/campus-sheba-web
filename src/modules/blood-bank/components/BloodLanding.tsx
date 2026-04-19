@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { fetchBloodDonorStatsAction } from "@/services/blood-donor";
 import { useBloodDonorsFind } from "../hooks/useBloodDonorsFind";
@@ -210,23 +211,27 @@ export default function BloodLanding() {
                 </p>
               ) : null}
               {donorsPreview.isLoading && donorsPreview.items.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-32 animate-pulse rounded-2xl bg-gray-100"
-                    />
-                  ))}
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-32 animate-pulse rounded-2xl bg-gray-100"
+                      />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
               ) : donorsPreview.items.length === 0 ? (
                 <p className="mt-4 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-500">
                   {tt("bloodLanding.noDonors", "No donors listed yet.")}
                 </p>
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-                  {donorsPreview.items.map((d) => (
-                    <DonorCard key={d._id} donor={d} />
-                  ))}
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {donorsPreview.items.map((d) => (
+                      <DonorCard key={d._id} donor={d} />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
               )}
             </SectionWrapper>
@@ -251,23 +256,27 @@ export default function BloodLanding() {
               ) : null}
               {requestsPreview.isLoading &&
               requestsPreview.items.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-32 animate-pulse rounded-2xl bg-gray-100"
-                    />
-                  ))}
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-32 animate-pulse rounded-2xl bg-gray-100"
+                      />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
               ) : requestsPreview.items.length === 0 ? (
                 <p className="mt-4 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-500">
                   {tt("bloodLanding.noRequests", "No open requests yet.")}
                 </p>
               ) : (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-                  {requestsPreview.items.map((r) => (
-                    <BloodRequestCard key={r._id} row={r} />
-                  ))}
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {requestsPreview.items.map((r) => (
+                      <BloodRequestCard key={r._id} row={r} />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
               )}
             </SectionWrapper>

@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { Button } from "@/components/ui";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { fetchUserCategoriesByType } from "@/services/books";
 import type { BuySellCategory } from "@/types/buy-sell";
 import { useLostFoundBrowse } from "../hooks/useLostFoundBrowse";
@@ -162,13 +163,15 @@ export default function LostFoundFeed() {
             ) : null}
 
             {isLoading && items.length === 0 ? (
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
-                  />
-                ))}
+              <div className="mt-6">
+                <ResponsiveCardsGrid>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
+                    />
+                  ))}
+                </ResponsiveCardsGrid>
               </div>
             ) : items.length === 0 ? (
               <p className="mt-8 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-12 text-center text-sm text-gray-500">
@@ -180,10 +183,12 @@ export default function LostFoundFeed() {
                   {tt("lostFoundFeed.showing", "Showing")} {items.length} /{" "}
                   {total}
                 </p>
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {items.map((p) => (
-                    <LostFoundCard key={p._id} post={p} />
-                  ))}
+                <div className="mt-3">
+                  <ResponsiveCardsGrid>
+                    {items.map((p) => (
+                      <LostFoundCard key={p._id} post={p} />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
                 {hasMore ? (
                   <div className="mt-6 flex justify-center">

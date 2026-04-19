@@ -160,20 +160,20 @@ export function HomeBooksRails() {
         >
           <div className="border-b border-gray-100 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700">
-              {tt("homeRails.booksKicker", "Book Sheba")}
+              {tt("landing.bookSheba", "Book Sheba")}
             </p>
             <h2
               id="home-books-heading"
               className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
             >
               {tt(
-                "homeRails.booksHeadline",
+                "landing.bookShebaIntro",
                 "Textbooks: buy, borrow, or grab a donation",
               )}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
               {tt(
-                "homeRails.booksIntro",
+                "landing.bookShebaDesc",
                 "Three rails tuned to how students actually move books — paid resale, short-term lending, and community giveaways.",
               )}
             </p>
@@ -181,9 +181,9 @@ export function HomeBooksRails() {
 
           <div className="mt-10 space-y-12">
             <BooksRow
-              title={tt("homeRails.booksSell", "Books for sale")}
+              title={tt("landing.bookShebaShortIntro", "Books for sale")}
               subtitle={tt(
-                "homeRails.booksSellSub",
+                "landing.bookShebaShortDesc",
                 "Buy textbooks and notes from students on your campus.",
               )}
               viewAllHref="/books/all?type=Selling"
@@ -195,9 +195,9 @@ export function HomeBooksRails() {
               )}
             />
             <BooksRow
-              title={tt("homeRails.booksLend", "Books to borrow")}
+              title={tt("landing.booksToBorrow", "Books to borrow")}
               subtitle={tt(
-                "homeRails.booksLendSub",
+                "landing.lendListing",
                 "Lend listings for a period — ideal for a single semester.",
               )}
               viewAllHref="/books/all?type=Lending"
@@ -209,9 +209,9 @@ export function HomeBooksRails() {
               )}
             />
             <BooksRow
-              title={tt("homeRails.booksDonate", "Free books & donations")}
+              title={tt("landing.freeBooks", "Free books & donations")}
               subtitle={tt(
-                "homeRails.booksDonateSub",
+                "landing.freeBooksDesc",
                 "Donated titles — pay it forward when you are done reading.",
               )}
               viewAllHref="/books/all?type=Donation"

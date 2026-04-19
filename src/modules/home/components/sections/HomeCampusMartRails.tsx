@@ -132,20 +132,20 @@ export function HomeCampusMartRails() {
           <div className="flex flex-col gap-2 border-b border-gray-200/80 pb-8 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
-                {tt("homeRails.campusMartKicker", "Campus Mart")}
+                {tt("landing.campusMart", "Campus Mart")}
               </p>
               <h2
                 id="home-campus-mart-heading"
                 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
               >
                 {tt(
-                  "homeRails.campusMartHeadline",
+                  "landing.officialShops",
                   "Official shops & retail products",
                 )}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
                 {tt(
-                  "homeRails.campusMartIntro",
+                  "landing.browseVerified",
                   "Browse verified campus stores and retail listings — separate from student Buy & Sell.",
                 )}
               </p>
@@ -154,7 +154,7 @@ export function HomeCampusMartRails() {
               href="/marketplace"
               className="text-sm font-bold text-[#00A651] hover:underline"
             >
-              {tt("homeRails.campusMartViewAll", "Open Campus Mart")} →
+              {tt("landing.openCampusMart", "Open Campus Mart")} →
             </Link>
           </div>
 
@@ -171,9 +171,9 @@ export function HomeCampusMartRails() {
               className="my-0"
             >
               <SectionHeader
-                title={tt("homeRails.campusMartStoresTitle", "Stores near you")}
+                title={tt("landing.storesNearYou", "Stores near you")}
                 subtitle={tt(
-                  "homeRails.campusMartStoresSub",
+                  "landing.retailOutlets",
                   "Retail outlets on Campus Mart.",
                 )}
                 viewAllHref="/marketplace/shops"
@@ -245,11 +245,11 @@ export function HomeCampusMartRails() {
             >
               <SectionHeader
                 title={tt(
-                  "homeRails.campusMartFeaturedTitle",
+                  "landing.featuredProducts",
                   "Featured products",
                 )}
                 subtitle={tt(
-                  "homeRails.campusMartFeaturedSub",
+                  "landing.highlightedListings",
                   "Highlighted listings from campus shops.",
                 )}
                 viewAllHref="/marketplace/products?featured=1"

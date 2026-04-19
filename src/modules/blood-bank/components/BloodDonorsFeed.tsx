@@ -8,6 +8,7 @@ import { useAppState } from "@/contexts/AppStateContext";
 import { useTranslations } from "next-intl";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { Button } from "@/components/ui";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { getUniversityMetadataAction } from "@/services/user";
@@ -224,23 +225,27 @@ export default function BloodDonorsFeed() {
             ) : null}
 
             {isLoading && items.length === 0 ? (
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-32 animate-pulse rounded-2xl bg-gray-100"
-                  />
-                ))}
+              <div className="mt-6">
+                <ResponsiveCardsGrid>
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-32 animate-pulse rounded-2xl bg-gray-100"
+                    />
+                  ))}
+                </ResponsiveCardsGrid>
               </div>
             ) : items.length === 0 ? (
               <p className="mt-6 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
                 {tt("bloodDonorsFeed.empty", "No donors match your filters.")}
               </p>
             ) : (
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-                {items.map((d) => (
-                  <DonorCard key={d._id} donor={d} />
-                ))}
+              <div className="mt-6">
+                <ResponsiveCardsGrid>
+                  {items.map((d) => (
+                    <DonorCard key={d._id} donor={d} />
+                  ))}
+                </ResponsiveCardsGrid>
               </div>
             )}
 

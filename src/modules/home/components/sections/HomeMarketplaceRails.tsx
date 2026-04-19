@@ -230,20 +230,20 @@ export function HomeMarketplaceRails() {
           <div className="flex flex-col gap-2 border-b border-gray-200/80 pb-8 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
-                {tt("homeRails.marketplaceKicker", "Buy & sell")}
+                {tt("landing.buy&Sell", "Buy & sell")}
               </p>
               <h2
                 id="home-used-marketplace-heading"
                 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
               >
                 {tt(
-                  "homeRails.marketplaceHeadline",
+                  "landing.used&SecondHand",
                   "Used & second-hand deals on campus",
                 )}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
                 {tt(
-                  "homeRails.marketplaceIntro",
+                  "landing.peerToPeer",
                   "Peer-to-peer listings for gadgets, furniture, notes, and everyday items — priced for students.",
                 )}
               </p>
@@ -252,12 +252,9 @@ export function HomeMarketplaceRails() {
 
           <div className="mt-10 space-y-12">
             <ListingRail
-              title={tt(
-                "homeRails.marketplaceFeatured",
-                "Featured used & second-hand",
-              )}
+              title={tt("landing.featuredUsed", "Featured used & second-hand")}
               subtitle={tt(
-                "homeRails.marketplaceFeaturedSub",
+                "landing.recentlyRefreshed",
                 "Recently refreshed listings your campusmates are watching.",
               )}
               viewAllHref="/buy-sell"
@@ -265,14 +262,14 @@ export function HomeMarketplaceRails() {
               isLoading={isLoading}
               error={error}
               emptyHint={tt(
-                "homeRails.marketplaceEmpty",
+                "landing.noListingsYet",
                 "No listings yet. Be the first to sell on your campus.",
               )}
             />
             <ListingRail
-              title={tt("homeRails.marketplaceLatest", "Latest items for sale")}
+              title={tt("landing.latestItemsForSale", "Latest items for sale")}
               subtitle={tt(
-                "homeRails.marketplaceLatestSub",
+                "landing.newlyPostedPicks",
                 "Newly posted second-hand picks from your university.",
               )}
               viewAllHref="/buy-sell/all"
@@ -280,7 +277,7 @@ export function HomeMarketplaceRails() {
               isLoading={isLoading}
               error={error}
               emptyHint={tt(
-                "homeRails.marketplaceEmpty",
+                "landing.noListingsYet",
                 "No listings yet. Be the first to sell on your campus.",
               )}
             />

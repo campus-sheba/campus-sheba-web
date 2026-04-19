@@ -34,7 +34,7 @@ export default function BookListingCard({ item }: Props) {
           src={photo}
           alt={item.title}
           fill
-          className="object-cover transition duration-300 group-hover:scale-[1.02]"
+          className="object-cover transition duration-300 group-hover:scale-[1.02] "
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           unoptimized={shouldUnoptimizeRemoteImage(photo)}
         />

@@ -126,20 +126,20 @@ export function HomeBloodRails() {
         >
           <div className="border-b border-red-100 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-700">
-              {tt("homeRails.bloodKicker", "Blood bank")}
+              {tt("landing.bloodBank", "Blood bank")}
             </p>
             <h2
               id="home-blood-heading"
               className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
             >
               {tt(
-                "homeRails.bloodHeadline",
+                "landing.donorsNearby",
                 "Donors nearby & urgent campus requests",
               )}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
               {tt(
-                "homeRails.bloodIntro",
+                "landing.openRequests",
                 "Open requests are sorted with critical and high urgency first so you can respond when minutes matter.",
               )}
             </p>
@@ -152,9 +152,9 @@ export function HomeBloodRails() {
               className="my-0"
             >
               <SectionHeader
-                title={tt("homeRails.bloodDonors", "Donors near your campus")}
+                title={tt("landing.donorsNearby", "Donors near your campus")}
                 subtitle={tt(
-                  "homeRails.bloodDonorsSub",
+                  "landing.students&stuff",
                   "Students and staff who registered to help.",
                 )}
                 viewAllHref="/blood-bank/donors"
@@ -201,7 +201,7 @@ export function HomeBloodRails() {
               ) : null}
               {donorsPreview.items.length === 0 && !donorsPreview.isLoading ? (
                 <p className="mt-4 rounded-xl border border-dashed border-red-100/80 bg-white px-4 py-8 text-center text-sm text-gray-500">
-                  {tt("homeRails.bloodNoDonors", "No donors listed yet.")}
+                  {tt("landing.noDonorsListedYet", "No donors listed yet.")}
                 </p>
               ) : null}
               {donorsPreview.items.length > 0 ? (
@@ -222,11 +222,11 @@ export function HomeBloodRails() {
             >
               <SectionHeader
                 title={tt(
-                  "homeRails.bloodUrgent",
+                  "landing.urgent&openBloodReq",
                   "Urgent & open blood requests",
                 )}
                 subtitle={tt(
-                  "homeRails.bloodUrgentSub",
+                  "landing.activeNeeds",
                   "Active needs from your university community.",
                 )}
                 viewAllHref="/blood-bank/requests"
@@ -277,7 +277,7 @@ export function HomeBloodRails() {
               {urgentRequests.length === 0 && !requestsPreview.isLoading ? (
                 <p className="mt-4 rounded-xl border border-dashed border-red-100/80 bg-white px-4 py-8 text-center text-sm text-gray-500">
                   {tt(
-                    "homeRails.bloodNoRequests",
+                    "landing.noOpenRequests",
                     "No open requests right now.",
                   )}
                 </p>
