@@ -1,6 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+export type GatewayMedia = { url: string; key?: string; size?: number };
 
+export type PaymentGateway = {
+  _id: string;
+  key: string;
+  title: string;
+  shortLabel?: string;
+  description?: string;
+  provider?: string;
+  logo?: GatewayMedia | null;
+  icon?: GatewayMedia | null;
+  sequence?: number;
+  isFeatured?: boolean;
+  deliveryType?: string;
+  paymentType?: string;
+  metadata?: unknown;
+};
+
+export type DeliveryOption = {
+  _id: string;
+  key: string;
+  title: string;
+  description?: string;
+  etaMinutes?: number;
+  sequence?: number;
+  logo?: GatewayMedia | null;
+  icon?: GatewayMedia | null;
+  metadata?: unknown;
+};
 
 export interface CartItemContent {
     _id: string;
@@ -75,21 +103,25 @@ export type OrderSummaryItemPayload = {
 };
 
 export type OrderSummaryPayload = {
-  type: "Book" | "BuySell";
+  type: string;
   rentalType: "Normal" | "Rental";
   rentalDays?: number;
   addressId: string;
   code?: string;
   items: OrderSummaryItemPayload[];
-  deliveryType: "COD" | "ONLINE";
+  paymentGatewayKey?: string;
+  deliveryOptionKey?: string;
+  /** @deprecated prefer paymentGatewayKey */
+  deliveryType?: "COD" | "ONLINE";
   deliveryTip?: number;
 };
 
 export interface OrderSummaryResponse {
-  type: string;
+  type?: string;
   subTotal: number;
   total: number;
   totalShippingCost?: number;
+  totalDeliveryOptionSurcharge?: number;
   totalVat?: number;
   totalTax?: number;
   totalPlatformFee?: number;
@@ -99,9 +131,39 @@ export interface OrderSummaryResponse {
   totalDiscount?: number;
   totalPaymentGatewayFee?: number;
   totalPlatformCommission?: number;
+  totalSellerPayout?: number;
   deliveryTip?: number;
+  paymentGatewayKey?: string;
+  deliveryOptionKey?: string;
+  deliveryChargeBreakdown?: {
+    baseShippingCost: number;
+    deliveryOptionSurcharge: number;
+    finalShippingCost: number;
+  };
+  paymentGatewayFeeBreakdown?: {
+    key: string;
+    percentage: number;
+    fixed: number;
+    appliedFee: number;
+  };
+  feeSummary?: {
+    subTotal: number;
+    vat: number;
+    tax: number;
+    serviceFee: number;
+    platformFee: number;
+    packagingFee: number;
+    codFee: number;
+    deliveryCharge: number;
+    deliveryOptionSurcharge: number;
+    paymentGatewayFee: number;
+    deliveryTip: number;
+    discount: number;
+    total: number;
+    currency: string;
+  };
   address?: { _id?: string; address?: string };
-  items: Array<{
+  items?: Array<{
     _id: string;
     title: string;
     quantity: number;

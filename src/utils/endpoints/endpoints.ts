@@ -138,6 +138,13 @@ export const orderEndpoints = {
     base: `${baseURL}/user/orders`,
     byId: (id: string) => `${baseURL}/user/orders/${encodeURIComponent(id)}`,
     cancel: (id: string) => `${baseURL}/user/orders/${encodeURIComponent(id)}/cancel`,
+    cancelItem: (id: string, itemId: string) =>
+        `${baseURL}/user/orders/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}/cancel`,
+};
+
+export const checkoutEndpoints = {
+    paymentGateways: `${baseURL}/user/payment-gateways/available`,
+    deliveryOptions: `${baseURL}/user/delivery-options/available`,
 };
 
 export const bookEndpoints = {
@@ -174,8 +181,23 @@ export const buySellEndpoints = {
     userById: (id: string) => `${baseURL}/user/buy-sell/${id}`,
 };
 
+export const pointsEndpoints = {
+    balance: `${baseURL}/points/balance`,
+    transactions: `${baseURL}/points/transactions`,
+    config: `${baseURL}/points/config`,
+    redeem: `${baseURL}/points/redeem`,
+};
+
+export const referralEndpoints = {
+    validate: (code: string) => `${baseURL}/referral/validate/${encodeURIComponent(code)}`,
+    myCode: `${baseURL}/referral/my-code`,
+    myReferrals: `${baseURL}/referral/my-referrals`,
+    leaderboard: `${baseURL}/referral/leaderboard`,
+};
+
 /** Browse shops, products, and food (guest or authenticated; university from cookie or query). */
 export const marketplaceEndpoints = {
+    /** Legacy direct shop/product endpoints — kept for backward compat. */
     shops: `${baseURL}/user/shops`,
     shopById: (id: string) => `${baseURL}/user/shops/${encodeURIComponent(id)}`,
     products: `${baseURL}/user/products`,
@@ -185,4 +207,10 @@ export const marketplaceEndpoints = {
     productById: (id: string) => `${baseURL}/user/products/${encodeURIComponent(id)}`,
     foods: `${baseURL}/user/foods`,
     foodById: (id: string) => `${baseURL}/user/foods/${encodeURIComponent(id)}`,
+    /** New marketplace aggregation endpoints. */
+    homeFeed: `${baseURL}/user/marketplace`,
+    marketplaceShops: `${baseURL}/user/marketplace/shops`,
+    marketplaceProducts: `${baseURL}/user/marketplace/products`,
+    marketplaceShopWithProducts: (shopId: string) =>
+        `${baseURL}/user/marketplace/shops/${encodeURIComponent(shopId)}/products`,
 };

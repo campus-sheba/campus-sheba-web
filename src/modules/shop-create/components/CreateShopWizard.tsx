@@ -284,7 +284,7 @@ export default function CreateShopWizard() {
       setError(result.message);
       return;
     }
-    router.push(`/my-shop/${result.shopId}`);
+    router.push(`/my-shop/${result.shop?._id}`);
   }
 
   return (

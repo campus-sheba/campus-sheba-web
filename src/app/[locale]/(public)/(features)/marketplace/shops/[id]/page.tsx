@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import MarketplaceShopDetailTemplate from "@/modules/marketplace/templates/MarketplaceShopDetailTemplate";
 import {
-  fetchMarketplaceProductsByShop,
   fetchMarketplaceShopById,
+  fetchMarketplaceShopWithProducts,
   getMarketplaceUniversityId,
 } from "@/services/marketplace";
 
@@ -20,10 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function MarketplaceShopDetailPage({ params }: Props) {
   const { id } = await params;
   const universityId = await getMarketplaceUniversityId();
-  const shop = await fetchMarketplaceShopById(id, universityId ?? undefined);
-  if (!shop) notFound();
 
-  const { data: products } = await fetchMarketplaceProductsByShop(id, universityId ?? undefined, 1, 24);
+  const { shop, products } = await fetchMarketplaceShopWithProducts(id, universityId ?? undefined, 1, 24);
 
-  return <MarketplaceShopDetailTemplate shop={shop} products={products} />;
+  // Fall back to separate shop fetch if combined endpoint didn't return shop data
+  const resolvedShop = shop ?? (await fetchMarketplaceShopById(id, universityId ?? undefined));
+  if (!resolvedShop) notFound();
+
+  return <MarketplaceShopDetailTemplate shop={resolvedShop} products={products} />;
 }

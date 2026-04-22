@@ -37,15 +37,13 @@ export async function listOrdersAction(params: OrdersListParams = {}) {
   }
 }
 
-function unwrapPlaceOrderId(response: unknown): string | null {
-  if (!response || typeof response !== "object") return null;
+function unwrapPlaceOrder(response: unknown): { orderId: string | null; paymentUrl: string | null } {
+  if (!response || typeof response !== "object") return { orderId: null, paymentUrl: null };
   const r = response as Record<string, unknown>;
-  if (r.data && typeof r.data === "object" && r.data !== null && "_id" in r.data) {
-    const id = (r.data as { _id?: unknown })._id;
-    return typeof id === "string" ? id : null;
-  }
-  if ("_id" in r && typeof r._id === "string") return r._id;
-  return null;
+  const data = (r.data && typeof r.data === "object" ? r.data : r) as Record<string, unknown>;
+  const orderId = typeof data._id === "string" ? data._id : null;
+  const paymentUrl = typeof data.url === "string" ? data.url : null;
+  return { orderId, paymentUrl };
 }
 
 function unwrapOrderDetail(response: unknown): UserOrderRow | null {
@@ -92,10 +90,16 @@ export async function placeOrderAction(payload: PlaceOrderPayload) {
     const response = await postPrivate<unknown>(orderEndpoints.base, payload, {
       includeUniversity: false,
     });
-    const orderId = unwrapPlaceOrderId(response);
-    return { success: true as const, orderId, raw: response };
+    const { orderId, paymentUrl } = unwrapPlaceOrder(response);
+    return { success: true as const, orderId, paymentUrl, raw: response };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to place order";
-    return { success: false as const, message, orderId: null as string | null, raw: null };
+    return {
+      success: false as const,
+      message,
+      orderId: null as string | null,
+      paymentUrl: null as string | null,
+      raw: null,
+    };
   }
 }

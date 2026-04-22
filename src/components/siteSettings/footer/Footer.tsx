@@ -1,56 +1,93 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { Package, Mail, Phone, ArrowRight, Shield, Globe } from "lucide-react";
+import React from "react";
+import {
+  GraduationCap,
+  Bike,
+  BookOpen,
+  ShoppingBag,
+  Droplets,
+  Briefcase,
+  Heart,
+  Package,
+  Trash2,
+  MapPin,
+  Mail,
+  Phone,
+  FacebookIcon,
+  Twitter,
+  Instagram,
+  Youtube,
+  ArrowRight,
+  Shield,
+  Globe,
+} from "lucide-react";
 import Logo from "../navbar/Logo";
 import { Button } from "@/components/ui";
-import { fetchUniversities } from "@/services/universities";
-import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import {
-  COMPANY_LINKS,
-  FALLBACK_UNIVERSITIES,
-  SERVICES,
-  SOCIAL,
-  SUPPORT_LINKS,
-} from "./footer.constants";
-import { useTranslations } from "next-intl";
 
 interface FooterProps {
   locale?: string;
 }
 
+const SERVICES = [
+  { label: "Delivery Sheba", href: "/delivery", icon: Bike },
+  { label: "Book Sheba", href: "/books", icon: BookOpen },
+  { label: "Buy & Sell", href: "/marketplace", icon: ShoppingBag },
+  { label: "Blood Bank", href: "/blood-bank", icon: Droplets },
+  { label: "Tuition Sheba", href: "/tuition", icon: GraduationCap },
+  { label: "Jobs", href: "/jobs", icon: Briefcase },
+  { label: "Donation", href: "/donation", icon: Heart },
+  { label: "Parcel Delivery", href: "/parcel", icon: Package },
+  { label: "Eco Pickup", href: "/garbage", icon: Trash2 },
+  { label: "Lost & Found", href: "/lost-found", icon: MapPin },
+];
+
+const COMPANY_LINKS = [
+  { label: "About Us", href: "/about" },
+  { label: "Careers", href: "/careers" },
+  { label: "Blog", href: "/blog" },
+  { label: "Press Kit", href: "/press" },
+  { label: "Contact", href: "/contact" },
+];
+
+const SUPPORT_LINKS = [
+  { label: "Help Center", href: "/help" },
+  { label: "Community Guidelines", href: "/guidelines" },
+  { label: "Report an Issue", href: "/report" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms & Conditions", href: "/terms-condition" },
+];
+
+const UNIVERSITIES = [
+  "Jahangirnagar University",
+  "Dhaka University",
+  "Chittagong University",
+  "+ More Coming Soon",
+];
+
+const SOCIAL = [
+  {
+    label: "Facebook",
+    icon: FacebookIcon,
+    href: "https://facebook.com/campussheba",
+  },
+  {
+    label: "Instagram",
+    icon: Instagram,
+    href: "https://instagram.com/campussheba",
+  },
+  { label: "Twitter", icon: Twitter, href: "https://twitter.com/campussheba" },
+  { label: "YouTube", icon: Youtube, href: "https://youtube.com/campussheba" },
+];
+
 const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
-  const t = useTranslations("common.footer");
   const currentYear = new Date().getFullYear();
-  const [universities, setUniversities] = useState<string[]>(
-    FALLBACK_UNIVERSITIES,
-  );
 
   const href = (path: string) => {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     return `/${locale}${normalizedPath}`;
   };
-
-  useEffect(() => {
-    let mounted = true;
-    const loadUniversities = async () => {
-      try {
-        const items = await fetchUniversities(1, 6);
-        if (!mounted) return;
-        const names = items.map((item) => item.name).filter(Boolean);
-        if (names.length) {
-          setUniversities([...names.slice(0, 4), "+ More Coming Soon"]);
-        }
-      } catch {
-        // Keep fallback list.
-      }
-    };
-    void loadUniversities();
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   return (
     <footer
@@ -58,22 +95,16 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
       aria-label="Site footer"
     >
       {/* ─── Newsletter Band ─── */}
-      <SectionWrapper
-        spacing="none"
-        background="transparent"
-        className="my-0 border-b border-white/8"
-      >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className="py-10 "
-        >
+      <div className="border-b border-white/8">
+        <div className="cs-container py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-xl text-white mb-1">
-                {t("stayInLoop")}
+                Stay in the loop
               </h3>
-              <p className="text-sm text-white/50">{t("newsletterSubtitle")}</p>
+              <p className="text-sm text-white/50">
+                Get updates on new campuses, features, and student offers.
+              </p>
             </div>
             <form
               onSubmit={(e) => e.preventDefault()}
@@ -97,20 +128,16 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                   background: "linear-gradient(135deg, #00A651, #00c460)",
                 }}
               >
-                {t("subscribe")}
+                Subscribe
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
           </div>
-        </ContentWrapper>
-      </SectionWrapper>
+        </div>
+      </div>
 
       {/* ─── Main Footer Grid ─── */}
-      <ContentWrapper
-        maxWidth="container"
-        padding="none"
-        className="py-14 "
-      >
+      <div className="cs-container py-14">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
@@ -124,13 +151,14 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               <div className="leading-none bg-white p-2 rounded-lg">
                 <Logo />
                 <span className="text-[9px] font-medium text-brand-navy-DEFAULT tracking-widest uppercase">
-                  {t("tagline")}
+                  Your Campus. Your World.
                 </span>
               </div>
             </Link>
 
             <p className="text-sm text-white/50 leading-relaxed mb-6 max-w-[220px]">
-              {t("description")}
+              A 360° campus lifestyle super-app connecting students, educators,
+              and service providers across Bangladesh.
             </p>
 
             {/* Social Links */}
@@ -162,7 +190,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               </a>
               <div className="flex items-center gap-2 text-xs text-white/40">
                 <Globe className="w-3.5 h-3.5 flex-shrink-0 text-brand-green-DEFAULT" />
-                {t("servingBangladesh")}
+                Serving all of Bangladesh
               </div>
             </div>
           </div>
@@ -170,7 +198,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* Services Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              {t("services")}
+              Services
             </h4>
             <ul className="space-y-3">
               {SERVICES.map((s) => (
@@ -194,7 +222,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* Company Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              {t("company")}
+              Company
             </h4>
             <ul className="space-y-3">
               {COMPANY_LINKS.map((l) => (
@@ -214,7 +242,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* Support Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              {t("support")}
+              Support
             </h4>
             <ul className="space-y-3">
               {SUPPORT_LINKS.map((l) => (
@@ -233,10 +261,10 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
             {/* Universities */}
             <div className="mt-8">
               <h4 className="font-display font-semibold text-sm text-white mb-4 tracking-wide uppercase">
-                {t("partnerUniversities")}
+                Partner Universities
               </h4>
               <ul className="space-y-2">
-                {universities.map((u) => (
+                {UNIVERSITIES.map((u) => (
                   <li key={u} className="text-sm text-white/40">
                     {u}
                   </li>
@@ -248,10 +276,11 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           {/* App Column */}
           <div>
             <h4 className="font-display font-semibold text-sm text-white mb-5 tracking-wide uppercase">
-              {t("getApp")}
+              Get the App
             </h4>
             <p className="text-sm text-white/40 mb-4 leading-relaxed">
-              {t("appDescription")}
+              Available on iOS and Android with all features accessible on the
+              go.
             </p>
             <div className="space-y-2">
               <a
@@ -264,7 +293,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 </div>
                 <div>
                   <p className="text-[9px] text-white/30 leading-none">
-                    {t("downloadOn")}
+                    Download on the
                   </p>
                   <p className="text-sm font-semibold text-white leading-none mt-0.5">
                     App Store
@@ -281,7 +310,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 </div>
                 <div>
                   <p className="text-[9px] text-white/30 leading-none">
-                    {t("getItOn")}
+                    Get it on
                   </p>
                   <p className="text-sm font-semibold text-white leading-none mt-0.5">
                     Google Play
@@ -295,29 +324,24 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               <Shield className="w-4 h-4 text-brand-green-DEFAULT flex-shrink-0" />
               <div>
                 <p className="text-xs font-semibold text-brand-green-400">
-                  {t("universityVerified")}
+                  University Verified
                 </p>
-                <p className="text-[10px] text-white/30">{t("safeTrusted")}</p>
+                <p className="text-[10px] text-white/30">
+                  Safe & trusted platform
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </ContentWrapper>
+      </div>
 
       {/* ─── Bottom Bar ─── */}
-      <SectionWrapper
-        spacing="none"
-        background="transparent"
-        className="my-0 border-t border-white/8"
-      >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className="py-5 "
-        >
+      <div className="border-t border-white/8">
+        <div className="cs-container py-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/30 text-center sm:text-left">
-              {t("copyright", { year: currentYear })}
+              © {currentYear} Campus Sheba. All rights reserved. Made with care in
+              Bangladesh.
             </p>
             <div className="flex items-center gap-4">
               <Link
@@ -325,7 +349,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 id="footer-bottom-privacy"
                 className="text-xs text-white/30 hover:text-white/60 transition-colors"
               >
-                {t("privacy")}
+                Privacy
               </Link>
               <span className="text-white/15">·</span>
               <Link
@@ -333,7 +357,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 id="footer-bottom-terms"
                 className="text-xs text-white/30 hover:text-white/60 transition-colors"
               >
-                {t("terms")}
+                Terms
               </Link>
               <span className="text-white/15">·</span>
               <Link
@@ -341,12 +365,12 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
                 id="footer-bottom-careers"
                 className="text-xs text-white/30 hover:text-white/60 transition-colors"
               >
-                {t("careers")}
+                Careers
               </Link>
             </div>
           </div>
-        </ContentWrapper>
-      </SectionWrapper>
+        </div>
+      </div>
     </footer>
   );
 };

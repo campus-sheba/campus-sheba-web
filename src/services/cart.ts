@@ -13,9 +13,11 @@ import { postPrivate } from "@/utils/api/post";
 import { deletePrivate } from "@/utils/api/delete";
 import { cartEndpoints, chargesEndpoints, orderEndpoints } from "@/utils/endpoints/endpoints";
 
+const cartOpts = { includeUniversity: false as const };
+
 export async function getCartAction() {
   try {
-    const response = await getPrivate<{ data: Cart }>(cartEndpoints.cart);
+    const response = await getPrivate<{ data: Cart }>(cartEndpoints.cart, cartOpts);
     return { success: true as const, data: response?.data };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to fetch cart";
@@ -25,7 +27,7 @@ export async function getCartAction() {
 
 export async function addToCartAction(input: {
   contentId: string;
-  type: "Book" | "BuySell" | "Product";
+  type: string;
   quantity?: number;
 }) {
   try {
@@ -33,7 +35,7 @@ export async function addToCartAction(input: {
       contentId: input.contentId,
       type: input.type,
       quantity: input.quantity ?? 1,
-    });
+    }, cartOpts);
     return { success: true as const, data: response?.data };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to add item to cart";
@@ -43,7 +45,7 @@ export async function addToCartAction(input: {
 
 export async function removeCartItemAction(id: string) {
   try {
-    await deletePrivate(cartEndpoints.cart + `/${id}`);
+    await deletePrivate(cartEndpoints.cart + `/${id}`, undefined, cartOpts);
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to remove cart item";
@@ -53,7 +55,7 @@ export async function removeCartItemAction(id: string) {
 
 export async function removeMultipleCartItemsAction(contentIds: string[]) {
   try {
-    await deletePrivate(cartEndpoints.cart, { contentIds });
+    await deletePrivate(cartEndpoints.cart, { contentIds }, cartOpts);
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to remove selected items";
@@ -63,7 +65,7 @@ export async function removeMultipleCartItemsAction(contentIds: string[]) {
 
 export async function increaseCartItemAction(contentId: string) {
   try {
-    await patchPrivate(cartEndpoints.increase, { contentId });
+    await patchPrivate(cartEndpoints.increase, { contentId }, cartOpts);
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to increase quantity";
@@ -73,7 +75,7 @@ export async function increaseCartItemAction(contentId: string) {
 
 export async function decreaseCartItemAction(contentId: string) {
   try {
-    await patchPrivate(cartEndpoints.decrease, { contentId });
+    await patchPrivate(cartEndpoints.decrease, { contentId }, cartOpts);
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to decrease quantity";
@@ -83,7 +85,7 @@ export async function decreaseCartItemAction(contentId: string) {
 
 export async function clearCartAction() {
   try {
-    await deletePrivate(cartEndpoints.clear);
+    await deletePrivate(cartEndpoints.clear, undefined, cartOpts);
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to clear cart";

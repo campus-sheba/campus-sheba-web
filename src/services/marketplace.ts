@@ -8,8 +8,10 @@ import { fetchUserCategoriesByType } from "@/services/books";
 import type {
   ApiDataEnvelope,
   MarketplaceFood,
+  MarketplaceHomeFeed,
   MarketplaceProduct,
   MarketplaceShopListItem,
+  MarketplaceShopWithProducts,
   Paginated,
 } from "@/types/marketplace";
 import { isFoodOutletShop } from "@/utils/marketplace/shopFilters";
@@ -57,7 +59,7 @@ export async function fetchMarketplaceShops(
   const uid = await resolveUniversityId(universityId);
   if (!uid) return { page, limit, total: 0, data: [] };
   const params: Record<string, string | number | boolean | undefined> = { page, limit, ...filters };
-  const url = appendQuery(marketplaceEndpoints.shops, params);
+  const url = appendQuery(marketplaceEndpoints.marketplaceShops, params);
   try {
     const res = await getPublic<Paginated<MarketplaceShopListItem>>(url, { universityId: uid });
     return {
@@ -111,7 +113,7 @@ export async function fetchMarketplaceProducts(
   if (!uid) return { page: query.page ?? 1, limit: query.limit ?? 12, total: 0, data: [] };
   const { page = 1, limit = 12, ...rest } = query;
   const params: Record<string, string | number | boolean | undefined> = { page, limit, ...rest };
-  const url = appendQuery(marketplaceEndpoints.products, params);
+  const url = appendQuery(marketplaceEndpoints.marketplaceProducts, params);
   try {
     const res = await getPublic<Paginated<MarketplaceProduct>>(url, { universityId: uid });
     return {
@@ -130,20 +132,7 @@ export async function fetchMarketplaceFeaturedProducts(
   page = 1,
   limit = 8,
 ): Promise<Paginated<MarketplaceProduct>> {
-  const uid = await resolveUniversityId(universityId);
-  if (!uid) return { page, limit, total: 0, data: [] };
-  const url = appendQuery(marketplaceEndpoints.productsFeatured, { page, limit });
-  try {
-    const res = await getPublic<Paginated<MarketplaceProduct>>(url, { universityId: uid });
-    return {
-      page: res.page ?? page,
-      limit: res.limit ?? limit,
-      total: res.total ?? res.data?.length ?? 0,
-      data: Array.isArray(res.data) ? res.data : [],
-    };
-  } catch {
-    return { page, limit, total: 0, data: [] };
-  }
+  return fetchMarketplaceProducts(universityId, { page, limit, isFeatured: true });
 }
 
 export async function fetchMarketplaceProductsByShop(
@@ -154,17 +143,80 @@ export async function fetchMarketplaceProductsByShop(
 ): Promise<Paginated<MarketplaceProduct>> {
   const uid = await resolveUniversityId(universityId);
   if (!uid) return { page, limit, total: 0, data: [] };
-  const url = appendQuery(marketplaceEndpoints.productsByShop(shopId), { page, limit });
+  const url = appendQuery(marketplaceEndpoints.marketplaceShopWithProducts(shopId), { page, limit });
   try {
-    const res = await getPublic<Paginated<MarketplaceProduct>>(url, { universityId: uid });
-    return {
-      page: res.page ?? page,
-      limit: res.limit ?? limit,
-      total: res.total ?? res.data?.length ?? 0,
-      data: Array.isArray(res.data) ? res.data : [],
-    };
+    const res = await getPublic<unknown>(url, { universityId: uid });
+    const r = res as Record<string, unknown>;
+    // Handle combined {shop, products} response or plain paginated list
+    const raw = (r?.products ?? r?.data ?? res) as Record<string, unknown>;
+    if (raw && Array.isArray(raw.data)) {
+      return {
+        page: (raw.page as number) ?? page,
+        limit: (raw.limit as number) ?? limit,
+        total: (raw.total as number) ?? (raw.data as unknown[]).length,
+        data: raw.data as MarketplaceProduct[],
+      };
+    }
+    if (Array.isArray(raw)) {
+      return { page, limit, total: (raw as unknown[]).length, data: raw as MarketplaceProduct[] };
+    }
+    return { page, limit, total: 0, data: [] };
   } catch {
     return { page, limit, total: 0, data: [] };
+  }
+}
+
+/** Fetches shop detail + its products in a single call. Falls back gracefully. */
+export async function fetchMarketplaceShopWithProducts(
+  shopId: string,
+  universityId?: string,
+  page = 1,
+  limit = 24,
+): Promise<{ shop: MarketplaceShopListItem | null; products: MarketplaceProduct[] }> {
+  const uid = await resolveUniversityId(universityId);
+  if (!uid) return { shop: null, products: [] };
+  const url = appendQuery(marketplaceEndpoints.marketplaceShopWithProducts(shopId), { page, limit });
+  try {
+    const res = await getPublic<unknown>(url, { universityId: uid });
+    const r = res as Record<string, unknown>;
+    const envelope = (r?.data ?? r) as Record<string, unknown>;
+    const shop = (envelope?.shop ?? null) as MarketplaceShopListItem | null;
+    const rawProducts = envelope?.products;
+    let products: MarketplaceProduct[] = [];
+    if (Array.isArray(rawProducts)) {
+      products = rawProducts as MarketplaceProduct[];
+    } else if (rawProducts && typeof rawProducts === "object") {
+      const p = rawProducts as Record<string, unknown>;
+      products = Array.isArray(p.data) ? (p.data as MarketplaceProduct[]) : [];
+    }
+    return { shop, products };
+  } catch {
+    return { shop: null, products: [] };
+  }
+}
+
+/** Home feed: single call returning featuredShops, featuredProducts, latestProducts, categories. */
+export async function fetchMarketplaceHomeFeed(
+  universityId: string | undefined,
+): Promise<MarketplaceHomeFeed> {
+  const empty: MarketplaceHomeFeed = { featuredShops: [], featuredProducts: [], latestProducts: [], categories: [] };
+  const uid = await resolveUniversityId(universityId);
+  if (!uid) return empty;
+  try {
+    const res = await getPublic<ApiDataEnvelope<MarketplaceHomeFeed>>(
+      marketplaceEndpoints.homeFeed,
+      { universityId: uid },
+    );
+    const feed = res?.data;
+    if (!feed) return empty;
+    return {
+      featuredShops: Array.isArray(feed.featuredShops) ? feed.featuredShops : [],
+      featuredProducts: Array.isArray(feed.featuredProducts) ? feed.featuredProducts : [],
+      latestProducts: Array.isArray(feed.latestProducts) ? feed.latestProducts : [],
+      categories: Array.isArray(feed.categories) ? feed.categories : [],
+    };
+  } catch {
+    return empty;
   }
 }
 
@@ -201,21 +253,13 @@ export async function fetchMarketplaceFoods(
   }
 }
 
-/** Shops for Campus Mart home: product retail, excluding food-only outlets when possible. */
+/** Shops for Campus Mart home — uses /user/marketplace/shops which returns Startup-type shops only. */
 export async function fetchMartRetailShops(
   universityId: string | undefined,
   page = 1,
   limit = 16,
 ): Promise<Paginated<MarketplaceShopListItem>> {
-  const typed = await fetchMarketplaceShops(universityId, page, limit, { type: "Product" });
-  if (typed.data.length > 0) return typed;
-  const all = await fetchMarketplaceShops(universityId, page, Math.max(limit, 24));
-  const data = all.data.filter((s) => !isFoodOutletShop(s));
-  return {
-    ...all,
-    data,
-    total: data.length,
-  };
+  return fetchMarketplaceShops(universityId, page, limit);
 }
 
 /** Restaurants / food halls for the Food hub. */

@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import CampusMartHomeTemplate from "@/modules/marketplace/templates/CampusMartHomeTemplate";
-import {
-  fetchCampusMartCategories,
-  fetchCampusMartNewArrivals,
-  fetchMarketplaceFeaturedProducts,
-  fetchMartRetailShops,
-  getMarketplaceUniversityId,
-} from "@/services/marketplace";
+import { fetchMarketplaceHomeFeed, getMarketplaceUniversityId } from "@/services/marketplace";
+import type { BuySellCategory } from "@/types/buy-sell";
 
 export const metadata: Metadata = {
   title: "Campus Mart",
@@ -15,21 +10,15 @@ export const metadata: Metadata = {
 
 export default async function MarketplacePage() {
   const universityId = await getMarketplaceUniversityId();
-
-  const [categories, shopsRes, featuredRes, newArrivals] = await Promise.all([
-    fetchCampusMartCategories(universityId ?? undefined),
-    fetchMartRetailShops(universityId ?? undefined, 1, 12),
-    fetchMarketplaceFeaturedProducts(universityId ?? undefined, 1, 14),
-    fetchCampusMartNewArrivals(universityId ?? undefined, 16),
-  ]);
+  const feed = await fetchMarketplaceHomeFeed(universityId ?? undefined);
 
   return (
     <CampusMartHomeTemplate
       universityId={universityId}
-      categories={categories}
-      shops={shopsRes.data}
-      featured={featuredRes.data}
-      newArrivals={newArrivals}
+      categories={feed.categories as BuySellCategory[]}
+      shops={feed.featuredShops}
+      featured={feed.featuredProducts}
+      newArrivals={feed.latestProducts}
     />
   );
 }
