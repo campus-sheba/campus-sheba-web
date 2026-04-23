@@ -102,7 +102,11 @@ export interface Product {
   contactPhone?: string;
   contactEmail?: string;
   categoryId?: string;
+  /** API may return full object instead of plain ID */
+  category?: { _id: string; title?: string; [key: string]: unknown } | string;
   addressId?: string;
+  /** API may return full object instead of plain ID */
+  address?: { _id: string; address?: string; [key: string]: unknown } | string;
   weight?: number;
   safekeepingCharge?: number;
   isActive?: boolean;

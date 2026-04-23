@@ -50,6 +50,7 @@ export type MarketplaceProduct = {
   _id: string;
   title: string;
   slug?: string;
+  subtitle?: string;
   description?: string;
   price?: number;
   discountPrice?: number;

@@ -140,8 +140,14 @@ export default function ShopProductsTab({ shopId }: Props) {
       condition: (p.condition as ProductCondition) ?? "Good",
       description: p.description ?? "",
       photos: (p.photos ?? []).map((x): ProductPhoto => ({ url: x.url, key: x.key ?? "", size: x.size ?? 0 })),
-      categoryId: p.categoryId ?? "",
-      addressId: p.addressId ?? "",
+      categoryId:
+        typeof p.category === "object" && p.category !== null
+          ? (p.category as { _id: string })._id
+          : (p.categoryId ?? ""),
+      addressId:
+        typeof p.address === "object" && p.address !== null
+          ? (p.address as { _id: string })._id
+          : (p.addressId ?? ""),
       isNegotiable: !!p.isNegotiable,
       discountPrice: p.discountPrice,
       weight: p.weight,

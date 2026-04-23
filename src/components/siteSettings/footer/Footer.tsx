@@ -97,14 +97,14 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
   return (
     <footer className="bg-brand-navy-DEFAULT text-white px-4 md:px-8 lg:px-0">
       {/* Newsletter */}
-      <SectionWrapper className="border-b border-white/8">
+      <SectionWrapper className="border-b border-white/8 text-black hidden md:block">
         <ContentWrapper className="py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h3 className="font-display font-bold text-xl mb-1">
                 Stay in the loop
               </h3>
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-black/50">
                 Get updates on new campuses, features, and student offers.
               </p>
             </div>
@@ -113,7 +113,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
               <input
                 type="email"
                 placeholder="your@university.edu"
-                className="flex-1 md:w-64 px-4 py-2.5 rounded-xl bg-white/8 border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green-DEFAULT/60"
+                className="flex-1 md:w-64 px-4 py-2.5 rounded-xl bg-white/8 border border-black/10 text-sm text-black placeholder:text-black/30 focus:outline-none focus:border-brand-green-DEFAULT/60"
               />
               <Button
                 type="submit"
