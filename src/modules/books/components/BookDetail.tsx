@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { Button } from "@/components/ui";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { ImageGallery } from "@/components/marketplace/ImageGallery";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { addToCartAction } from "@/services/cart";
@@ -86,7 +87,7 @@ export default function BookDetail() {
     if (item.type === "Lending") return false;
     const res = await addToCartAction({
       contentId: item._id,
-      type: "Book",
+      type: "book",
       quantity,
     });
     if (res.success) {
@@ -470,10 +471,12 @@ export default function BookDetail() {
             {tt("bookDetail.noRelated", "No related books yet.")}
           </p>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {related.map((r) => (
-              <BookListingCard key={r._id} item={r} />
-            ))}
+          <div className="mt-4">
+            <ResponsiveCardsGrid>
+              {related.map((r) => (
+                <BookListingCard key={r._id} item={r} />
+              ))}
+            </ResponsiveCardsGrid>
           </div>
         )}
       </SectionWrapper>

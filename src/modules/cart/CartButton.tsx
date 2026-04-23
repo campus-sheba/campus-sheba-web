@@ -97,10 +97,10 @@ export default function CartButton() {
     () => deliveryAddresses.find((a) => a._id === drawerAddressId) ?? null,
     [deliveryAddresses, drawerAddressId],
   );
-  const lineItemType = items[0]?.type ?? "BuySell";
-  const cartType = (lineItemType === "Book" ? "Book" : "BuySell") as "Book" | "BuySell";
+  const lineItemType = items[0]?.type ?? "buy_sell";
+  const cartType = lineItemType;
   const chargeType: ChargeType =
-    lineItemType === "Book" ? "Book" : lineItemType === "Product" ? "Product" : "BuySell";
+    lineItemType === "book" ? "Book" : lineItemType === "campus_mart" ? "Product" : "BuySell";
 
   const totalItems = useMemo(
     () => items.reduce((s, i) => s + i.quantity, 0),
@@ -242,7 +242,8 @@ export default function CartButton() {
         type: cartType,
         rentalType: "Normal" as const,
         addressId: drawerAddressId,
-        deliveryType: "COD" as const,
+        paymentGatewayKey: "cod",
+        deliveryOptionKey: "regular",
         deliveryTip: 0,
         ...(appliedCoupon ? { code: appliedCoupon } : {}),
         items: items.map((item) => ({ id: item.content._id, quantity: item.quantity })),

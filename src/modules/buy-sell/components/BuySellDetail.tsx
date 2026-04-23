@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { Button } from "@/components/ui";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { ImageGallery } from "@/components/marketplace/ImageGallery";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { addToCartAction } from "@/services/cart";
@@ -78,7 +79,7 @@ export default function BuySellDetail() {
     if (!item) return;
     const res = await addToCartAction({
       contentId: item._id,
-      type: "BuySell",
+      type: "buy_sell",
       quantity,
     });
     if (res.success) {
@@ -453,10 +454,12 @@ export default function BuySellDetail() {
             {tt("buySellDetail.noRelatedItems", "No related items found yet.")}
           </p>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {related.map((r) => (
-              <BuySellListingCard key={r._id} item={r} />
-            ))}
+          <div className="mt-4">
+            <ResponsiveCardsGrid>
+              {related.map((r) => (
+                <BuySellListingCard key={r._id} item={r} />
+              ))}
+            </ResponsiveCardsGrid>
           </div>
         )}
       </SectionWrapper>

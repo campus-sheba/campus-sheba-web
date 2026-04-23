@@ -122,7 +122,9 @@ export async function getProductStatisticsAction() {
 export async function createProductAction(data: ProductPayload) {
   try {
     const body = data as unknown as Record<string, unknown>;
+    console.log("createProductAction body:", body);
     const response = await postPrivate<unknown>(ownerHubEndpoints.products, body, privateOpts);
+    console.log("createProductAction response:", response);
     const product =
       (pickRecord(response)?.data as Product | undefined) ??
       (("_id" in (response as object) ? response : undefined) as Product | undefined);

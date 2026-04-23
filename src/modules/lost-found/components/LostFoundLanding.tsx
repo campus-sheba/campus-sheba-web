@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { useLostFoundBrowse } from "../hooks/useLostFoundBrowse";
 import LostFoundCard from "./LostFoundCard";
@@ -51,23 +52,27 @@ function SectionBlock({
         </p>
       ) : null}
       {isLoading && items.length === 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
-            />
-          ))}
+        <div className="mt-4">
+          <ResponsiveCardsGrid>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-100"
+              />
+            ))}
+          </ResponsiveCardsGrid>
         </div>
       ) : items.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-500">
           {tt("lostFoundLanding.noPosts", "No posts yet.")}
         </p>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {items.slice(0, 8).map((p) => (
-            <LostFoundCard key={p._id} post={p} />
-          ))}
+        <div className="mt-4">
+          <ResponsiveCardsGrid>
+            {items.slice(0, 8).map((p) => (
+              <LostFoundCard key={p._id} post={p} />
+            ))}
+          </ResponsiveCardsGrid>
         </div>
       )}
     </SectionWrapper>

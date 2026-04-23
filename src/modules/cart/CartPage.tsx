@@ -77,16 +77,10 @@ export default function CartPage() {
     state.user.profile?.university?._id ??
     getCookieValue("universityId");
 
-  const lineItemType = items[0]?.type ?? "BuySell";
-  const cartType = (lineItemType === "Book" ? "Book" : "BuySell") as
-    | "Book"
-    | "BuySell";
+  const lineItemType = items[0]?.type ?? "buy_sell";
+  const cartType = lineItemType;
   const chargeType: ChargeType =
-    lineItemType === "Book"
-      ? "Book"
-      : lineItemType === "Product"
-        ? "Product"
-        : "BuySell";
+    lineItemType === "book" ? "Book" : lineItemType === "campus_mart" ? "Product" : "BuySell";
 
   const subtotal = useMemo(
     () =>
@@ -171,7 +165,8 @@ export default function CartPage() {
         type: cartType,
         rentalType: "Normal" as const,
         addressId: selectedAddressId,
-        deliveryType: "COD" as const,
+        paymentGatewayKey: "cod",
+        deliveryOptionKey: "regular",
         deliveryTip: 0,
         ...(appliedCoupon ? { code: appliedCoupon } : {}),
         items: items.map((item) => ({

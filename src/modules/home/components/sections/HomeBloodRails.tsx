@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { useAppState } from "@/contexts/AppStateContext";
 import { useTranslations } from "next-intl";
+import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import BloodRequestCard from "@/modules/blood-bank/components/BloodRequestCard";
 import DonorCard from "@/modules/blood-bank/components/DonorCard";
 import { useBloodDonorsFind } from "@/modules/blood-bank/hooks/useBloodDonorsFind";
@@ -26,8 +27,12 @@ function urgencyRank(u: string | undefined): number {
 
 function sortRequestsUrgentFirst(rows: BloodRequestRow[]): BloodRequestRow[] {
   return [...rows].sort((a, b) => {
-    const ra = urgencyRank(typeof a.urgencyLevel === "string" ? a.urgencyLevel : undefined);
-    const rb = urgencyRank(typeof b.urgencyLevel === "string" ? b.urgencyLevel : undefined);
+    const ra = urgencyRank(
+      typeof a.urgencyLevel === "string" ? a.urgencyLevel : undefined,
+    );
+    const rb = urgencyRank(
+      typeof b.urgencyLevel === "string" ? b.urgencyLevel : undefined,
+    );
     if (ra !== rb) return ra - rb;
     const ta = Date.parse(a.createdAt ?? "") || 0;
     const tb = Date.parse(b.createdAt ?? "") || 0;
@@ -37,11 +42,13 @@ function sortRequestsUrgentFirst(rows: BloodRequestRow[]): BloodRequestRow[] {
 
 export function HomeBloodRails() {
   const t = useTranslations("common");
-  const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const tt = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback;
   const { state } = useAppState();
   const universityId =
     state.university.selected?._id ??
-    (typeof state.user.profile?.university === "object" && state.user.profile.university
+    (typeof state.user.profile?.university === "object" &&
+    state.user.profile.university
       ? state.user.profile.university._id
       : undefined);
   const guestMode = !state.auth.isAuthenticated;
@@ -62,21 +69,33 @@ export function HomeBloodRails() {
   });
 
   const urgentRequests = useMemo(
-    () => sortRequestsUrgentFirst(requestsPreview.items).slice(0, REQUEST_PREVIEW),
+    () =>
+      sortRequestsUrgentFirst(requestsPreview.items).slice(0, REQUEST_PREVIEW),
     [requestsPreview.items],
   );
 
   if (guestMode && !universityId) {
     return (
       <section id="home-blood" aria-labelledby="home-blood-heading">
-        <SectionWrapper spacing="none" background="transparent" className="my-0 bg-red-50/40 py-12 md:py-16">
-          <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
+        <SectionWrapper
+          spacing="none"
+          background="transparent"
+          className="my-0 bg-red-50/40 py-12 md:py-16"
+        >
+          <ContentWrapper
+            maxWidth="max-w-7xl mx-auto"
+            padding="none"
+            className=""
+          >
             <div className="flex items-start gap-4 rounded-2xl border border-dashed border-red-200/80 bg-white p-8">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
                 <Droplets className="h-6 w-6" aria-hidden />
               </div>
               <div>
-                <h2 id="home-blood-heading" className="text-lg font-bold text-gray-900 md:text-xl">
+                <h2
+                  id="home-blood-heading"
+                  className="text-lg font-bold text-gray-900 md:text-xl"
+                >
                   {tt("homeRails.bloodTitle", "Blood bank")}
                 </h2>
                 <p className="mt-2 text-sm text-gray-600">
@@ -95,28 +114,49 @@ export function HomeBloodRails() {
 
   return (
     <section id="home-blood" aria-labelledby="home-blood-heading">
-      <SectionWrapper spacing="none" background="transparent" className="my-0 bg-red-50/40 py-12 md:py-16">
-        <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="none" className="">
+      <SectionWrapper
+        spacing="none"
+        background="transparent"
+        className="my-0 bg-red-50/40 py-12 md:py-16"
+      >
+        <ContentWrapper
+          maxWidth="max-w-7xl mx-auto"
+          padding="none"
+          className="px-4 md:px-8 lg:px-0"
+        >
           <div className="border-b border-red-100 pb-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-700">
-              {tt("homeRails.bloodKicker", "Blood bank")}
+              {tt("landing.bloodBank", "Blood bank")}
             </p>
-            <h2 id="home-blood-heading" className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
-              {tt("homeRails.bloodHeadline", "Donors nearby & urgent campus requests")}
+            <h2
+              id="home-blood-heading"
+              className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl"
+            >
+              {tt(
+                "landing.donorsNearby",
+                "Donors nearby & urgent campus requests",
+              )}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
               {tt(
-                "homeRails.bloodIntro",
+                "landing.openRequests",
                 "Open requests are sorted with critical and high urgency first so you can respond when minutes matter.",
               )}
             </p>
           </div>
 
           <div className="mt-10 space-y-12">
-            <SectionWrapper spacing="sm" background="transparent" className="my-0">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0"
+            >
               <SectionHeader
-                title={tt("homeRails.bloodDonors", "Donors near your campus")}
-                subtitle={tt("homeRails.bloodDonorsSub", "Students and staff who registered to help.")}
+                title={tt("landing.donorsNearby", "Donors near your campus")}
+                subtitle={tt(
+                  "landing.students&stuff",
+                  "Students and staff who registered to help.",
+                )}
                 viewAllHref="/blood-bank/donors"
               />
               {donorsPreview.error ? (
@@ -125,28 +165,70 @@ export function HomeBloodRails() {
                 </p>
               ) : null}
               {donorsPreview.isLoading && donorsPreview.items.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 hidden md:grid lg:hidden gap-4 grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-40 animate-pulse rounded-2xl bg-white"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {donorsPreview.isLoading && donorsPreview.items.length === 0 ? (
+                <div className="mt-4 hidden lg:grid gap-4 grid-cols-6">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-40 animate-pulse rounded-2xl bg-white" />
+                    <div
+                      key={i}
+                      className="h-40 animate-pulse rounded-2xl bg-white"
+                    />
                   ))}
                 </div>
-              ) : donorsPreview.items.length === 0 ? (
+              ) : null}
+              {donorsPreview.isLoading && donorsPreview.items.length === 0 ? (
+                <div className="mt-4 md:hidden">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-40 animate-pulse rounded-2xl bg-white"
+                      style={{
+                        display: "inline-block",
+                        width: "calc(42.86% - 10px)",
+                        marginRight: "16px",
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {donorsPreview.items.length === 0 && !donorsPreview.isLoading ? (
                 <p className="mt-4 rounded-xl border border-dashed border-red-100/80 bg-white px-4 py-8 text-center text-sm text-gray-500">
-                  {tt("homeRails.bloodNoDonors", "No donors listed yet.")}
+                  {tt("landing.noDonorsListedYet", "No donors listed yet.")}
                 </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {donorsPreview.items.map((d) => (
-                    <DonorCard key={d._id} donor={d} />
-                  ))}
+              ) : null}
+              {donorsPreview.items.length > 0 ? (
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {donorsPreview.items.map((d) => (
+                      <DonorCard key={d._id} donor={d} />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
-              )}
+              ) : null}
             </SectionWrapper>
 
-            <SectionWrapper spacing="sm" background="transparent" className="my-0">
+            <SectionWrapper
+              spacing="sm"
+              background="transparent"
+              className="my-0"
+            >
               <SectionHeader
-                title={tt("homeRails.bloodUrgent", "Urgent & open blood requests")}
-                subtitle={tt("homeRails.bloodUrgentSub", "Active needs from your university community.")}
+                title={tt(
+                  "landing.urgent&openBloodReq",
+                  "Urgent & open blood requests",
+                )}
+                subtitle={tt(
+                  "landing.activeNeeds",
+                  "Active needs from your university community.",
+                )}
                 viewAllHref="/blood-bank/requests"
               />
               {requestsPreview.error ? (
@@ -154,23 +236,61 @@ export function HomeBloodRails() {
                   {requestsPreview.error}
                 </p>
               ) : null}
-              {requestsPreview.isLoading && requestsPreview.items.length === 0 ? (
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-44 animate-pulse rounded-2xl bg-white" />
+              {requestsPreview.isLoading &&
+              requestsPreview.items.length === 0 ? (
+                <div className="mt-4 hidden md:grid lg:hidden gap-4 grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-44 animate-pulse rounded-2xl bg-white"
+                    />
                   ))}
                 </div>
-              ) : urgentRequests.length === 0 ? (
+              ) : null}
+              {requestsPreview.isLoading &&
+              requestsPreview.items.length === 0 ? (
+                <div className="mt-4 hidden lg:grid gap-4 grid-cols-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-44 animate-pulse rounded-2xl bg-white"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {requestsPreview.isLoading &&
+              requestsPreview.items.length === 0 ? (
+                <div className="mt-4 md:hidden">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-44 animate-pulse rounded-2xl bg-white"
+                      style={{
+                        display: "inline-block",
+                        width: "calc(42.86% - 10px)",
+                        marginRight: "16px",
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {urgentRequests.length === 0 && !requestsPreview.isLoading ? (
                 <p className="mt-4 rounded-xl border border-dashed border-red-100/80 bg-white px-4 py-8 text-center text-sm text-gray-500">
-                  {tt("homeRails.bloodNoRequests", "No open requests right now.")}
+                  {tt(
+                    "landing.noOpenRequests",
+                    "No open requests right now.",
+                  )}
                 </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {urgentRequests.map((row) => (
-                    <BloodRequestCard key={row._id} row={row} />
-                  ))}
+              ) : null}
+              {urgentRequests.length > 0 ? (
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {urgentRequests.map((row) => (
+                      <BloodRequestCard key={row._id} row={row} />
+                    ))}
+                  </ResponsiveCardsGrid>
                 </div>
-              )}
+              ) : null}
             </SectionWrapper>
           </div>
         </ContentWrapper>

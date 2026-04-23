@@ -10,15 +10,17 @@ type Props = {
   minOrderLabel: string;
 };
 
-export default function CampusShopCard({ shop, openLabel, closedLabel, minOrderLabel }: Props) {
+export default function CampusShopCard({
+  shop,
+  openLabel,
+  closedLabel,
+  minOrderLabel,
+}: Props) {
   const cover = shop.coverPhoto?.url || "/placeholder.jpg";
   const logo = shop.logo?.url;
 
   return (
-    <Link
-      href={`/marketplace/shops/${shop._id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:border-gray-200 hover:shadow-md"
-    >
+    <div className="group flex h-full flex-col overflow-hidden border border-gray-100 bg-white shadow-sm transition hover:border-gray-200 hover:shadow-md">
       <div className="relative aspect-[16/10] w-full bg-gray-100">
         <Image
           src={cover}
@@ -28,9 +30,9 @@ export default function CampusShopCard({ shop, openLabel, closedLabel, minOrderL
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           unoptimized={shouldUnoptimizeRemoteImage(cover)}
         />
-        <div className="absolute bottom-2 left-2 flex items-end gap-2">
+        <div className="absolute left-2 top-2 flex items-start gap-2 md:bottom-2 md:left-2 md:top-auto md:items-end">
           {logo ? (
-            <div className="relative h-11 w-11 overflow-hidden rounded-lg border-2 border-white bg-white shadow-sm">
+            <div className="relative h-10 w-10 overflow-hidden rounded-lg border-2 border-white bg-white shadow-sm md:h-11 md:w-11">
               <Image
                 src={logo}
                 alt=""
@@ -43,25 +45,37 @@ export default function CampusShopCard({ shop, openLabel, closedLabel, minOrderL
           ) : null}
         </div>
         <span
-          className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm ${
+          className={`absolute bottom-2 right-2 rounded-md px-2 py-0.5 text-[9px] font-semibold text-white backdrop-blur-sm md:bottom-auto md:right-2 md:top-2 md:text-[10px] ${
             shop.isOpen ? "bg-emerald-600/90" : "bg-gray-700/85"
           }`}
         >
           {shop.isOpen ? openLabel : closedLabel}
         </span>
       </div>
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="line-clamp-1 text-sm font-semibold text-gray-900">{shop.name}</p>
-        {shop.type ? <p className="text-[11px] text-gray-500">{shop.type}</p> : null}
+      <div className="flex flex-1 flex-col gap-1 p-2.5 md:p-3">
+        <p className="line-clamp-1 text-[11px] font-semibold text-gray-900 md:text-sm">
+          {shop.name}
+        </p>
+        {shop.type ? (
+          <p className="text-[10px] text-gray-500 md:text-[11px]">
+            {shop.type}
+          </p>
+        ) : null}
         {shop.minimumOrderAmount != null ? (
-          <p className="mt-auto pt-1 text-xs text-gray-600">
+          <p className="mt-auto pt-1 text-[10px] text-gray-600 md:text-xs">
             {minOrderLabel}:{" "}
             <span className="font-semibold text-[#00A651]">
               ৳{shop.minimumOrderAmount.toLocaleString()}
             </span>
           </p>
         ) : null}
+        <Link
+          href={`/marketplace/shops/${shop._id}`}
+          className="mt-1 md:mt-3 inline-flex items-center justify-center rounded-md md:rounded-lg bg-[#00A651] px-3 py-2 text-[11px] font-semibold text-white transition hover:brightness-105 md:text-sm"
+        >
+          Buy now
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }

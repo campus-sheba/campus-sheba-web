@@ -317,19 +317,19 @@ function HeroCoreCtas({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:col-span-7 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-2 lg:col-span-7 lg:grid-cols-3">
           {utilityCards.map((c) => {
             const Icon = c.icon;
             return (
               <Link
                 key={c.href}
                 href={c.href}
-                className={`group flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition ${c.borderHover} hover:shadow-md`}
+                className={`group flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-3 md:p-5 shadow-sm transition ${c.borderHover} hover:shadow-md`}
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.iconWrap}`}
+                  className={`flex h-8 md:h-10 w-8 md:w-10 items-center justify-center rounded-lg ${c.iconWrap}`}
                 >
-                  <Icon className="h-5 w-5" aria-hidden />
+                  <Icon className="h-4 md:h-5 w-4 md:w-5" aria-hidden />
                 </div>
                 <h3 className="mt-4 text-sm font-bold text-gray-900">
                   {c.title}
@@ -355,14 +355,14 @@ function HeroCoreCtas({
           href="/explore"
           className="font-semibold text-[#00A651] hover:underline"
         >
-          {tt("homeContent.heroExploreLink", "Browse all campus services")}
+          {tt("landing.browseAllServices", "Browse all campus services")}
         </Link>
         <span className="text-gray-400"> · </span>
         <Link
           href="/buy-sell"
           className="font-semibold text-gray-700 hover:text-[#00A651] hover:underline"
         >
-          {tt("homeContent.heroMarketplaceLink", "Marketplace")}
+          {tt("landing.marketplace", "Marketplace")}
         </Link>
       </p>
     </div>
@@ -388,10 +388,14 @@ export function HomePageContent() {
         background="transparent"
         className="my-0 scroll-mt-6 bg-white pt-8 md:pt-12"
       >
-        <ContentWrapper maxWidth="container" padding="none" className="px-4 md:px-8">
+        <ContentWrapper
+          maxWidth="container"
+          padding="none"
+          className="px-4 md:px-8"
+        >
           <header className="mx-auto max-w-3xl text-center">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-              {tt("homeContent.headline", "Your campus, connected")}
+              {tt("landing.title", "Your campus, connected")}
             </h1>
             {/* <p className="mt-3 text-base leading-relaxed text-gray-600 md:text-lg">
               {tt(
@@ -401,7 +405,7 @@ export function HomePageContent() {
             </p> */}
             {campus ? (
               <p className="mt-4 text-sm text-gray-500">
-                {tt("homeContent.showingFor", "Personalized for")}{" "}
+                {tt("landing.subtitle", "Personalized for")}{" "}
                 <span className="font-semibold text-gray-900">{campus}</span>
               </p>
             ) : (
@@ -436,19 +440,16 @@ export function HomePageContent() {
         <ContentWrapper
           maxWidth="container"
           padding="none"
-          className=""
+          className="px-4 md:px-8 lg:px-0"
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900 md:text-2xl">
-                {tt(
-                  "homeContent.quickServicesTitle",
-                  "Every live module — one tap away",
-                )}
+                {tt("landing.oneTapAway", "Every live module — one tap away")}
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-600">
                 {tt(
-                  "homeContent.quickServicesSub",
+                  "landing.preferATraditionalDirectory",
                   "Prefer a traditional directory? Jump straight into any service; the sections above show real listings when your campus is selected.",
                 )}
               </p>
@@ -457,7 +458,7 @@ export function HomePageContent() {
               href="/explore"
               className="text-sm font-bold text-[#00A651] hover:underline"
             >
-              {tt("homeContent.viewHub", "View service hub")} →
+              {tt("landing.viewServiceHub", "View service hub")} →
             </Link>
           </div>
 
@@ -472,66 +473,62 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 bg-white py-14 md:py-20"
+        className="my-0 bg-white py-14 md:py-20 px-4 md:px-8 lg:px-0"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className=""
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="">
           <div className="grid gap-10 lg:grid-cols-3 lg:gap-12">
             <div className="lg:col-span-1">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 ring-1 ring-emerald-100">
                 <HeartHandshake className="h-4 w-4" aria-hidden />
-                {tt("homeContent.whyTitle", "Why students use us")}
+                {tt("landing.WhyStudentsUseUs", "Why students use us")}
               </div>
               <h2 className="mt-4 text-2xl font-bold text-gray-900">
                 {tt(
-                  "homeContent.whyHeadline",
+                  "landing.BuiltForRealCampusRoutines",
                   "Built for real campus routines",
                 )}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-gray-600">
                 {tt(
-                  "homeContent.whyBody",
+                  "landing.fromNightBefore",
                   "From night-before exams to sudden emergencies, Campus Sheba keeps essential tools in one trusted place — with your university at the center.",
                 )}
               </p>
             </div>
-            <ul className="grid gap-6 sm:grid-cols-2 lg:col-span-2">
+            <ul className="grid gap-4 md:gap-6 grid-cols-2 lg:col-span-2">
               {[
                 {
-                  title: tt("homeContent.benefit1Title", "Campus-first"),
+                  title: tt("landing.campusFirst", "Campus-first"),
                   text: tt(
-                    "homeContent.benefit1Text",
+                    "landing.mapsContactsAndMore",
                     "Maps, contacts, and listings respect your institution — not generic city results.",
                   ),
                 },
                 {
-                  title: tt("homeContent.benefit2Title", "Peer-powered"),
+                  title: tt("landing.peerPowered", "Peer-powered"),
                   text: tt(
-                    "homeContent.benefit2Text",
+                    "landing.peerPoweredText",
                     "Books, buy & sell, and blood networks grow from students helping students.",
                   ),
                 },
                 {
-                  title: tt("homeContent.benefit3Title", "Safety aware"),
+                  title: tt("landing.safetyAware", "Safety aware"),
                   text: tt(
-                    "homeContent.benefit3Text",
+                    "landing.emergencyDirectories",
                     "Emergency directories and lost & found reduce friction when minutes count.",
                   ),
                 },
                 {
-                  title: tt("homeContent.benefit4Title", "Always evolving"),
+                  title: tt("landing.alwaysEvolving", "Always evolving"),
                   text: tt(
-                    "homeContent.benefit4Text",
+                    "landing.evolvingText",
                     "Food, shops, jobs, and tuition tools are rolling out — your feedback shapes the roadmap.",
                   ),
                 },
               ].map((b) => (
                 <li
                   key={b.title}
-                  className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5 ring-1 ring-black/[0.02]"
+                  className="rounded-xl md:rounded-2xl border border-gray-100 bg-gray-50/80 p-3 md:p-5 ring-1 ring-black/[0.02]"
                 >
                   <h3 className="font-bold text-gray-900">{b.title}</h3>
                   <p className="mt-2 text-sm text-gray-600">{b.text}</p>
@@ -545,21 +542,17 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 bg-gradient-to-b from-gray-900 to-gray-950 py-14 text-white md:py-20"
+        className="my-0 bg-gradient-to-b from-gray-900 to-gray-950 py-14 text-white md:py-20 px-4 md:px-8 lg:px-0"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-          className=""
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-bold md:text-3xl">
-                {tt("homeContent.roadmapTitle", "Coming soon to your campus")}
+                {tt("landing.comingSoonToYourCampus", "Coming soon to your campus")}
               </h2>
               <p className="mt-2 max-w-xl text-sm text-gray-300 md:text-base">
                 {tt(
-                  "homeContent.roadmapSub",
+                  "landing.shippingFood",
                   "We are shipping food ordering, shop-wise selling, skill bookings, jobs, tuition matching, and sustainable waste pickup — day by day.",
                 )}
               </p>
@@ -570,13 +563,13 @@ export function HomePageContent() {
               </span>
             </div>
           </div>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid gap-4 grid-cols-2 lg:grid-cols-3">
             {COMING_SOON.map((item) => {
               const Icon = item.icon;
               return (
                 <li
                   key={item.title}
-                  className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+                  className="flex flex-col md:flex-row gap-4 rounded-xl md:rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5 backdrop-blur-sm"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
                     <Icon className="h-5 w-5 text-emerald-400" aria-hidden />
@@ -597,21 +590,17 @@ export function HomePageContent() {
       <SectionWrapper
         spacing="none"
         background="transparent"
-        className="my-0 border-t border-gray-100 bg-white py-12 md:py-16"
+        className="my-0 border-t border-gray-100 bg-white py-12 md:py-16 px-4 md:px-8 lg:px-0"
       >
-        <ContentWrapper
-          maxWidth="container"
-          padding="none"
-            className=""
-        >
+        <ContentWrapper maxWidth="container" padding="none" className="">
           <div className="mx-auto max-w-3xl text-center">
             <Sparkles className="mx-auto h-8 w-8 text-[#00A651]" aria-hidden />
             <h2 className="mt-4 text-xl font-bold text-gray-900 md:text-2xl">
-              {tt("homeContent.deliveryTitle", "Food delivery on the way")}
+              {tt("landing.foodDeliveryOnTheWay", "Food delivery on the way")}
             </h2>
             <p className="mt-2 text-sm text-gray-600 md:text-base">
               {tt(
-                "homeContent.deliveryBody",
+                "landing.deliveryShebaWillTieInto",
                 "Delivery Sheba will tie into the same account and campus context you use for parcels and maps — stay tuned for launch announcements.",
               )}
             </p>
@@ -620,7 +609,7 @@ export function HomePageContent() {
               className="mt-6 inline-flex items-center gap-2 rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-bold text-gray-800 hover:bg-gray-50"
             >
               <Bike className="h-4 w-4 text-purple-600" aria-hidden />
-              {tt("homeContent.deliveryCta", "Delivery hub")}
+              {tt("landing.deliveryHub", "Delivery hub")}
             </Link>
           </div>
 
@@ -631,7 +620,7 @@ export function HomePageContent() {
             <h2 className="text-center text-sm font-bold uppercase tracking-wider text-gray-400">
               {tt("homeContent.seoNavTitle", "Popular links")}
             </h2>
-            <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
+            <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] md:text-sm">
               {LIVE_SERVICES.map((s) => (
                 <li key={s.href}>
                   <Link

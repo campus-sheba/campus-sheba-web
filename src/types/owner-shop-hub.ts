@@ -60,6 +60,31 @@ export interface ProductPhoto {
   size: number;
 }
 
+export type ProductCondition = "Brand New" | "Like New" | "Good" | "Fair";
+export type ProductUnit = "Piece" | "Kg" | "Gram" | "Liter" | "ML" | "Pack" | "Set" | "Pair" | "Dozen" | "Box";
+
+export interface ProductVariant {
+  name: string;
+  options: string[];
+}
+
+export interface ProductSpecification {
+  key: string;
+  value: string;
+}
+
+export interface ProductReturnPolicy {
+  isReturnable: boolean;
+  returnWindowDays?: number;
+  conditions?: string;
+}
+
+export interface ProductDeliveryInfo {
+  estimatedDays?: number;
+  freeDeliveryAbove?: number;
+  deliveryCharge?: number;
+}
+
 export interface Product {
   _id: string;
   title: string;
@@ -69,7 +94,7 @@ export interface Product {
   photos?: ProductPhoto[];
   price: number;
   quantity?: number;
-  condition?: string;
+  condition?: ProductCondition | string;
   isNegotiable?: boolean;
   discountPrice?: number;
   shopId?: string;
@@ -80,6 +105,17 @@ export interface Product {
   addressId?: string;
   weight?: number;
   safekeepingCharge?: number;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  status?: string;
+  brand?: string;
+  sku?: string;
+  unit?: ProductUnit;
+  variants?: ProductVariant[];
+  specifications?: ProductSpecification[];
+  tags?: string[];
+  returnPolicy?: ProductReturnPolicy;
+  deliveryInfo?: ProductDeliveryInfo;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -96,13 +132,22 @@ export interface ProductPayload {
   quantity?: number;
   categoryId?: string;
   weight?: number;
-  condition?: string;
+  condition?: ProductCondition | string;
   isNegotiable?: boolean;
   discountPrice?: number;
   shopId?: string;
   contactName?: string;
   contactPhone?: string;
   contactEmail?: string;
+  isActive?: boolean;
+  brand?: string;
+  sku?: string;
+  unit?: ProductUnit;
+  variants?: ProductVariant[];
+  specifications?: ProductSpecification[];
+  tags?: string[];
+  returnPolicy?: ProductReturnPolicy;
+  deliveryInfo?: ProductDeliveryInfo;
 }
 
 export interface OrderItem {

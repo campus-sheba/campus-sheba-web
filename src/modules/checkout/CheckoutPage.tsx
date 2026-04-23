@@ -45,14 +45,23 @@ function getCookieValue(name: string): string | null {
 
 function toFeatureKey(itemType: string): string {
   const map: Record<string, string> = {
-    Book: "book",
+    // snake_case (cart API response)
+    buy_sell: "buy_sell",
+    book: "book",
+    campus_mart: "campus_mart",
+    food: "food",
+    parcel: "parcel",
+    skill: "skill",
+    // PascalCase (legacy / direct usage)
     BuySell: "buy_sell",
+    Book: "book",
     Product: "campus_mart",
     Food: "food",
     Parcel: "parcel",
   };
   return map[itemType] ?? "buy_sell";
 }
+
 
 function etaLabel(etaMinutes?: number): string {
   if (!etaMinutes) return "";
@@ -101,9 +110,9 @@ export default function CheckoutPage() {
     state.user.profile?.university?._id ??
     getCookieValue("universityId");
 
-  const lineItemType = items[0]?.type ?? "BuySell";
+  const lineItemType = items[0]?.type ?? "buy_sell";
   const featureKey = toFeatureKey(lineItemType);
-  const cartType = lineItemType === "Book" ? "Book" : "BuySell";
+  const cartType = lineItemType;
 
   const deliveryTip = useMemo(() => {
     const n = Number.parseFloat(deliveryTipStr);

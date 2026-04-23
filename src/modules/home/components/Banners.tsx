@@ -18,7 +18,8 @@ interface BannersProps {
 
 /** Matches slide heights to avoid CLS between skeleton and real banners */
 const BANNER_H = "h-[30vh] min-h-[200px] md:h-[55vh] md:min-h-0";
-const BANNER_FRAME = "mx-4 overflow-hidden rounded-xl md:mx-0 md:rounded-none";
+const BANNER_FRAME =
+  "mr-4 overflow-hidden lg:rounded-xl md:mr-4 md:rounded-none lg:mr-0";
 
 function BannerShimmer() {
   return (
@@ -39,7 +40,9 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
     useHomeBanners(selectedUniversityId);
 
   const hasBanners = banners.length > 0;
-  const showShimmer = Boolean(!error && (isLoading || (hasBanners && !allImagesLoaded)));
+  const showShimmer = Boolean(
+    !error && (isLoading || (hasBanners && !allImagesLoaded)),
+  );
   const showEmptyShell = Boolean(!error && !isLoading && !hasBanners);
 
   return (
@@ -49,7 +52,9 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
         the features strip + gap before the next section (hero). Same in all states.
       */}
       <div className="relative mb-24 w-full md:mb-32">
-        <div className={cn("relative w-full bg-gray-50", BANNER_FRAME, BANNER_H)}>
+        <div
+          className={cn("relative w-full bg-gray-50", BANNER_FRAME, BANNER_H)}
+        >
           {error ? (
             <div className="flex h-full min-h-[inherit] items-center justify-center px-4 text-center text-sm text-gray-500">
               {t("unableToLoadBanners")}
@@ -113,7 +118,9 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
         {bottomOverlay ? (
           <div className="pointer-events-none relative z-20 mt-8 px-4 md:absolute md:inset-x-0 md:bottom-0 md:mt-0 md:translate-y-1/2 md:px-8">
             <ContentWrapper maxWidth="container" padding="none">
-              <div className="pointer-events-auto bg-transparent">{bottomOverlay}</div>
+              <div className="pointer-events-auto bg-transparent">
+                {bottomOverlay}
+              </div>
             </ContentWrapper>
           </div>
         ) : null}
