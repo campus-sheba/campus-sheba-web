@@ -268,7 +268,7 @@ export async function fetchFoodOutletShops(
   page = 1,
   limit = 24,
 ): Promise<Paginated<MarketplaceShopListItem>> {
-  const typed = await fetchMarketplaceShops(universityId, page, limit, { type: "Food" });
+  const typed = await fetchMarketplaceShops(universityId, page, limit, { type: "food" });
   if (typed.data.length > 0) return typed;
   const all = await fetchMarketplaceShops(universityId, page, Math.max(limit, 32));
   const data = all.data.filter(isFoodOutletShop);

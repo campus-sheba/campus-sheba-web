@@ -74,7 +74,7 @@ export async function updateOwnerShopAction(id: string, body: Partial<CreateStud
 
 export async function submitShopKycAction(id: string, payload: SubmitShopKycPayload) {
   try {
-    await postPrivate(shopEndpoints.kyc(id), payload, opts);
+    await patchPrivate(shopEndpoints.kyc(id), payload, opts);
     return { success: true as const, message: "" };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to submit KYC";

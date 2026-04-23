@@ -23,7 +23,10 @@ import type { CreateStudentShopBody } from "@/types/shop-create";
 import { MediaFeatureName } from "@/types/media";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 import { buildDefaultOperatingHours } from "../defaultOperatingHours";
-import { defaultFlagsForShopTitle, subcategoryListTypeForShopTitle } from "../subcategoryApiType";
+import {
+  defaultFlagsForShopTitle,
+  subcategoryListTypeForShopTitle,
+} from "../subcategoryApiType";
 import ShopCreateReviewCard from "./ShopCreateReviewCard";
 
 const inputClass =
@@ -54,7 +57,9 @@ export default function CreateShopWizard() {
   const [loadingShopCats, setLoadingShopCats] = useState(false);
   const [loadingSubCats, setLoadingSubCats] = useState(false);
 
-  const [shopCategory, setShopCategory] = useState<BuySellCategory | null>(null);
+  const [shopCategory, setShopCategory] = useState<BuySellCategory | null>(
+    null,
+  );
   const [selectedSubIds, setSelectedSubIds] = useState<string[]>([]);
 
   const [name, setName] = useState("");
@@ -105,7 +110,9 @@ export default function CreateShopWizard() {
     }
   }, [step, shopCategories.length, loadingShopCats, loadShopCategories]);
 
-  const subListType = shopCategory ? subcategoryListTypeForShopTitle(shopCategory.title) : null;
+  const subListType = shopCategory
+    ? subcategoryListTypeForShopTitle(shopCategory.title)
+    : null;
 
   useEffect(() => {
     if (step !== 2 || !shopCategory || !subListType) {
@@ -120,7 +127,8 @@ export default function CreateShopWizard() {
         if (cancelled) return;
         setSubCategoriesList(res.data ?? []);
       } catch {
-        if (!cancelled) setError("Could not load specialties for this shop type.");
+        if (!cancelled)
+          setError("Could not load specialties for this shop type.");
       } finally {
         if (!cancelled) setLoadingSubCats(false);
       }
@@ -131,13 +139,18 @@ export default function CreateShopWizard() {
   }, [step, shopCategory, subListType]);
 
   const flags = useMemo(
-    () => (shopCategory ? defaultFlagsForShopTitle(shopCategory.title) : { isAggregator: false, isSkillBased: false }),
+    () =>
+      shopCategory
+        ? defaultFlagsForShopTitle(shopCategory.title)
+        : { isAggregator: false, isSkillBased: false },
     [shopCategory],
   );
 
   const specialtyLabels = useMemo(
     () =>
-      subCategories.filter((s) => selectedSubIds.includes(s._id)).map((s) => s.title),
+      subCategories
+        .filter((s) => selectedSubIds.includes(s._id))
+        .map((s) => s.title),
     [subCategories, selectedSubIds],
   );
 
@@ -146,7 +159,12 @@ export default function CreateShopWizard() {
     const minOrder = Number(minimumOrderAmount);
     if (Number.isNaN(minOrder) || minOrder < 0) return null;
     if (phoneNumber.trim().length < 8) return null;
-    if (name.trim().length < 2 || description.trim().length < 10 || address.trim().length < 5) return null;
+    if (
+      name.trim().length < 2 ||
+      description.trim().length < 10 ||
+      address.trim().length < 5
+    )
+      return null;
 
     const tags = tagsInput
       .split(",")
@@ -167,7 +185,11 @@ export default function CreateShopWizard() {
       description: description.trim(),
       address: address.trim(),
       logo: { url: logo.url, key: logo.key, size: logo.size },
-      coverPhoto: { url: coverPhoto.url, key: coverPhoto.key, size: coverPhoto.size },
+      coverPhoto: {
+        url: coverPhoto.url,
+        key: coverPhoto.key,
+        size: coverPhoto.size,
+      },
       contactEmail: contactEmail.trim() || null,
       phoneNumber: phoneNumber.trim(),
       website: website.trim() || null,
@@ -208,7 +230,9 @@ export default function CreateShopWizard() {
   ]);
 
   function toggleSub(id: string) {
-    setSelectedSubIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSelectedSubIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   }
 
   async function onLogo(files: FileList | null) {
@@ -217,6 +241,7 @@ export default function CreateShopWizard() {
     setUploadingLogo(true);
     setError(null);
     const res = await uploadMediaFiles([f], MediaFeatureName.SHOP);
+    console.log("res logo", res);
     setUploadingLogo(false);
     if (!res.success || !res.files?.[0]) {
       setError(res.message ?? "Logo upload failed.");
@@ -231,6 +256,7 @@ export default function CreateShopWizard() {
     setUploadingCover(true);
     setError(null);
     const res = await uploadMediaFiles([f], MediaFeatureName.SHOP);
+    console.log("res cover", res);
     setUploadingCover(false);
     if (!res.success || !res.files?.[0]) {
       setError(res.message ?? "Cover photo upload failed.");
@@ -248,7 +274,11 @@ export default function CreateShopWizard() {
       case 2:
         return true;
       case 3:
-        return name.trim().length >= 2 && description.trim().length >= 10 && address.trim().length >= 5;
+        return (
+          name.trim().length >= 2 &&
+          description.trim().length >= 10 &&
+          address.trim().length >= 5
+        );
       case 4:
         return phoneNumber.trim().length >= 8;
       case 5:
@@ -294,21 +324,31 @@ export default function CreateShopWizard() {
           <div key={label} className="flex items-center gap-2 shrink-0">
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                i < step ? "bg-[#00A651] text-white" : i === step ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"
+                i < step
+                  ? "bg-[#00A651] text-white"
+                  : i === step
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-500"
               }`}
             >
               {i < step ? <Check className="h-4 w-4" /> : i + 1}
             </div>
-            <span className={`hidden text-xs font-medium sm:inline ${i === step ? "text-gray-900" : "text-gray-400"}`}>
+            <span
+              className={`hidden text-xs font-medium sm:inline ${i === step ? "text-gray-900" : "text-gray-400"}`}
+            >
               {label}
             </span>
-            {i < STEPS.length - 1 ? <ChevronRight className="h-4 w-4 text-gray-300" /> : null}
+            {i < STEPS.length - 1 ? (
+              <ChevronRight className="h-4 w-4 text-gray-300" />
+            ) : null}
           </div>
         ))}
       </div>
 
       {error ? (
-        <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>
+        <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {error}
+        </div>
       ) : null}
 
       {step === 0 ? (
@@ -316,10 +356,16 @@ export default function CreateShopWizard() {
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#00A651] text-white shadow-lg shadow-emerald-900/15">
             <Sparkles className="h-7 w-7" aria-hidden />
           </div>
-          <h1 className="mt-6 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">Become a campus entrepreneur</h1>
+          <h1 className="mt-6 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+            Become a campus entrepreneur
+          </h1>
           <p className="mt-3 text-sm leading-relaxed text-gray-600 md:text-base">
-            Open a verified <strong className="font-semibold text-gray-800">Student Shop</strong> on Campus Sheba — food,
-            products, services, or logistics. We review every storefront to keep the marketplace safe and trustworthy for
+            Open a verified{" "}
+            <strong className="font-semibold text-gray-800">
+              Student Shop
+            </strong>{" "}
+            on Campus Sheba — food, products, services, or logistics. We review
+            every storefront to keep the marketplace safe and trustworthy for
             your university.
           </p>
           <ul className="mt-6 space-y-3 text-sm text-gray-700">
@@ -328,8 +374,11 @@ export default function CreateShopWizard() {
                 <Store className="h-3.5 w-3.5" />
               </span>
               <span>
-                <strong className="font-semibold text-gray-900">How it works</strong> — choose your shop type, add
-                specialties, business details, and branding. Submit once; our team reviews and activates your shop.
+                <strong className="font-semibold text-gray-900">
+                  How it works
+                </strong>{" "}
+                — choose your shop type, add specialties, business details, and
+                branding. Submit once; our team reviews and activates your shop.
               </span>
             </li>
             <li className="flex gap-3">
@@ -337,7 +386,8 @@ export default function CreateShopWizard() {
                 <Building2 className="h-3.5 w-3.5" />
               </span>
               <span>
-                After approval, list items in the right module (foods, products, or skills) and reach buyers across campus.
+                After approval, list items in the right module (foods, products,
+                or skills) and reach buyers across campus.
               </span>
             </li>
           </ul>
@@ -354,8 +404,12 @@ export default function CreateShopWizard() {
 
       {step === 1 ? (
         <div>
-          <h2 className="text-xl font-bold text-gray-900">What will you offer?</h2>
-          <p className="mt-1 text-sm text-gray-500">Pick one shop category. This drives how customers discover you.</p>
+          <h2 className="text-xl font-bold text-gray-900">
+            What will you offer?
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Pick one shop category. This drives how customers discover you.
+          </p>
           {loadingShopCats ? (
             <div className="mt-8 flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#00A651]" />
@@ -393,7 +447,11 @@ export default function CreateShopWizard() {
                   )}
                   <div>
                     <p className="font-bold text-gray-900">{c.title}</p>
-                    {c.description ? <p className="text-xs text-gray-500 line-clamp-2">{c.description}</p> : null}
+                    {c.description ? (
+                      <p className="text-xs text-gray-500 line-clamp-2">
+                        {c.description}
+                      </p>
+                    ) : null}
                   </div>
                 </button>
               ))}
@@ -406,18 +464,22 @@ export default function CreateShopWizard() {
         <div>
           <h2 className="text-xl font-bold text-gray-900">Specialties</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Select one or more focus areas{subListType ? ` (from ${subListType} catalogue)` : ""}. Optional if none apply
-            yet.
+            Select one or more focus areas
+            {subListType ? ` (from ${subListType} catalogue)` : ""}. Optional if
+            none apply yet.
           </p>
           {!subListType ? (
-            <p className="mt-6 text-sm text-amber-800">This shop type does not use linked specialties — continue.</p>
+            <p className="mt-6 text-sm text-amber-800">
+              This shop type does not use linked specialties — continue.
+            </p>
           ) : loadingSubCats ? (
             <div className="mt-8 flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#00A651]" />
             </div>
           ) : subCategories.length === 0 ? (
             <p className="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-600">
-              No specialties are configured for this line yet. You can still continue — add details in the next steps.
+              No specialties are configured for this line yet. You can still
+              continue — add details in the next steps.
             </p>
           ) : (
             <div className="mt-6 flex flex-wrap gap-2">
@@ -456,10 +518,17 @@ export default function CreateShopWizard() {
       {step === 3 ? (
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Business details</h2>
-          <p className="text-sm text-gray-500">Name and describe your shop like a professional storefront.</p>
+          <p className="text-sm text-gray-500">
+            Name and describe your shop like a professional storefront.
+          </p>
           <div>
             <label className={labelClass}>Shop name</label>
-            <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Campus Bites" />
+            <input
+              className={inputClass}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Campus Bites"
+            />
           </div>
           <div>
             <label className={labelClass}>Description</label>
@@ -485,10 +554,17 @@ export default function CreateShopWizard() {
       {step === 4 ? (
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Contact & social</h2>
-          <p className="text-sm text-gray-500">How customers reach you (phone is required).</p>
+          <p className="text-sm text-gray-500">
+            How customers reach you (phone is required).
+          </p>
           <div>
             <label className={labelClass}>Phone</label>
-            <input className={inputClass} value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+8801..." />
+            <input
+              className={inputClass}
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="+8801..."
+            />
           </div>
           <div>
             <label className={labelClass}>Email</label>
@@ -502,24 +578,46 @@ export default function CreateShopWizard() {
           </div>
           <div>
             <label className={labelClass}>Website</label>
-            <input className={inputClass} value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
+            <input
+              className={inputClass}
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://..."
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className={labelClass}>Facebook</label>
-              <input className={inputClass} value={facebook} onChange={(e) => setFacebook(e.target.value)} />
+              <input
+                className={inputClass}
+                value={facebook}
+                onChange={(e) => setFacebook(e.target.value)}
+              />
             </div>
             <div>
               <label className={labelClass}>Instagram</label>
-              <input className={inputClass} value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+              <input
+                className={inputClass}
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+              />
             </div>
             <div>
               <label className={labelClass}>Twitter / X</label>
-              <input className={inputClass} value={twitter} onChange={(e) => setTwitter(e.target.value)} />
+              <input
+                className={inputClass}
+                value={twitter}
+                onChange={(e) => setTwitter(e.target.value)}
+              />
             </div>
             <div>
               <label className={labelClass}>WhatsApp</label>
-              <input className={inputClass} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="https://wa.me/..." />
+              <input
+                className={inputClass}
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="https://wa.me/..."
+              />
             </div>
           </div>
         </div>
@@ -528,7 +626,9 @@ export default function CreateShopWizard() {
       {step === 5 ? (
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-gray-900">Brand photos</h2>
-          <p className="text-sm text-gray-500">Logo and cover image help students recognize your shop.</p>
+          <p className="text-sm text-gray-500">
+            Logo and cover image help students recognize your shop.
+          </p>
           <div>
             <label className={labelClass}>Logo</label>
             <div className="flex flex-wrap items-center gap-4">
@@ -548,10 +648,17 @@ export default function CreateShopWizard() {
               )}
               <label className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50">
                 <span className="inline-flex items-center gap-2">
-                  {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {uploadingLogo ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : null}
                   {uploadingLogo ? "Uploading…" : "Upload logo"}
                 </span>
-                <input type="file" accept="image/*" className="sr-only" onChange={(e) => void onLogo(e.target.files)} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(e) => void onLogo(e.target.files)}
+                />
               </label>
             </div>
           </div>
@@ -574,9 +681,16 @@ export default function CreateShopWizard() {
                 </div>
               )}
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-50">
-                {uploadingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {uploadingCover ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : null}
                 {uploadingCover ? "Uploading…" : "Upload cover"}
-                <input type="file" accept="image/*" className="sr-only" onChange={(e) => void onCover(e.target.files)} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(e) => void onCover(e.target.files)}
+                />
               </label>
             </div>
           </div>
@@ -587,8 +701,9 @@ export default function CreateShopWizard() {
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Hours & orders</h2>
           <p className="text-sm text-gray-500">
-            We start you with a standard weekly schedule (Mon–Thu split slots, Fri–Sat closed). You can request changes
-            after approval. Set your minimum order amount for checkout.
+            We start you with a standard weekly schedule (Mon–Thu split slots,
+            Fri–Sat closed). You can request changes after approval. Set your
+            minimum order amount for checkout.
           </p>
           <div>
             <label className={labelClass}>Minimum order amount (BDT)</label>
@@ -610,16 +725,34 @@ export default function CreateShopWizard() {
             />
           </div>
           <div className="rounded-xl border border-gray-100 bg-gray-50/80 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Map pin (optional)</p>
-            <p className="mt-1 text-xs text-gray-500">Longitude, latitude — helps discovery on campus maps.</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Map pin (optional)
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Longitude, latitude — helps discovery on campus maps.
+            </p>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <input className={inputClass} value={lng} onChange={(e) => setLng(e.target.value)} placeholder="90.2673" />
-              <input className={inputClass} value={lat} onChange={(e) => setLat(e.target.value)} placeholder="23.8825" />
+              <input
+                className={inputClass}
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                placeholder="90.2673"
+              />
+              <input
+                className={inputClass}
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                placeholder="23.8825"
+              />
             </div>
           </div>
           <p className="text-xs text-gray-500">
             Flags for your shop:{" "}
-            <strong>{flags.isAggregator ? "Aggregator / delivery" : "Standard storefront"}</strong>
+            <strong>
+              {flags.isAggregator
+                ? "Aggregator / delivery"
+                : "Standard storefront"}
+            </strong>
             {flags.isSkillBased ? ", skill-based services" : ""}.
           </p>
         </div>
@@ -628,9 +761,13 @@ export default function CreateShopWizard() {
       {step === 7 ? (
         <div className="space-y-6">
           <div className="text-center md:text-left">
-            <h2 className="text-xl font-bold text-gray-900 md:text-2xl">Review & submit</h2>
+            <h2 className="text-xl font-bold text-gray-900 md:text-2xl">
+              Review & submit
+            </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Your shop will be <strong className="text-gray-700">Pending</strong> until our team reviews it.
+              Your shop will be{" "}
+              <strong className="text-gray-700">Pending</strong> until our team
+              reviews it.
             </p>
           </div>
           {draftPayload && shopCategory ? (
