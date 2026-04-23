@@ -206,6 +206,7 @@ export const marketplaceEndpoints = {
         `${baseURL}/user/products/shop/${encodeURIComponent(shopId)}`,
     productById: (id: string) => `${baseURL}/user/products/${encodeURIComponent(id)}`,
     foods: `${baseURL}/user/foods`,
+    foodsHome: `${baseURL}/user/foods/home`,
     foodById: (id: string) => `${baseURL}/user/foods/${encodeURIComponent(id)}`,
     /** New marketplace aggregation endpoints. */
     homeFeed: `${baseURL}/user/marketplace`,

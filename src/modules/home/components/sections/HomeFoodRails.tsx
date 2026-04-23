@@ -52,7 +52,7 @@ export function HomeFoodRails() {
       try {
         const [outletRes, foodRes] = await Promise.all([
           fetchFoodOutletShops(universityId, 1, ROW),
-          fetchMarketplaceFoods(universityId, 1, ROW),
+          fetchMarketplaceFoods(universityId, { page: 1, limit: ROW }),
         ]);
         if (cancelled) return;
         setOutlets(outletRes.data ?? []);

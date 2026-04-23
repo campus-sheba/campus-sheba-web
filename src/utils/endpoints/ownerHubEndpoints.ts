@@ -20,4 +20,8 @@ export const ownerHubEndpoints = {
     `${baseURL}/creator/reviews/${encodeURIComponent(type)}${query}`,
   reviewRespond: (reviewId: string) =>
     `${baseURL}/creator/reviews/${encodeURIComponent(reviewId)}/respond`,
+  foodsOwn: (query: string) => `${baseURL}/creator/foods/own${query}`,
+  foods: `${baseURL}/creator/foods`,
+  foodById: (foodId: string) => `${baseURL}/creator/foods/${encodeURIComponent(foodId)}`,
+  foodCategories: `${baseURL}/user/categories?type=Food`,
 };

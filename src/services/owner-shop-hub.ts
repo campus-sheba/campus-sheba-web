@@ -6,6 +6,8 @@ import { patchPrivate } from "@/utils/api/patch";
 import { postPrivate } from "@/utils/api/post";
 import { ownerHubEndpoints } from "@/utils/endpoints/ownerHubEndpoints";
 import type {
+  FoodItem,
+  FoodPayload,
   HubReview,
   Order,
   Product,
@@ -255,6 +257,91 @@ export async function getReviewsAction(type: ReviewItemType, params?: Record<str
     const message = error instanceof Error ? error.message : "Failed to fetch reviews";
     console.error("[getReviewsAction] Error:", message);
     return { success: false as const, message, data: [] as HubReview[], meta: null };
+  }
+}
+
+export async function getOwnFoodsAction(params?: Record<string, string>) {
+  try {
+    const qs = params && Object.keys(params).length ? `?${new URLSearchParams(params).toString()}` : "";
+    const url = ownerHubEndpoints.foodsOwn(qs);
+    const response = await getPrivate<unknown>(url, privateOpts);
+    const raw = pickData<unknown>(response) ?? response;
+    let data: FoodItem[] = [];
+    if (Array.isArray(raw)) data = raw as FoodItem[];
+    else if (raw && typeof raw === "object" && Array.isArray((raw as { data?: unknown }).data)) {
+      data = (raw as { data: FoodItem[] }).data;
+    }
+    const meta =
+      raw && typeof raw === "object" && "meta" in raw ? (raw as { meta: unknown }).meta : null;
+    return { success: true as const, data, meta };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to fetch food items";
+    console.error("[getOwnFoodsAction] Error:", message);
+    return { success: false as const, message, data: [] as FoodItem[], meta: null };
+  }
+}
+
+export async function createFoodAction(data: FoodPayload) {
+  try {
+    console.log("createFoodAction data:", data);
+    const response = await postPrivate<unknown>(ownerHubEndpoints.foods, data as unknown as Record<string, unknown>, privateOpts);
+    console.log("createFoodAction response:", response);
+    const food =
+      (pickRecord(response)?.data as FoodItem | undefined) ??
+      (("_id" in (response as object) ? response : undefined) as FoodItem | undefined);
+    return { success: true as const, food: food as FoodItem };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create food item";
+    console.error("[createFoodAction] Error:", message);
+    return { success: false as const, message };
+  }
+}
+
+export async function updateFoodAction(foodId: string, data: Partial<FoodPayload>) {
+  try {
+    console.log("updateFoodAction data:", data);
+    const response = await patchPrivate<unknown>(
+      ownerHubEndpoints.foodById(foodId),
+      data as unknown as Record<string, unknown>,
+      privateOpts,
+    );
+    console.log("updateFoodAction response:", response);
+    const food =
+      (pickRecord(response)?.data as FoodItem | undefined) ??
+      (("_id" in (response as object) ? response : undefined) as FoodItem | undefined);
+    return { success: true as const, food: food as FoodItem };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update food item";
+    console.error("[updateFoodAction] Error:", message);
+    return { success: false as const, message };
+  }
+}
+
+export async function deleteFoodAction(foodId: string) {
+  try {
+    await deletePrivate(ownerHubEndpoints.foodById(foodId), undefined, privateOpts);
+    return { success: true as const };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete food item";
+    console.error("[deleteFoodAction] Error:", message);
+    return { success: false as const, message };
+  }
+}
+
+export async function getFoodCategoriesAction() {
+  try {
+    const response = await getPrivate<unknown>(ownerHubEndpoints.foodCategories, privateOpts);
+    const raw = pickData<unknown>(response) ?? response;
+    let data: { _id: string; title: string }[] = [];
+    if (Array.isArray(raw)) data = raw as { _id: string; title: string }[];
+    else if (raw && typeof raw === "object" && Array.isArray((raw as { data?: unknown }).data)) {
+      data = (raw as { data: { _id: string; title: string }[] }).data;
+    }
+    return { success: true as const, data };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to fetch food categories";
+    console.error("[getFoodCategoriesAction] Error:", message);
+    return { success: false as const, message, data: [] as { _id: string; title: string }[] };
   }
 }
 

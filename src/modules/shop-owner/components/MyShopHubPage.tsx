@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { getMyShopAction, updateShopAction } from "@/services/owner-shop-hub";
 import type { OperatingHour, Shop, ShopPayload } from "@/types/owner-shop-hub";
 import ShopForm from "@/modules/shop-owner/components/ShopForm";
+import ShopFoodTab from "@/modules/shop-owner/components/ShopFoodTab";
 import ShopProductsTab from "@/modules/shop-owner/components/ShopProductsTab";
 import ShopOrdersTab from "@/modules/shop-owner/components/ShopOrdersTab";
 import ShopReviewsTab from "@/modules/shop-owner/components/ShopReviewsTab";
@@ -192,9 +193,15 @@ export default function MyShopHubPage() {
   const openDays = hours?.filter((h) => !h.isClosed) ?? [];
   const closedDays = hours?.filter((h) => h.isClosed).map((h) => h.day) ?? [];
 
+  const shopCategory = shop.category as { _id?: string; title?: string } | string | undefined;
+  const categoryTitle = typeof shopCategory === "object" && shopCategory !== null
+    ? (shopCategory.title ?? "")
+    : "";
+  const isFoodShop = categoryTitle.toLowerCase() === "food";
+
   const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
     { id: "info", label: "Shop info", icon: <Info className="h-4 w-4" /> },
-    { id: "products", label: "Products", icon: <Package className="h-4 w-4" /> },
+    { id: "products", label: isFoodShop ? "Menu" : "Products", icon: <Package className="h-4 w-4" /> },
     { id: "orders", label: "Orders", icon: <ShoppingBag className="h-4 w-4" /> },
     { id: "reviews", label: "Reviews", icon: <Star className="h-4 w-4" /> },
   ];
@@ -440,7 +447,11 @@ export default function MyShopHubPage() {
           </div>
         ) : null}
 
-        {activeTab === "products" ? <ShopProductsTab shopId={shop._id} /> : null}
+        {activeTab === "products" ? (
+          isFoodShop
+            ? <ShopFoodTab shopId={shop._id} />
+            : <ShopProductsTab shopId={shop._id} />
+        ) : null}
         {activeTab === "orders" ? <ShopOrdersTab /> : null}
         {activeTab === "reviews" ? <ShopReviewsTab /> : null}
       </div>

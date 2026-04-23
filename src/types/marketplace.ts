@@ -86,17 +86,58 @@ export type ApiDataEnvelope<T> = {
   data: T;
 };
 
-/** Food items vary by API version; keep loose for list cards. */
+export type MarketplaceFoodVariation = {
+  _id?: string;
+  title: string;
+  price: number;
+};
+
+export type MarketplaceFoodShopRef = {
+  _id: string;
+  name: string;
+  address?: string;
+  logo?: MarketplaceMedia | null;
+  coverPhoto?: MarketplaceMedia | null;
+  rating?: number;
+  minimumOrderAmount?: number;
+};
+
+export type MarketplaceFoodCategoryRef = {
+  _id: string;
+  title: string;
+  icon?: string;
+  type?: string;
+};
+
 export type MarketplaceFood = {
   _id: string;
-  name?: string;
   title?: string;
+  name?: string;
   description?: string;
+  servingSize?: string;
   price?: number;
+  discountPrice?: number;
+  quantity?: number;
   photos?: MarketplaceMedia[];
-  isActive?: boolean;
+  variations?: MarketplaceFoodVariation[];
+  category?: MarketplaceFoodCategoryRef | string | null;
   categoryId?: string;
-  category?: string | { _id?: string };
+  shop?: MarketplaceFoodShopRef | string | null;
+  isAvailable?: boolean;
+  isActive?: boolean;
+  isPopular?: boolean;
+  isVegetarian?: boolean;
+  isVegan?: boolean;
+  spicyLevel?: "Mild" | "Medium" | "Hot" | "Extra Hot";
+  allergens?: string[];
+  rating?: number;
+  reviewCount?: number;
+  preparationTime?: number;
+  deliveryTime?: number;
+  totalOrders?: number;
+  maxDailyOrders?: number;
+  status?: string;
+  slug?: string;
   [key: string]: unknown;
 };
 
@@ -112,4 +153,13 @@ export type MarketplaceHomeFeed = {
 export type MarketplaceShopWithProducts = {
   shop: MarketplaceShopListItem;
   products: Paginated<MarketplaceProduct> | MarketplaceProduct[];
+};
+
+/** Response shape for GET /user/foods/home */
+export type FoodHomeFeed = {
+  featuredShops: MarketplaceShopListItem[];
+  popularFoods: MarketplaceFood[];
+  topRatedFoods: MarketplaceFood[];
+  latestFoods: MarketplaceFood[];
+  categories: MarketplaceFoodCategoryRef[];
 };
