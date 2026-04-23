@@ -15,13 +15,17 @@ import type {
 } from "@/types/marketplace";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 import FoodListingCard from "../components/FoodListingCard";
+import FoodFiltersBar from "../components/FoodFiltersBar";
 
 type Props = {
   universityId: string | null;
   foodShops: MarketplaceShopListItem[];
   categories: BuySellCategory[];
   foods: MarketplaceFood[];
+  popularFoods: MarketplaceFood[];
   activeCategoryId?: string;
+  activeSearch?: string;
+  total: number;
 };
 
 function itemTitle(f: MarketplaceFood): string {
@@ -33,7 +37,9 @@ export default async function CampusFoodHomeTemplate({
   foodShops,
   categories,
   foods,
+  popularFoods,
   activeCategoryId,
+  total,
 }: Props) {
   const t = await getTranslations("common.campusFood");
 
@@ -89,20 +95,17 @@ export default async function CampusFoodHomeTemplate({
               <FeatureHeroAds universityId={universityId} />
             </div>
 
-            <SectionWrapper
-              spacing="sm"
-              background="transparent"
-              className="my-0 mt-8"
-            >
-              <SectionHeader
-                title={t("outletsTitle")}
-                subtitle={t("outletsSub")}
-              />
-              {foodShops.length === 0 ? (
-                <p className="mt-4 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
-                  {t("emptyOutlets")}
-                </p>
-              ) : (
+            {/* Food outlets */}
+            {foodShops.length > 0 ? (
+              <SectionWrapper
+                spacing="sm"
+                background="transparent"
+                className="my-0 mt-8"
+              >
+                <SectionHeader
+                  title={t("outletsTitle")}
+                  subtitle={t("outletsSub")}
+                />
                 <div className="mt-4">
                   <ResponsiveCardsGrid>
                     {foodShops.map((s) => (
@@ -116,13 +119,14 @@ export default async function CampusFoodHomeTemplate({
                     ))}
                   </ResponsiveCardsGrid>
                 </div>
-              )}
-            </SectionWrapper>
+              </SectionWrapper>
+            ) : null}
 
+            {/* Category chips */}
             <SectionWrapper
               spacing="sm"
               background="transparent"
-              className="my-0 mt-10"
+              className="my-0 mt-8"
             >
               <SectionHeader
                 title={t("categoriesTitle")}
@@ -145,6 +149,7 @@ export default async function CampusFoodHomeTemplate({
                     ...categories.map((c) => {
                       const active = activeCategoryId === c._id;
                       const icon = c.icon?.trim();
+                      const isUrl = icon?.startsWith("http");
                       return (
                         <Link
                           key={c._id}
@@ -155,7 +160,7 @@ export default async function CampusFoodHomeTemplate({
                               : "border-gray-200 bg-white text-gray-700 hover:border-[#00A651] hover:text-[#00A651]"
                           }`}
                         >
-                          {icon ? (
+                          {icon && isUrl ? (
                             <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full bg-gray-100">
                               <Image
                                 src={icon}
@@ -176,14 +181,42 @@ export default async function CampusFoodHomeTemplate({
               </div>
             </SectionWrapper>
 
+            {/* Popular items */}
+            {popularFoods.length > 0 ? (
+              <SectionWrapper
+                spacing="sm"
+                background="transparent"
+                className="my-0 mt-10"
+              >
+                <SectionHeader title="Popular right now" subtitle="Trending dishes on campus" />
+                <div className="mt-4">
+                  <ResponsiveCardsGrid>
+                    {popularFoods.map((f) => (
+                      <FoodListingCard key={f._id} item={f} title={itemTitle(f)} />
+                    ))}
+                  </ResponsiveCardsGrid>
+                </div>
+              </SectionWrapper>
+            ) : null}
+
+            {/* All food — with filter bar */}
             <SectionWrapper
               spacing="sm"
               background="transparent"
               className="my-0 mt-10"
             >
-              <SectionHeader title={t("menuTitle")} subtitle={t("menuSub")} />
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <SectionHeader
+                  title={t("menuTitle")}
+                  subtitle={total > 0 ? `${total} item${total === 1 ? "" : "s"} available` : t("menuSub")}
+                />
+              </div>
+              <div className="mt-3">
+                <FoodFiltersBar />
+              </div>
+
               {foods.length === 0 ? (
-                <p className="mt-4 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
+                <p className="mt-6 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
                   {t("empty")}
                 </p>
               ) : (

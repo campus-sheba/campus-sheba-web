@@ -189,3 +189,65 @@ export interface HubReview {
 export type Review = HubReview;
 
 export type ReviewItemType = "shop" | "product" | "food" | "book" | "parcel";
+
+export interface FoodPhoto {
+  url: string;
+  key: string;
+  size: number;
+}
+
+export type FoodSpicyLevel = "Mild" | "Medium" | "Hot" | "Extra Hot";
+
+export interface FoodVariation {
+  title: string;
+  price: number;
+}
+
+export interface FoodItem {
+  _id: string;
+  title: string;
+  description?: string;
+  servingSize?: string;
+  lowStockThreshold?: number;
+  maxDailyOrders?: number;
+  price: number;
+  discountPrice?: number;
+  quantity: number;
+  variations?: FoodVariation[];
+  photos?: FoodPhoto[];
+  category?: string | { _id: string; title?: string; [key: string]: unknown };
+  isAvailable?: boolean;
+  unavailableReason?: string;
+  preparationTime?: number;
+  deliveryTime?: number;
+  isVegetarian?: boolean;
+  isVegan?: boolean;
+  spicyLevel?: FoodSpicyLevel;
+  allergens?: string[];
+  isPopular?: boolean;
+  shopId?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface FoodPayload {
+  title: string;
+  description?: string;
+  servingSize?: string;
+  lowStockThreshold?: number;
+  maxDailyOrders?: number;
+  price: number;
+  discountPrice?: number;
+  quantity: number;
+  variations?: FoodVariation[];
+  photos: FoodPhoto[];
+  category: string;
+  preparationTime?: number;
+  deliveryTime?: number;
+  isVegetarian?: boolean;
+  isVegan?: boolean;
+  spicyLevel?: FoodSpicyLevel;
+  allergens?: string[];
+  shopId: string;
+}

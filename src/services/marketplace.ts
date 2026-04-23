@@ -7,6 +7,7 @@ import type { BuySellCategory } from "@/types/buy-sell";
 import { fetchUserCategoriesByType } from "@/services/books";
 import type {
   ApiDataEnvelope,
+  FoodHomeFeed,
   MarketplaceFood,
   MarketplaceHomeFeed,
   MarketplaceProduct,
@@ -232,14 +233,33 @@ export async function fetchMarketplaceProductById(productId: string): Promise<Ma
   }
 }
 
+export type FoodQuery = {
+  page?: number;
+  limit?: number;
+  searchKey?: string;
+  category?: string;
+  shop?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  isVegetarian?: boolean;
+  isVegan?: boolean;
+  spicyLevel?: string;
+  isPopular?: boolean;
+};
+
 export async function fetchMarketplaceFoods(
   universityId: string | undefined,
-  page = 1,
-  limit = 20,
+  query: FoodQuery = {},
 ): Promise<Paginated<MarketplaceFood>> {
   const uid = await resolveUniversityId(universityId);
-  if (!uid) return { page, limit, total: 0, data: [] };
-  const url = appendQuery(marketplaceEndpoints.foods, { page, limit });
+  if (!uid) return { page: query.page ?? 1, limit: query.limit ?? 20, total: 0, data: [] };
+  const { page = 1, limit = 20, ...rest } = query;
+  const params: Record<string, string | number | boolean | undefined> = { page, limit };
+  for (const [k, v] of Object.entries(rest)) {
+    if (v !== undefined && v !== "" && v !== null) params[k] = v as string | number | boolean;
+  }
+  const url = appendQuery(marketplaceEndpoints.foods, params);
   try {
     const res = await getPublic<Paginated<MarketplaceFood>>(url, { universityId: uid });
     return {
@@ -277,6 +297,29 @@ export async function fetchFoodOutletShops(
     data,
     total: data.length,
   };
+}
+
+export async function fetchFoodHomeFeed(universityId: string | undefined): Promise<FoodHomeFeed> {
+  const empty: FoodHomeFeed = { featuredShops: [], popularFoods: [], topRatedFoods: [], latestFoods: [], categories: [] };
+  const uid = await resolveUniversityId(universityId);
+  if (!uid) return empty;
+  try {
+    const res = await getPublic<ApiDataEnvelope<FoodHomeFeed>>(
+      marketplaceEndpoints.foodsHome,
+      { universityId: uid },
+    );
+    const feed = res?.data;
+    if (!feed) return empty;
+    return {
+      featuredShops: Array.isArray(feed.featuredShops) ? feed.featuredShops : [],
+      popularFoods: Array.isArray(feed.popularFoods) ? feed.popularFoods : [],
+      topRatedFoods: Array.isArray(feed.topRatedFoods) ? feed.topRatedFoods : [],
+      latestFoods: Array.isArray(feed.latestFoods) ? feed.latestFoods : [],
+      categories: Array.isArray(feed.categories) ? feed.categories : [],
+    };
+  } catch {
+    return empty;
+  }
 }
 
 export async function fetchMarketplaceFoodById(foodId: string): Promise<MarketplaceFood | null> {
