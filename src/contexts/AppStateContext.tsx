@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useState } from "react";
+import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useRef, useState } from "react";
 import { AppState, AppStateAction, AppStateContextValue, UserProfile, University, UniversityAddress } from "@/types/global";
 import { CookieHelper, StorageHelper } from "@/lib/appStateHelper";
 
@@ -304,6 +304,40 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
       window.removeEventListener("client-logout", handleLogoutEvent);
     };
   }, [logout]);
+
+  /**
+   * Cookie-polling sync: httpOnly auth cookies can be set or cleared by server actions
+   * (login, logout, refresh, auto-login via token). Mirror the non-httpOnly `user`
+   * cookie into reducer state within ~1s so UI responds to server-driven auth changes
+   * without a full page reload.
+   */
+  const lastUserCookieRef = useRef<string | null>(null);
+  useEffect(() => {
+    const syncFromCookie = () => {
+      if (typeof document === "undefined") return;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; user=`);
+      const raw = parts.length === 2 ? (parts.pop()?.split(";").shift() ?? null) : null;
+
+      if (raw === lastUserCookieRef.current) return;
+      lastUserCookieRef.current = raw;
+
+      if (!raw) {
+        dispatch({ type: "CLEAR_AUTH" });
+        return;
+      }
+
+      const profile = CookieHelper.getUserProfile();
+      if (profile) {
+        dispatch({ type: "SET_AUTH_TOKEN", payload: { token: "session", refreshToken: "session" } });
+        dispatch({ type: "SET_USER_PROFILE", payload: profile });
+      }
+    };
+
+    syncFromCookie();
+    const id = window.setInterval(syncFromCookie, 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
   const selectUniversity = useCallback((university: University) => {
     dispatch({

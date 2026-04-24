@@ -4,6 +4,36 @@ import { getPublic } from "@/utils/api/get";
 import { landingPageEndpoints } from "@/utils/endpoints/endpoints";
 import type { UniversityFeature } from "@/components/siteSettings/navbar/navbar.constants";
 
+export type BannerResolveItem = {
+  _id: string;
+  title: string;
+  description?: string;
+  photo?: { url: string; key?: string };
+  link?: string;
+  displayType?: string;
+  platform?: string;
+};
+
+export async function fetchBannersResolve(opts: {
+  displayType: "popup" | "banner";
+  platform?: string;
+  universityId?: string;
+}): Promise<BannerResolveItem[]> {
+  const params = new URLSearchParams();
+  params.set("displayType", opts.displayType);
+  params.set("platform", opts.platform ?? "web_app");
+  if (opts.universityId) params.set("university", opts.universityId);
+  try {
+    const res = await getPublic<{ data?: BannerResolveItem[] }>(
+      landingPageEndpoints.bannersResolve(params.toString()),
+      { universityId: opts.universityId, includeUniversity: false },
+    );
+    return Array.isArray(res.data) ? res.data : [];
+  } catch {
+    return [];
+  }
+}
+
 export interface Banner {
   _id: string;
   title: string;

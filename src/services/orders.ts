@@ -37,13 +37,32 @@ export async function listOrdersAction(params: OrdersListParams = {}) {
   }
 }
 
-function unwrapPlaceOrder(response: unknown): { orderId: string | null; paymentUrl: string | null } {
-  if (!response || typeof response !== "object") return { orderId: null, paymentUrl: null };
+function unwrapPlaceOrder(response: unknown): {
+  orderId: string | null;
+  paymentUrl: string | null;
+  requiresRedirect: boolean;
+} {
+  if (!response || typeof response !== "object") {
+    return { orderId: null, paymentUrl: null, requiresRedirect: false };
+  }
   const r = response as Record<string, unknown>;
   const data = (r.data && typeof r.data === "object" ? r.data : r) as Record<string, unknown>;
-  const orderId = typeof data._id === "string" ? data._id : null;
-  const paymentUrl = typeof data.url === "string" ? data.url : null;
-  return { orderId, paymentUrl };
+  /** New API returns `orderId` + `redirectUrl`; legacy returned `_id` + `url`. */
+  const orderId =
+    typeof data.orderId === "string"
+      ? data.orderId
+      : typeof data._id === "string"
+        ? data._id
+        : null;
+  const paymentUrl =
+    typeof data.redirectUrl === "string" && data.redirectUrl
+      ? data.redirectUrl
+      : typeof data.url === "string"
+        ? data.url
+        : null;
+  const requiresRedirect =
+    data.requiresRedirect === true || (paymentUrl != null && paymentUrl.length > 0);
+  return { orderId, paymentUrl, requiresRedirect };
 }
 
 function unwrapOrderDetail(response: unknown): UserOrderRow | null {
@@ -90,8 +109,14 @@ export async function placeOrderAction(payload: PlaceOrderPayload) {
     const response = await postPrivate<unknown>(orderEndpoints.base, payload, {
       includeUniversity: false,
     });
-    const { orderId, paymentUrl } = unwrapPlaceOrder(response);
-    return { success: true as const, orderId, paymentUrl, raw: response };
+    const { orderId, paymentUrl, requiresRedirect } = unwrapPlaceOrder(response);
+    return {
+      success: true as const,
+      orderId,
+      paymentUrl,
+      requiresRedirect,
+      raw: response,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to place order";
     return {
@@ -99,6 +124,7 @@ export async function placeOrderAction(payload: PlaceOrderPayload) {
       message,
       orderId: null as string | null,
       paymentUrl: null as string | null,
+      requiresRedirect: false,
       raw: null,
     };
   }

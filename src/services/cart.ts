@@ -106,16 +106,32 @@ export async function getChargeByTypeAction(type: ChargeType, universityId: stri
   }
 }
 
+/**
+ * Normalizes both the legacy flat shape and the new `pricing`-object shape into
+ * a single `OrderSummaryResponse` with consistent `total` / `subTotal` surfaces.
+ */
 function unwrapOrderSummary(response: unknown): OrderSummaryResponse | null {
   if (!response || typeof response !== "object") return null;
   const r = response as Record<string, unknown>;
-  if (r.data && typeof r.data === "object" && r.data !== null && "total" in r.data) {
-    return r.data as OrderSummaryResponse;
-  }
-  if ("total" in r && typeof r.total === "number") {
-    return response as OrderSummaryResponse;
-  }
-  return null;
+  const payload =
+    r.data && typeof r.data === "object"
+      ? (r.data as Record<string, unknown>)
+      : r;
+
+  const pricing = payload.pricing as OrderSummaryResponse["pricing"] | undefined;
+  const legacyTotal = typeof payload.total === "number" ? (payload.total as number) : null;
+  const legacySub = typeof payload.subTotal === "number" ? (payload.subTotal as number) : null;
+
+  const total = pricing?.total ?? legacyTotal;
+  const subTotal = pricing?.subtotal ?? legacySub ?? 0;
+  if (total == null) return null;
+
+  return {
+    ...(payload as Partial<OrderSummaryResponse>),
+    pricing,
+    total,
+    subTotal,
+  } as OrderSummaryResponse;
 }
 
 export async function createOrderSummaryAction(payload: OrderSummaryPayload) {

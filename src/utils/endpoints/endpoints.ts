@@ -9,6 +9,7 @@ export const landingPageEndpoints = {
         `${baseURL}/banners?page=1&limit=10&isActive=true&type=${encodeURIComponent(bannerType)}&university=${universityId}`,
     universityFeatures: (universityId: string) =>
         `${baseURL}/user/features/university/${universityId}`,
+    bannersResolve: (params: string) => `${baseURL}/banners/resolve?${params}`,
 };
 
 // careers page endpoints
@@ -145,6 +146,11 @@ export const orderEndpoints = {
 export const checkoutEndpoints = {
     paymentGateways: `${baseURL}/user/payment-gateways/available`,
     deliveryOptions: `${baseURL}/user/delivery-options/available`,
+};
+
+export const promoCodeEndpoints = {
+    public: `${baseURL}/user/promo-codes/public`,
+    validate: `${baseURL}/user/promo-codes/validate`,
 };
 
 export const bookEndpoints = {

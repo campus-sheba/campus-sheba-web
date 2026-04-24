@@ -7,6 +7,7 @@ import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import type { MarketplaceFood } from "@/types/marketplace";
 import { Clock, Star, Truck, Users, Flame, Leaf, ShoppingBag } from "lucide-react";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+import FoodDetailActions from "@/modules/food/components/FoodDetailActions";
 
 type Props = {
   food: MarketplaceFood;
@@ -262,20 +263,19 @@ export default async function CampusFoodDetailTemplate({ food }: Props) {
               <p className="mt-1 text-amber-900/90">{t("orderNoteBody")}</p>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Link
-                href="/food"
-                className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-800 hover:border-[#00A651]"
-              >
-                {t("back")}
-              </Link>
-              <Link
-                href="/marketplace"
-                className="inline-flex flex-1 items-center justify-center rounded-lg bg-[#00A651] px-4 py-3 text-center text-sm font-semibold text-white hover:brightness-95"
-              >
-                {t("linkMart")}
-              </Link>
-            </div>
+            <FoodDetailActions
+              foodId={food._id}
+              quantity={food.quantity}
+              variations={food.variations as { title: string; price: number }[] | undefined}
+              isAvailable={food.isAvailable}
+            />
+
+            <Link
+              href="/food"
+              className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-800 hover:border-[#00A651]"
+            >
+              {t("back")}
+            </Link>
           </div>
         </div>
       </SectionWrapper>

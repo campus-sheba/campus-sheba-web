@@ -21,18 +21,69 @@ import {
   getAvailablePaymentGatewaysAction,
 } from "@/services/checkout";
 import { placeOrderAction } from "@/services/orders";
+import {
+  getPublicPromoCodesAction,
+  validatePromoCodeAction,
+} from "@/services/promoCodes";
 import CartLineItems from "@/modules/cart/CartLineItems";
 import CartOrderSummary from "@/modules/cart/CartOrderSummary";
 import { pickDefaultDeliveryAddressId } from "@/modules/cart/deliveryAddress";
 import { normalizeCartLineItems } from "@/modules/cart/mergeCartLineItems";
 import type { UserAddress } from "@/types/address";
+import type { PublicPromoCode } from "@/types/promo";
 import type {
+  Cart,
+  CartDeliveryMethod,
   CartItem,
+  CartPaymentGateway,
+  CartSavedAddress,
   DeliveryOption,
   OrderSummaryPayload,
   OrderSummaryResponse,
   PaymentGateway,
 } from "@/types/cart";
+
+/** Upgrade the compact cart-inline gateway/method shapes to the richer checkout shape. */
+function inlineGatewaysToFull(list: CartPaymentGateway[]): PaymentGateway[] {
+  return list.map((g) => ({
+    _id: g.key,
+    key: g.key,
+    title: g.title,
+    description:
+      g.key === "wallet" && typeof g.balance === "number"
+        ? `Balance ৳${g.balance.toLocaleString()}`
+        : undefined,
+    logo: g.logo
+      ? { url: g.logo.url, key: g.logo.key, size: g.logo.size }
+      : null,
+    icon: null,
+    paymentType:
+      g.key === "sslcommerz"
+        ? "Online"
+        : g.key === "wallet"
+          ? "Wallet"
+          : "Offline",
+  }));
+}
+function inlineMethodsToFull(list: CartDeliveryMethod[]): DeliveryOption[] {
+  return list.map((d) => ({
+    _id: d.key,
+    key: d.key,
+    title: d.title,
+    etaMinutes: d.etaMinutes,
+  }));
+}
+function inlineAddressToUser(a: CartSavedAddress): UserAddress {
+  return {
+    _id: a._id,
+    address: a.address,
+    type: (a.type as UserAddress["type"]) ?? "DELIVERY",
+    latitude: a.latitude,
+    longitude: a.longitude,
+    description: a.description,
+    isDefault: a.isDefault,
+  } as UserAddress;
+}
 
 function getCookieValue(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -62,7 +113,6 @@ function toFeatureKey(itemType: string): string {
   return map[itemType] ?? "buy_sell";
 }
 
-
 function etaLabel(etaMinutes?: number): string {
   if (!etaMinutes) return "";
   if (etaMinutes < 60) return `~${etaMinutes} min`;
@@ -70,30 +120,49 @@ function etaLabel(etaMinutes?: number): string {
   return h === 24 ? "~24 hrs" : `~${h} hr${h > 1 ? "s" : ""}`;
 }
 
-const B = { primary: "#00A651", primaryLight: "#E8F7EF", primaryBorder: "#C3E8D5" };
+const B = {
+  primary: "#00A651",
+  primaryLight: "#E8F7EF",
+  primaryBorder: "#C3E8D5",
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { state } = useAppState();
 
+  const [cart, setCart] = useState<Cart | null>(null);
   const [items, setItems] = useState<CartItem[]>([]);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null,
+  );
 
   const [gateways, setGateways] = useState<PaymentGateway[]>([]);
-  const [selectedGatewayKey, setSelectedGatewayKey] = useState<string | null>(null);
+  const [selectedGatewayKey, setSelectedGatewayKey] = useState<string | null>(
+    null,
+  );
   const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
-  const [selectedDeliveryKey, setSelectedDeliveryKey] = useState<string | null>(null);
+  const [selectedDeliveryKey, setSelectedDeliveryKey] = useState<string | null>(
+    null,
+  );
   const [checkoutConfigLoading, setCheckoutConfigLoading] = useState(false);
 
   const [couponDraft, setCouponDraft] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponValidating, setCouponValidating] = useState(false);
+  const [couponFieldError, setCouponFieldError] = useState<string | null>(null);
+  const [publicPromos, setPublicPromos] = useState<PublicPromoCode[]>([]);
+  const [publicPromosLoading, setPublicPromosLoading] = useState(false);
   const [deliveryTipStr, setDeliveryTipStr] = useState("0");
 
-  const [orderSummary, setOrderSummary] = useState<OrderSummaryResponse | null>(null);
+  const [orderSummary, setOrderSummary] = useState<OrderSummaryResponse | null>(
+    null,
+  );
   const [orderSummaryLoading, setOrderSummaryLoading] = useState(false);
-  const [orderSummaryError, setOrderSummaryError] = useState<string | null>(null);
+  const [orderSummaryError, setOrderSummaryError] = useState<string | null>(
+    null,
+  );
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -120,7 +189,11 @@ export default function CheckoutPage() {
   }, [deliveryTipStr]);
 
   const subtotal = useMemo(
-    () => items.reduce((s, i) => s + i.quantity * (i.content.discountPrice || i.content.price), 0),
+    () =>
+      items.reduce(
+        (s, i) => s + i.quantity * (i.content.discountPrice || i.content.price),
+        0,
+      ),
     [items],
   );
   const totalDisplay =
@@ -129,11 +202,18 @@ export default function CheckoutPage() {
   // Load cart
   const loadCartFromServer = useCallback(async () => {
     const res = await getCartAction();
-    if (res.success && res.data) setItems(normalizeCartLineItems(res.data));
-    else setItems([]);
+    if (res.success && res.data) {
+      setCart(res.data);
+      setItems(normalizeCartLineItems(res.data));
+    } else {
+      setCart(null);
+      setItems([]);
+    }
   }, []);
 
-  useEffect(() => { void loadCartFromServer(); }, [loadCartFromServer]);
+  useEffect(() => {
+    void loadCartFromServer();
+  }, [loadCartFromServer]);
 
   useEffect(() => {
     const onUpd = () => void loadCartFromServer();
@@ -141,25 +221,78 @@ export default function CheckoutPage() {
     return () => window.removeEventListener(CART_UPDATED_EVENT, onUpd);
   }, [loadCartFromServer]);
 
-  // Load addresses
+  useEffect(() => {
+    if (!isLoggedIn || items.length === 0) {
+      setPublicPromos([]);
+      return;
+    }
+    let cancelled = false;
+    setPublicPromosLoading(true);
+    void (async () => {
+      const res = await getPublicPromoCodesAction({
+        featureKey,
+        page: 1,
+        limit: 20,
+      });
+      if (cancelled) return;
+      setPublicPromosLoading(false);
+      if (res.success) setPublicPromos(res.data);
+      else setPublicPromos([]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [featureKey, isLoggedIn, items.length]);
+
+  /**
+   * Addresses: prefer the `savedDeliveryAddress` returned inline with GET /cart
+   * and skip the separate /addresses round-trip when present.
+   */
   useEffect(() => {
     if (!isLoggedIn) return;
+    const inline = cart?.savedDeliveryAddress;
+    if (inline) {
+      const addr = inlineAddressToUser(inline);
+      setAddresses([addr]);
+      setSelectedAddressId(addr._id);
+      CookieHelper.setAddressId(addr._id);
+      return;
+    }
     void (async () => {
       const r = await getAddressesAction();
       if (!r.success) return;
       setAddresses(r.data);
       const cookieId = CookieHelper.getAddressId();
       const delivery = r.data.filter((a) => a.type === "DELIVERY");
-      const cookieOk = Boolean(cookieId && delivery.some((a) => a._id === cookieId));
+      const cookieOk = Boolean(
+        cookieId && delivery.some((a) => a._id === cookieId),
+      );
       const nextId = cookieOk ? cookieId : pickDefaultDeliveryAddressId(r.data);
       setSelectedAddressId(nextId);
       if (nextId && !cookieOk) CookieHelper.setAddressId(nextId);
     })();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, cart?.savedDeliveryAddress]);
 
-  // Load payment gateways + delivery options whenever featureKey changes
+  /**
+   * Payment gateways + delivery methods: prefer the inline lists returned with
+   * GET /cart (which already reflect wallet balance + eligible methods for this
+   * cart's contents) and only call the per-feature config APIs as a fallback.
+   */
   useEffect(() => {
     if (!featureKey || !isLoggedIn) return;
+
+    const inlineGw = cart?.paymentGateways;
+    const inlineDm = cart?.deliveryMethods;
+    if (inlineGw && inlineGw.length > 0 && inlineDm && inlineDm.length > 0) {
+      const gw = inlineGatewaysToFull(inlineGw);
+      const dm = inlineMethodsToFull(inlineDm);
+      setGateways(gw);
+      setDeliveryOptions(dm);
+      setSelectedGatewayKey((prev) => prev ?? gw[0]?.key ?? null);
+      setSelectedDeliveryKey((prev) => prev ?? dm[0]?.key ?? null);
+      return;
+    }
+
     setCheckoutConfigLoading(true);
     void (async () => {
       const [gwRes, doRes] = await Promise.all([
@@ -170,23 +303,26 @@ export default function CheckoutPage() {
 
       const gw = gwRes.data;
       setGateways(gw);
-      if (gw.length > 0 && !selectedGatewayKey) {
+      if (gw.length > 0 && !selectedGatewayKey)
         setSelectedGatewayKey(gw[0].key);
-      }
 
       const opts = doRes.data;
       setDeliveryOptions(opts);
-      if (opts.length > 0 && !selectedDeliveryKey) {
+      if (opts.length > 0 && !selectedDeliveryKey)
         setSelectedDeliveryKey(opts[0].key);
-      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [featureKey, isLoggedIn]);
+  }, [featureKey, isLoggedIn, cart?.paymentGateways, cart?.deliveryMethods]);
 
   // Recalculate order summary whenever key inputs change
   useEffect(() => {
     let cancelled = false;
-    if (!selectedAddressId || items.length === 0 || !selectedGatewayKey || !selectedDeliveryKey) {
+    if (
+      !selectedAddressId ||
+      items.length === 0 ||
+      !selectedGatewayKey ||
+      !selectedDeliveryKey
+    ) {
       setOrderSummary(null);
       setOrderSummaryError(null);
       setOrderSummaryLoading(false);
@@ -204,7 +340,10 @@ export default function CheckoutPage() {
         deliveryOptionKey: selectedDeliveryKey,
         deliveryTip,
         ...(appliedCoupon ? { code: appliedCoupon } : {}),
-        items: items.map((item) => ({ id: item.content._id, quantity: item.quantity })),
+        items: items.map((item) => ({
+          id: item.content._id,
+          quantity: item.quantity,
+        })),
       };
       const summary = await createOrderSummaryAction(payload);
       if (cancelled) return;
@@ -214,45 +353,110 @@ export default function CheckoutPage() {
         setOrderSummaryError(null);
       } else {
         setOrderSummary(null);
-        setOrderSummaryError(summary.message ?? "Could not load order summary.");
+        setOrderSummaryError(
+          summary.message ?? "Could not load order summary.",
+        );
       }
     })();
-    return () => { cancelled = true; };
-  }, [cartType, items, selectedAddressId, appliedCoupon, deliveryTip, selectedGatewayKey, selectedDeliveryKey]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    cartType,
+    items,
+    selectedAddressId,
+    appliedCoupon,
+    deliveryTip,
+    selectedGatewayKey,
+    selectedDeliveryKey,
+  ]);
 
   const removeItem = async (id: string) => {
     setRemovingId(id);
     const res = await removeCartItemAction(id);
     setRemovingId(null);
-    if (res.success) { setMessage(null); emitCartUpdated(); }
-    else setMessage(res.message ?? "Failed to remove item.");
+    if (res.success) {
+      setMessage(null);
+      emitCartUpdated();
+    } else setMessage(res.message ?? "Failed to remove item.");
   };
 
   const updateQty = async (id: string, next: number) => {
     const target = items.find((i) => i._id === id);
     if (!target) return;
-    if (next <= 0) { await removeItem(id); return; }
-    const action = next > target.quantity
-      ? increaseCartItemAction(target.content._id)
-      : decreaseCartItemAction(target.content._id);
+    if (next <= 0) {
+      await removeItem(id);
+      return;
+    }
+    const action =
+      next > target.quantity
+        ? increaseCartItemAction(target.content._id)
+        : decreaseCartItemAction(target.content._id);
     const res = await action;
-    if (res.success) { setMessage(null); emitCartUpdated(); }
-    else setMessage(res.message ?? "Failed to update quantity.");
+    if (res.success) {
+      setMessage(null);
+      emitCartUpdated();
+    } else setMessage(res.message ?? "Failed to update quantity.");
+  };
+
+  const applyValidatedCode = async (raw: string) => {
+    const code = raw.trim();
+    if (!code.length) {
+      setAppliedCoupon(null);
+      setCouponFieldError(null);
+      setMessage(null);
+      return;
+    }
+    setCouponValidating(true);
+    setCouponFieldError(null);
+    setMessage(null);
+    const res = await validatePromoCodeAction({
+      code,
+      moduleType: featureKey,
+      orderSubtotal: subtotal,
+    });
+    setCouponValidating(false);
+    if (res.success && res.data) {
+      setAppliedCoupon(res.data.code);
+      setCouponDraft(res.data.code);
+      setCouponFieldError(null);
+    } else {
+      setAppliedCoupon(null);
+      setCouponFieldError(res.message ?? "This code cannot be applied.");
+    }
   };
 
   const onApplyCoupon = () => {
-    const code = couponDraft.trim();
-    setAppliedCoupon(code.length ? code : null);
+    void applyValidatedCode(couponDraft);
+  };
+
+  const onClearCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDraft("");
+    setCouponFieldError(null);
     setMessage(null);
+  };
+
+  const onPickPublicPromo = (code: string) => {
+    setCouponDraft(code);
+    void applyValidatedCode(code);
   };
 
   const onPlaceOrder = async () => {
     if (!selectedAddressId || items.length === 0) {
-      setMessage("Select a delivery address and keep at least one item in your cart.");
+      setMessage(
+        "Select a delivery address and keep at least one item in your cart.",
+      );
       return;
     }
-    if (!selectedGatewayKey) { setMessage("Select a payment method."); return; }
-    if (!selectedDeliveryKey) { setMessage("Select a delivery option."); return; }
+    if (!selectedGatewayKey) {
+      setMessage("Select a payment method.");
+      return;
+    }
+    if (!selectedDeliveryKey) {
+      setMessage("Select a delivery option.");
+      return;
+    }
 
     setSubmitting(true);
     setMessage(null);
@@ -265,7 +469,10 @@ export default function CheckoutPage() {
       deliveryOptionKey: selectedDeliveryKey,
       deliveryTip,
       ...(appliedCoupon ? { code: appliedCoupon } : {}),
-      items: items.map((item) => ({ id: item.content._id, quantity: item.quantity })),
+      items: items.map((item) => ({
+        id: item.content._id,
+        quantity: item.quantity,
+      })),
     };
 
     const res = await placeOrderAction(payload);
@@ -273,7 +480,7 @@ export default function CheckoutPage() {
 
     if (res.success) {
       emitCartUpdated();
-      if (res.paymentUrl) {
+      if (res.requiresRedirect && res.paymentUrl) {
         window.location.href = res.paymentUrl;
       } else {
         router.push("/my-orders");
@@ -297,7 +504,10 @@ export default function CheckoutPage() {
     return (
       <ContentWrapper maxWidth="full" padding="lg" className="mx-auto max-w-xl">
         <p className="text-sm text-gray-600">Your cart is empty.</p>
-        <Link href="/cart" className="mt-3 inline-flex text-sm font-semibold text-[#00A651] underline">
+        <Link
+          href="/cart"
+          className="mt-3 inline-flex text-sm font-semibold text-[#00A651] underline"
+        >
           Back to cart
         </Link>
       </ContentWrapper>
@@ -308,251 +518,184 @@ export default function CheckoutPage() {
   const isOnlineGateway = selectedGateway?.paymentType === "Online";
 
   return (
-    <ContentWrapper maxWidth="full" padding="lg" className="mx-auto max-w-xl pb-24">
-      <Link
-        href="/cart"
-        className="mb-4 inline-flex items-center gap-2 text-[13px] font-medium text-gray-600 hover:text-[#00A651]"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Edit cart
-      </Link>
+    <ContentWrapper
+      maxWidth="full"
+      padding="lg"
+      className="mx-auto max-w-7xl pb-24"
+    >
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <Link
+          href="/cart"
+          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#00A651]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to cart
+        </Link>
 
-      <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
-      <p className="mt-1 text-[13px] text-gray-500">Confirm delivery and place your order.</p>
-
-      <div className="mt-6">
-        <CartLineItems
-          items={items}
-          removingId={removingId}
-          onChangeQty={updateQty}
-          onRemove={removeItem}
-        />
+        <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
       </div>
 
-      {/* Delivery address */}
-      <section className="mt-6 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <p className="mb-3 text-[13px] font-semibold text-gray-800">Delivery address</p>
-        {deliveryAddresses.length === 0 ? (
-          <p className="text-[13px] text-gray-600">
-            Add a delivery address first.{" "}
-            <Link href="/my-addresses" className="font-semibold text-[#00A651] underline">
-              Manage addresses
-            </Link>
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {deliveryAddresses.map((a) => (
-              <li key={a._id}>
-                <label className="flex cursor-pointer gap-3 rounded-xl border border-gray-100 bg-gray-50/80 p-3 has-[:checked]:border-[#00A651] has-[:checked]:bg-[#E8F7EF]">
-                  <input
-                    type="radio"
-                    name="checkout-address"
-                    className="mt-0.5"
-                    checked={selectedAddressId === a._id}
-                    onChange={() => { setSelectedAddressId(a._id); CookieHelper.setAddressId(a._id); setMessage(null); }}
-                  />
-                  <span className="min-w-0 text-[13px] text-gray-800">
-                    <span className="line-clamp-2 font-medium">{a.address}</span>
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {/* Main Layout */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* LEFT SIDE */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Cart Items */}
+          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold text-gray-800">
+              Order Items
+            </h2>
+            <CartLineItems
+              items={items}
+              removingId={removingId}
+              onChangeQty={updateQty}
+              onRemove={removeItem}
+            />
+          </section>
 
-      {/* Delivery options */}
-      <section className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <div className="mb-3 flex items-center gap-2">
-          <Truck className="h-4 w-4 text-[#00A651]" />
-          <p className="text-[13px] font-semibold text-gray-800">Delivery option</p>
-        </div>
-        {checkoutConfigLoading ? (
-          <div className="flex gap-3">
-            {[1, 2].map((n) => (
-              <div key={n} className="h-16 flex-1 animate-pulse rounded-xl bg-gray-100" />
-            ))}
-          </div>
-        ) : deliveryOptions.length === 0 ? (
-          <p className="text-[13px] text-gray-500">No delivery options available.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {deliveryOptions.map((opt) => {
-              const active = selectedDeliveryKey === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setSelectedDeliveryKey(opt.key)}
-                  className={`flex flex-1 min-w-[140px] flex-col gap-0.5 rounded-xl border p-3 text-left transition-all ${
-                    active
-                      ? "border-[#00A651] bg-[#E8F7EF]"
-                      : "border-gray-200 bg-gray-50/60 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold text-gray-900">{opt.title}</span>
-                    {active && <CheckCircle2 className="h-3.5 w-3.5 text-[#00A651] flex-shrink-0" />}
-                  </div>
-                  {opt.etaMinutes ? (
-                    <span className="flex items-center gap-1 text-[11px] text-gray-500">
-                      <Clock className="h-3 w-3" />
-                      {etaLabel(opt.etaMinutes)}
-                    </span>
-                  ) : null}
-                  {opt.description ? (
-                    <span className="text-[11px] text-gray-400 line-clamp-1">{opt.description}</span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </section>
+          {/* Address */}
+          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold text-gray-800">
+              Delivery Address
+            </h2>
 
-      {/* Payment gateways */}
-      <section className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <p className="mb-3 text-[13px] font-semibold text-gray-800">Payment method</p>
-        {checkoutConfigLoading ? (
-          <div className="flex gap-3">
-            {[1, 2].map((n) => (
-              <div key={n} className="h-16 flex-1 animate-pulse rounded-xl bg-gray-100" />
-            ))}
-          </div>
-        ) : gateways.length === 0 ? (
-          <p className="text-[13px] text-gray-500">No payment methods available.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {gateways.map((gw) => {
-              const active = selectedGatewayKey === gw.key;
-              const logoUrl = gw.icon?.url ?? gw.logo?.url;
-              return (
-                <button
-                  key={gw.key}
-                  type="button"
-                  onClick={() => setSelectedGatewayKey(gw.key)}
-                  className={`flex flex-1 min-w-[140px] items-center gap-3 rounded-xl border p-3 text-left transition-all ${
-                    active
-                      ? "border-[#00A651] bg-[#E8F7EF]"
-                      : "border-gray-200 bg-gray-50/60 hover:border-gray-300"
-                  }`}
-                >
-                  {logoUrl ? (
-                    <Image
-                      src={logoUrl}
-                      alt={gw.title}
-                      width={32}
-                      height={32}
-                      className="h-8 w-8 rounded-lg object-contain flex-shrink-0"
+            {deliveryAddresses.length === 0 ? (
+              <p className="text-sm text-gray-600">
+                No address found.{" "}
+                <Link href="/my-addresses" className="text-[#00A651] underline">
+                  Add address
+                </Link>
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {deliveryAddresses.map((a) => (
+                  <label
+                    key={a._id}
+                    className={`cursor-pointer rounded-xl border p-3 transition ${
+                      selectedAddressId === a._id
+                        ? "border-[#00A651] bg-[#E8F7EF]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      className="hidden"
+                      checked={selectedAddressId === a._id}
+                      onChange={() => setSelectedAddressId(a._id)}
                     />
-                  ) : (
-                    <div className="h-8 w-8 rounded-lg bg-gray-200 flex-shrink-0" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-semibold text-gray-900 truncate">{gw.shortLabel ?? gw.title}</p>
-                    {gw.description ? (
-                      <p className="text-[10px] text-gray-400 line-clamp-1">{gw.description}</p>
-                    ) : null}
-                  </div>
-                  {active && <CheckCircle2 className="h-3.5 w-3.5 text-[#00A651] flex-shrink-0" />}
-                </button>
-              );
-            })}
+                    <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                      {a.address}
+                    </p>
+                  </label>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Delivery + Payment in Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Delivery */}
+            <section className="rounded-2xl border bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-sm font-semibold text-gray-800">
+                Delivery Option
+              </h2>
+
+              <div className="space-y-2">
+                {deliveryOptions.map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setSelectedDeliveryKey(opt.key)}
+                    className={`w-full rounded-xl border p-3 text-left ${
+                      selectedDeliveryKey === opt.key
+                        ? "border-[#00A651] bg-[#E8F7EF]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold">{opt.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {etaLabel(opt.etaMinutes)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Payment */}
+            <section className="rounded-2xl border bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-sm font-semibold text-gray-800">
+                Payment Method
+              </h2>
+
+              <div className="space-y-2">
+                {gateways.map((gw) => (
+                  <button
+                    key={gw.key}
+                    onClick={() => setSelectedGatewayKey(gw.key)}
+                    className={`w-full flex items-center gap-3 rounded-xl border p-3 ${
+                      selectedGatewayKey === gw.key
+                        ? "border-[#00A651] bg-[#E8F7EF]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <div className="h-8 w-8 bg-gray-100 rounded-md" />
+                    <p className="text-sm font-medium">{gw.title}</p>
+                  </button>
+                ))}
+              </div>
+            </section>
           </div>
-        )}
-        {isOnlineGateway ? (
-          <p className="mt-2 text-[11px] text-gray-500">
-            You will be redirected to the payment page after placing your order.
-          </p>
-        ) : null}
-      </section>
 
-      {/* Delivery tip */}
-      <section className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <label className="block text-[13px] font-semibold text-gray-800">
-          Delivery tip <span className="font-normal text-gray-400">(optional)</span>
-        </label>
-        <input
-          type="number"
-          min={0}
-          step={1}
-          value={deliveryTipStr}
-          onChange={(e) => setDeliveryTipStr(e.target.value)}
-          className="mt-2 w-full max-w-[180px] rounded-xl border border-gray-200 px-3 py-2 text-[13px] outline-none focus:border-[#00A651]"
-          placeholder="0"
-        />
-      </section>
+          {/* Coupon + Tip */}
+          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold text-gray-800">
+              Offers & Tip
+            </h2>
 
-      {/* Coupon */}
-      <section
-        className="mt-4 rounded-2xl border p-4"
-        style={{ borderColor: B.primaryBorder, background: B.primaryLight }}
-      >
-        <p className="mb-2 text-[13px] font-semibold text-gray-800">Coupon code</p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={couponDraft}
-            onChange={(e) => setCouponDraft(e.target.value)}
-            placeholder="Optional"
-            className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[13px] outline-none focus:border-[#00A651]"
-          />
-          <button
-            type="button"
-            onClick={onApplyCoupon}
-            className="shrink-0 rounded-xl bg-[#00A651] px-4 py-2.5 text-[13px] font-bold text-white active:brightness-95"
-          >
-            Apply
-          </button>
+            <div className="flex gap-2">
+              <input
+                value={couponDraft}
+                onChange={(e) => setCouponDraft(e.target.value)}
+                placeholder="Promo code"
+                className="flex-1 rounded-xl border px-3 py-2 text-sm"
+              />
+              <button className="rounded-xl bg-[#00A651] px-4 text-sm text-white">
+                Apply
+              </button>
+            </div>
+
+            <input
+              type="number"
+              value={deliveryTipStr}
+              onChange={(e) => setDeliveryTipStr(e.target.value)}
+              className="mt-3 w-40 rounded-xl border px-3 py-2 text-sm"
+              placeholder="Tip amount"
+            />
+          </section>
         </div>
-        {appliedCoupon ? (
-          <p className="mt-2 text-[11px] text-gray-600">
-            Applied: <span className="font-semibold">{appliedCoupon}</span>
-          </p>
-        ) : null}
-      </section>
 
-      <CartOrderSummary
-        hasAddress={Boolean(selectedAddressId && deliveryAddresses.length > 0)}
-        isLoading={orderSummaryLoading}
-        error={orderSummaryError}
-        summary={orderSummary}
-        cartSubtotal={subtotal}
-        deliveryFeeFallback={0}
-        totalDisplay={totalDisplay}
-      />
+        {/* RIGHT SIDE (Sticky Summary) */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 space-y-4">
+            <CartOrderSummary
+              hasAddress={Boolean(selectedAddressId)}
+              isLoading={orderSummaryLoading}
+              error={orderSummaryError}
+              summary={orderSummary}
+              cartSubtotal={subtotal}
+              deliveryFeeFallback={0}
+              totalDisplay={totalDisplay}
+            />
 
-      {message ? (
-        <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">{message}</p>
-      ) : null}
-
-      <button
-        type="button"
-        disabled={submitting || !selectedAddressId || !selectedGatewayKey || !selectedDeliveryKey}
-        onClick={() => void onPlaceOrder()}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[14px] font-bold text-white transition active:brightness-95 disabled:cursor-not-allowed disabled:bg-gray-300"
-        style={{
-          background:
-            selectedAddressId && selectedGatewayKey && selectedDeliveryKey && !submitting
-              ? B.primary
-              : "#D1D5DB",
-          boxShadow:
-            selectedAddressId && selectedGatewayKey && selectedDeliveryKey && !submitting
-              ? "0 3px 12px rgba(0,166,81,0.28)"
-              : "none",
-        }}
-      >
-        {submitting ? (
-          <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            {isOnlineGateway ? "Redirecting to payment…" : "Placing order…"}
-          </>
-        ) : isOnlineGateway ? (
-          "Continue to payment"
-        ) : (
-          "Place order"
-        )}
-      </button>
+            <button
+              disabled={submitting}
+              onClick={() => void onPlaceOrder()}
+              className="w-full h-12 rounded-xl bg-[#00A651] text-white font-bold shadow-md"
+            >
+              {submitting ? "Processing..." : "Place Order"}
+            </button>
+          </div>
+        </div>
+      </div>
     </ContentWrapper>
   );
 }

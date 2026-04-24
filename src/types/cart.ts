@@ -30,31 +30,44 @@ export type DeliveryOption = {
   metadata?: unknown;
 };
 
+export interface CartMedia {
+  url: string;
+  key?: string;
+  size?: number;
+}
+
 export interface CartItemContent {
     _id: string;
     title: string;
-    slug: string;
-    description: string;
-    owner: string;
-    university: string;
-    category: string;
-    address: string;
-    type: string;
-    status: string;
+    slug?: string;
+    description?: string;
+    owner?: string;
+    university?: string;
+    /** API may return category as an object { _id, title, icon } or just an id string. */
+    category?: string | { _id: string; title?: string; icon?: string };
+    address?: string;
+    type?: string;
+    status?: string;
     price: number;
     discountPrice?: number;
     quantity: number;
-    photos: { url: string; key: string; size: number }[];
-    isActive: boolean;
-    isDeleted: boolean;
-    condition: string;
-    isNegotiable: boolean;
-    isFeatured: boolean;
-    viewCount: number;
-    contactName: string;
-    contactPhone: string;
-    createdAt: string;
-    updatedAt: string;
+    /** Legacy array form (returned by older endpoints). */
+    photos?: CartMedia[];
+    /** New single-photo form returned by GET /cart. */
+    photo?: CartMedia;
+    /** Embedded shop summary returned by GET /cart. */
+    shop?: { _id: string; name?: string; logo?: string | CartMedia };
+    variants?: Array<{ _id?: string; name: string; options: string[] }>;
+    isActive?: boolean;
+    isDeleted?: boolean;
+    condition?: string;
+    isNegotiable?: boolean;
+    isFeatured?: boolean;
+    viewCount?: number;
+    contactName?: string;
+    contactPhone?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface CartItem {
@@ -62,18 +75,55 @@ export interface CartItem {
     quantity: number;
     type: string;
     _id: string;
+    shop?: string;
+    isAvailableForCheckout?: boolean;
+    availabilityReason?: string | null;
     createdAt: string;
     updatedAt: string;
+}
+
+/** Inline payment gateway returned inside GET /cart response. */
+export interface CartPaymentGateway {
+  key: string;
+  title: string;
+  logo?: CartMedia;
+  /** Present for wallet gateway; absent for others. */
+  balance?: number;
+}
+
+/** Inline delivery method returned inside GET /cart response. */
+export interface CartDeliveryMethod {
+  key: string;
+  title: string;
+  etaMinutes?: number;
+}
+
+/** Saved delivery address returned inline with the cart. */
+export interface CartSavedAddress {
+  _id: string;
+  address: string;
+  type: string;
+  latitude?: number;
+  longitude?: number;
+  description?: string;
+  isDefault?: boolean;
+  user?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Cart {
     _id: string;
     user: string;
     items: CartItem[];
+    itemCount?: number;
+    paymentGateways?: CartPaymentGateway[];
+    deliveryMethods?: CartDeliveryMethod[];
+    savedDeliveryAddress?: CartSavedAddress | null;
     createdAt: string;
     updatedAt: string;
-    groupedByShop: any[];
-    otherItems: CartItem[];
+    groupedByShop?: any[];
+    otherItems?: CartItem[];
 }
 
 export type ChargeType = "Product" | "BuySell" | "Book";
@@ -116,10 +166,57 @@ export type OrderSummaryPayload = {
   deliveryTip?: number;
 };
 
-export interface OrderSummaryResponse {
-  type?: string;
-  subTotal: number;
+/** New pricing block returned by POST /user/orders/summary. */
+export interface OrderSummaryPricing {
+  subtotal: number;
+  deliveryFee: number;
+  deliveryTip: number;
+  vat: number;
+  tax: number;
+  serviceFee: number;
+  platformFee: number;
+  packagingFee: number;
+  codFee: number;
+  paymentGatewayFee: number;
+  discount: number;
   total: number;
+  currency: string;
+}
+
+/** Canonical order-summary response used across the app. */
+export interface OrderSummaryResponse {
+  /** Unified total surfaced regardless of which API shape returned. */
+  total: number;
+  /** Unified subtotal (filled from `pricing.subtotal` or legacy `subTotal`). */
+  subTotal: number;
+  pricing?: OrderSummaryPricing;
+  paymentMethod?: { key: string; title: string; paymentType?: string };
+  deliveryMethod?: {
+    key: string;
+    title: string;
+    etaMinutes?: number;
+    estimatedDeliveryTime?: string;
+    logo?: CartMedia | null;
+    icon?: CartMedia | null;
+  };
+  coupon?: string;
+  address?: { _id?: string; address?: string };
+  items?: Array<{
+    /** Newer API uses `itemId`; older uses `_id`. Normalizer fills both. */
+    _id?: string;
+    itemId?: string;
+    title: string;
+    quantity: number;
+    price: number;
+    photo?: string;
+    subtotal?: number;
+    shippingFee?: number;
+    packagingFee?: number;
+    total: number;
+  }>;
+
+  /** ───── Legacy flat fields (older API shape; kept for back-compat) ───── */
+  type?: string;
   totalShippingCost?: number;
   totalDeliveryOptionSurcharge?: number;
   totalVat?: number;
@@ -135,42 +232,15 @@ export interface OrderSummaryResponse {
   deliveryTip?: number;
   paymentGatewayKey?: string;
   deliveryOptionKey?: string;
-  deliveryChargeBreakdown?: {
-    baseShippingCost: number;
-    deliveryOptionSurcharge: number;
-    finalShippingCost: number;
-  };
-  paymentGatewayFeeBreakdown?: {
-    key: string;
-    percentage: number;
-    fixed: number;
-    appliedFee: number;
-  };
-  feeSummary?: {
-    subTotal: number;
-    vat: number;
-    tax: number;
-    serviceFee: number;
-    platformFee: number;
-    packagingFee: number;
-    codFee: number;
-    deliveryCharge: number;
-    deliveryOptionSurcharge: number;
-    paymentGatewayFee: number;
-    deliveryTip: number;
-    discount: number;
-    total: number;
-    currency: string;
-  };
-  address?: { _id?: string; address?: string };
-  items?: Array<{
-    _id: string;
-    title: string;
-    quantity: number;
-    price: number;
-    total: number;
-    subTotal?: number;
-    shippingCost?: number;
-    packagingFee?: number;
-  }>;
+}
+
+/** Response shape returned by POST /user/orders. */
+export interface PlaceOrderResponse {
+  orderId: string;
+  status: string;
+  paymentMethod: string;
+  total: number;
+  currency: string;
+  requiresRedirect: boolean;
+  redirectUrl?: string | null;
 }

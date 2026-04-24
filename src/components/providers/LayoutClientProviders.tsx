@@ -1,69 +1,41 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AppStateProvider, useAppState } from "@/contexts/AppStateContext";
+import { ReactNode } from "react";
+import { AppStateProvider } from "@/contexts/AppStateContext";
+import { SessionProvider } from "@/components/providers/SessionProvider";
+import { GlobalModals } from "@/components/providers/GlobalModals";
 import { AppInitializer } from "@/components/AppInitializer";
-import AuthModal from "@/components/modals/AuthModal";
-import UniversitySelectorModal from "@/components/modals/UniversitySelectorModal";
+import { useAuthModalFromUrl } from "@/hooks/useAuthModalFromUrl";
 import { useNotificationBootstrap } from "@/hooks/useNotificationBootstrap";
 
 /**
- * Client-side providers and modals wrapper
- * This component is responsible for:
- * 1. Providing global state (AppStateProvider)
- * 2. Initializing app state on mount (AppInitializer)
- * 3. Rendering global modals (AuthModal, UniversitySelectorModal)
+ * Runs side-effects that require AppState to be mounted:
+ *  - cookie → state bootstrap (AppInitializer)
+ *  - `?auth=login|signup` URL param → auth modal
+ *  - web-push notification bootstrap
  */
-function LayoutContent({ children }: { children: ReactNode }) {
-  const { state, dispatch } = useAppState();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+function AppStateBootstrap() {
+  useAuthModalFromUrl();
   useNotificationBootstrap();
-
-  useEffect(() => {
-    const authParam = searchParams.get("auth");
-    if (authParam !== "login" && authParam !== "signup") return;
-
-    dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: authParam } });
-
-    const nextParams = new URLSearchParams(searchParams.toString());
-    nextParams.delete("auth");
-    const nextQuery = nextParams.toString();
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [dispatch, pathname, router, searchParams]);
-
-  return (
-    <>
-      <AppInitializer />
-      {children}
-
-      {/* Global Modals */}
-      <AuthModal
-        isOpen={state.modals.authModal.isOpen}
-        defaultTab={state.modals.authModal.defaultTab}
-        onClose={() => dispatch({ type: "CLOSE_AUTH_MODAL" })}
-      />
-
-      <UniversitySelectorModal
-        isOpen={state.modals.universitySelector.isOpen}
-        isMandatory={state.modals.universitySelector.isMandatory}
-      />
-    </>
-  );
+  return <AppInitializer />;
 }
 
-export function LayoutClientProviders({
-  children,
-  locale: _locale,
-}: {
-  children: ReactNode;
-  locale: string;
-}) {
+/**
+ * Client-only provider stack composed at the top of every locale tree.
+ *
+ * Order matters: SessionProvider issues the anon `session_uuid` before anything
+ * downstream might read it; AppStateProvider owns auth/user/university/address
+ * state and wires cookie-polling sync so server actions (login, logout, auto-login
+ * via ?token=) propagate without a reload; GlobalModals render once at the root.
+ */
+export function LayoutClientProviders({ children }: { children: ReactNode }) {
   return (
-    <AppStateProvider>
-      <LayoutContent>{children}</LayoutContent>
-    </AppStateProvider>
+    <SessionProvider>
+      <AppStateProvider>
+        <AppStateBootstrap />
+        {children}
+        <GlobalModals />
+      </AppStateProvider>
+    </SessionProvider>
   );
 }

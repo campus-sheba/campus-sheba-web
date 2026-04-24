@@ -1,9 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { Minus, Plus, Trash2, Package } from "lucide-react";
+import { AlertCircle, Minus, Package, Plus, Trash2 } from "lucide-react";
 import type { CartItem } from "@/types/cart";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+
+/** Cart API may return a singular `photo` object or the legacy `photos` array. */
+function pickCartPhoto(content: CartItem["content"]): string | undefined {
+  return content.photo?.url ?? content.photos?.[0]?.url;
+}
+
+function shopNameOf(content: CartItem["content"]): string | undefined {
+  const shop = content.shop;
+  if (shop && typeof shop === "object" && typeof shop.name === "string") {
+    return shop.name;
+  }
+  return undefined;
+}
 
 const B = {
   primary: "#00A651",
@@ -46,8 +59,10 @@ export default function CartLineItems({
   return (
     <div className="space-y-2">
       {items.map((item) => {
-        const photoUrl = item.content.photos?.[0]?.url;
+        const photoUrl = pickCartPhoto(item.content);
         const unit = item.content.discountPrice || item.content.price;
+        const shopName = shopNameOf(item.content);
+        const unavailable = item.isAvailableForCheckout === false;
         return (
           <div
             key={item._id}
@@ -76,7 +91,16 @@ export default function CartLineItems({
 
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold text-gray-800 truncate">{item.content.title}</p>
+              {shopName ? (
+                <p className="text-[10px] text-gray-400 truncate">{shopName}</p>
+              ) : null}
               <p className="text-[11px] text-gray-400 mt-0.5">৳{unit} each</p>
+              {unavailable && item.availabilityReason ? (
+                <p className="mt-1 flex items-center gap-1 text-[10px] text-amber-700">
+                  <AlertCircle className="h-3 w-3" />
+                  {item.availabilityReason}
+                </p>
+              ) : null}
 
               <div className="mt-2 flex items-center justify-between">
                 <div

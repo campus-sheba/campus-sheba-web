@@ -1,17 +1,18 @@
 import "@/app/globals.css";
 
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Urbanist } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Toaster } from "sonner";
+
+import { routing } from "@/i18n/routing";
 import Loading from "@/components/common/Loading";
 import Navbar from "@/components/siteSettings/navbar/Navbar";
 import Footer from "@/components/siteSettings/footer/Footer";
 import CartButton from "@/modules/cart/CartButton";
-import { Toaster } from "sonner";
 import { LayoutClientProviders } from "@/components/providers/LayoutClientProviders";
 
 const urbanist = Urbanist({
@@ -65,6 +66,24 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Authenticated site chrome rendered inside every locale tree.
+ * Kept separate from providers so provider wiring reads top-down without
+ * being interleaved with layout markup.
+ */
+function AppShell({ locale, children }: { locale: string; children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Navbar locale={locale} />
+      <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">
+        {children}
+      </main>
+      <Footer />
+      <CartButton />
+    </Suspense>
+  );
+}
+
 export default async function RootLayout({
   children,
   params,
@@ -80,22 +99,11 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html
-      lang={locale}
-      className={`  ${urbanist.className}  `}
-      data-scroll-behavior="smooth"
-    >
+    <html lang={locale} className={urbanist.className} data-scroll-behavior="smooth">
       <body className="antialiased font-body bg-white text-neutral-900">
         <NextIntlClientProvider messages={messages}>
-          <LayoutClientProviders locale={locale}>
-            <Suspense fallback={<Loading />}>
-              <Navbar locale={locale} />
-              <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">
-                {children}
-              </main>
-              <Footer />
-              <CartButton />
-            </Suspense>
+          <LayoutClientProviders>
+            <AppShell locale={locale}>{children}</AppShell>
             <Toaster
               position="top-right"
               richColors
