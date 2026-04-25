@@ -6,7 +6,7 @@ import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 import { ResponsiveCategoryRow } from "@/components/marketplace/ResponsiveCategoryRow";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import CampusShopCard from "@/modules/marketplace/components/CampusShopCard";
+import FoodShopCard from "../components/FoodShopCard";
 import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import type { BuySellCategory } from "@/types/buy-sell";
 import type {
@@ -109,7 +109,7 @@ export default async function CampusFoodHomeTemplate({
                 <div className="mt-4">
                   <ResponsiveCardsGrid>
                     {foodShops.map((s) => (
-                      <CampusShopCard
+                      <FoodShopCard
                         key={s._id}
                         shop={s}
                         openLabel={t("openNow")}

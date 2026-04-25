@@ -214,6 +214,10 @@ export const marketplaceEndpoints = {
     foods: `${baseURL}/user/foods`,
     foodsHome: `${baseURL}/user/foods/home`,
     foodById: (id: string) => `${baseURL}/user/foods/${encodeURIComponent(id)}`,
+    /** GET /user/foods/shops — paginated food-shop listing for a university. */
+    foodShops: `${baseURL}/user/foods/shops`,
+    /** GET /user/foods/shops/:shopId/menus — shop detail + paginated menu items. */
+    foodShopMenus: (shopId: string) => `${baseURL}/user/foods/shops/${encodeURIComponent(shopId)}/menus`,
     /** New marketplace aggregation endpoints. */
     homeFeed: `${baseURL}/user/marketplace`,
     marketplaceShops: `${baseURL}/user/marketplace/shops`,

@@ -282,12 +282,94 @@ export async function fetchMartRetailShops(
   return fetchMarketplaceShops(universityId, page, limit);
 }
 
-/** Restaurants / food halls for the Food hub. */
+/** Dedicated food-shop listing endpoint: GET /user/foods/shops */
+export async function fetchFoodShops(
+  universityId: string | undefined,
+  page = 1,
+  limit = 24,
+  filters?: { search?: string; category?: string },
+): Promise<Paginated<MarketplaceShopListItem>> {
+  const uid = await resolveUniversityId(universityId);
+  if (!uid) return { page, limit, total: 0, data: [] };
+  const params: Record<string, string | number | boolean | undefined> = {
+    page,
+    limit,
+    university: uid,
+    ...filters,
+  };
+  const url = appendQuery(marketplaceEndpoints.foodShops, params);
+  try {
+    const res = await getPublic<Paginated<MarketplaceShopListItem>>(url, { universityId: uid });
+    return {
+      page: res.page ?? page,
+      limit: res.limit ?? limit,
+      total: res.total ?? res.data?.length ?? 0,
+      data: Array.isArray(res.data) ? res.data : [],
+    };
+  } catch {
+    return { page, limit, total: 0, data: [] };
+  }
+}
+
+export type FoodShopMenuData = {
+  shop: MarketplaceShopListItem | null;
+  menus: MarketplaceFood[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+/** GET /user/foods/shops/:shopId/menus — shop detail + paginated food items. */
+export async function fetchFoodShopMenus(
+  shopId: string,
+  universityId: string | undefined,
+  query: FoodQuery = {},
+): Promise<FoodShopMenuData> {
+  const empty: FoodShopMenuData = { shop: null, menus: [], total: 0, page: 1, limit: 10 };
+  const uid = await resolveUniversityId(universityId);
+  if (!uid) return empty;
+  const { page = 1, limit = 20, ...rest } = query;
+  const params: Record<string, string | number | boolean | undefined> = {
+    page,
+    limit,
+    university: uid,
+  };
+  for (const [k, v] of Object.entries(rest)) {
+    if (v !== undefined && v !== "" && v !== null) params[k] = v as string | number | boolean;
+  }
+  const url = appendQuery(marketplaceEndpoints.foodShopMenus(shopId), params);
+  try {
+    const res = await getPublic<unknown>(url, { universityId: uid });
+    const r = res as Record<string, unknown>;
+    // Response shape: { page, limit, total, data: { shop, menus } }
+    const envelope = (r?.data ?? r) as Record<string, unknown>;
+    const shop = (envelope?.shop ?? null) as MarketplaceShopListItem | null;
+    const rawMenus = envelope?.menus;
+    const menus: MarketplaceFood[] = Array.isArray(rawMenus) ? (rawMenus as MarketplaceFood[]) : [];
+    return {
+      shop,
+      menus,
+      total: (r?.total as number) ?? menus.length,
+      page: (r?.page as number) ?? page,
+      limit: (r?.limit as number) ?? limit,
+    };
+  } catch {
+    return empty;
+  }
+}
+
+/** Restaurants / food halls for the Food hub.
+ *  Tries the dedicated /user/foods/shops endpoint first; falls back to
+ *  filtering marketplace shops by type if empty. */
 export async function fetchFoodOutletShops(
   universityId: string | undefined,
   page = 1,
   limit = 24,
 ): Promise<Paginated<MarketplaceShopListItem>> {
+  // Try the dedicated /user/foods/shops endpoint first
+  const dedicated = await fetchFoodShops(universityId, page, limit);
+  if (dedicated.data.length > 0) return dedicated;
+  // Fall back: filter marketplace shops by food type / category
   const typed = await fetchMarketplaceShops(universityId, page, limit, { type: "food" });
   if (typed.data.length > 0) return typed;
   const all = await fetchMarketplaceShops(universityId, page, Math.max(limit, 32));
