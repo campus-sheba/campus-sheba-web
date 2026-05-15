@@ -21,6 +21,18 @@ export const careersEndpoints = {
     sendApplication: `${baseURL}/career/send-cv`,
 };
 
+export const campusMapEndpoints = {
+    list: `${baseURL}/campus-map`,
+    featured: `${baseURL}/campus-map/featured`,
+    search: `${baseURL}/campus-map/search`,
+    bySlug: (slug: string) => `${baseURL}/campus-map/by-slug/${encodeURIComponent(slug)}`,
+    byId: (id: string) => `${baseURL}/campus-map/${encodeURIComponent(id)}`,
+    favourites: `${baseURL}/campus-map/favourites`,
+    favouriteToggle: (id: string) => `${baseURL}/campus-map/${encodeURIComponent(id)}/favourite`,
+    report: (id: string) => `${baseURL}/campus-map/${encodeURIComponent(id)}/report`,
+    submissions: `${baseURL}/campus-map/submissions`,
+};
+
 export const emergencyEndpoints = {
     contacts: `${baseURL}/emergency/contacts`,
     contactsByCategory: `${baseURL}/emergency/contacts/by-category`,
@@ -151,6 +163,13 @@ export const checkoutEndpoints = {
 export const promoCodeEndpoints = {
     public: `${baseURL}/user/promo-codes/public`,
     validate: `${baseURL}/user/promo-codes/validate`,
+};
+
+export const reviewEndpoints = {
+    base: `${baseURL}/user/reviews`,
+    universityLocation: (locationId: string) =>
+        `${baseURL}/user/reviews/university-location/${encodeURIComponent(locationId)}`,
+    byId: (reviewId: string) => `${baseURL}/user/reviews/${encodeURIComponent(reviewId)}`,
 };
 
 export const bookEndpoints = {

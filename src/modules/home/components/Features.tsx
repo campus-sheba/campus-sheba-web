@@ -50,13 +50,16 @@ export function FeaturesSection() {
   if (isLoading) {
     return (
       <ContentWrapper maxWidth="container" padding="none">
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-8">
-          {skeletonCards.map((_, index) => (
-            <div
-              key={`features-skeleton-${index}`}
-              className="h-[90px] animate-pulse rounded-xl border border-neutral-200 bg-neutral-100 md:h-[112px]"
-            />
-          ))}
+        <div className="rounded-3xl border border-emerald-100/60 bg-gradient-to-br from-emerald-50/60 via-white to-sky-50/60 p-4 sm:p-6">
+         
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+            {skeletonCards.map((_, index) => (
+              <div
+                key={`features-skeleton-${index}`}
+                className="h-[110px] animate-pulse rounded-2xl border border-emerald-100/60 bg-white/70"
+              />
+            ))}
+          </div>
         </div>
       </ContentWrapper>
     );
@@ -64,7 +67,7 @@ export function FeaturesSection() {
 
   return (
     <ContentWrapper maxWidth="container" padding="none">
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 xl:grid-cols-7">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         {dynamicModules.map((module) => (
           <ModuleButton
             key={module.id}
@@ -73,6 +76,14 @@ export function FeaturesSection() {
             iconUrl={module.iconUrl}
           />
         ))}
+        {/* explore all */}
+        <ModuleButton
+          label="Explore All"
+          href="/explore"
+          iconUrl="/search.png"
+          color="#475569"
+          bg="#E2E8F0"
+        />
       </div>
     </ContentWrapper>
   );

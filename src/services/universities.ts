@@ -22,3 +22,15 @@ export async function fetchUniversityById(id: string): Promise<University | null
   const url = `${careersEndpoints.universities}/${id}`;
   return getPublic<University>(url, { includeUniversity: false });
 }
+
+export async function fetchUniversityByShortName(shortName: string): Promise<University | null> {
+  const trimmed = shortName?.trim();
+  if (!trimmed) return null;
+  const universities = await fetchUniversities(1, 200);
+  const lowered = trimmed.toLowerCase();
+  return (
+    universities.find((uni) => uni.shortName?.toLowerCase() === lowered) ??
+    universities.find((uni) => uni.name?.toLowerCase() === lowered) ??
+    null
+  );
+}

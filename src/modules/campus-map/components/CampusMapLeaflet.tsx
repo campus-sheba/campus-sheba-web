@@ -24,6 +24,10 @@ function typeColor(type?: string): string {
     hangout: "#db2777",
     lake: "#0891b2",
     cultural: "#d97706",
+    sports: "#e11d48",
+    religious: "#6366f1",
+    administrative: "#78716c",
+    other: "#059669",
   };
   return m[t] ?? "#00A651";
 }

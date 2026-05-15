@@ -424,13 +424,13 @@ export function HomePageContent() {
         </ContentWrapper>
       </SectionWrapper>
 
-      <HomeMarketplaceRails />
+      {/* <HomeMarketplaceRails />
       <HomeCampusMartRails />
       <HomeFoodRails />
       <HomeBooksRails />
       <HomeLostFoundRails />
       <HomeBloodRails />
-      <HomeParcelCampusCtas />
+      <HomeParcelCampusCtas /> */}
 
       <SectionWrapper
         spacing="none"
