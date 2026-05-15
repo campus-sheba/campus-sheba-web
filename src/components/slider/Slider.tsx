@@ -66,7 +66,7 @@ export default function Slider({
 
   return (
     <div className={cn("w-full", containerClassName)}>
-      <div className="flex items-stretch">
+      <div className="flex h-full items-stretch">
         {showNavigationButtons && navigation && (
           <button
             type="button"
@@ -81,7 +81,7 @@ export default function Slider({
           </button>
         )}
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden h-full">
           <Swiper
             modules={modules}
             spaceBetween={spaceBetween}
@@ -109,10 +109,12 @@ export default function Slider({
               swiperRef.current = swiper;
             }}
             onSlideChange={onSlideChange}
-            className={cn("!w-full", className)}
+            className={cn("!w-full h-full", className)}
           >
             {React.Children.map(children, (child, index) => (
-              <SwiperSlide key={index}>{child}</SwiperSlide>
+              <SwiperSlide key={index} className="h-full">
+                {child}
+              </SwiperSlide>
             ))}
           </Swiper>
         </div>
