@@ -194,6 +194,7 @@ export default function CampusLocationDetailContent({
     }
     setReportSubmitting(true);
     const res = await reportCampusMapLocationAction(location._id, reason);
+    console.log("res from report", res);
     if (res.success) {
       setReportReason("");
       setReportOpen(false);
