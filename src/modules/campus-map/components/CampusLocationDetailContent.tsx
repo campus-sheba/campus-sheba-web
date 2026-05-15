@@ -303,7 +303,9 @@ export default function CampusLocationDetailContent({
           ]}
         />
 
-        <div className={`relative mt-4 w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 ${HERO_H}`}>
+        <div
+          className={`relative mt-4 w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 ${HERO_H}`}
+        >
           {galleryImages.length > 0 ? (
             <Slider
               className="h-full"
@@ -311,7 +313,9 @@ export default function CampusLocationDetailContent({
               slidesPerView={1}
               spaceBetween={0}
               navigation={galleryImages.length > 1}
-              pagination={galleryImages.length > 1 ? { clickable: true } : false}
+              pagination={
+                galleryImages.length > 1 ? { clickable: true } : false
+              }
               autoplay={
                 galleryImages.length > 1
                   ? { delay: 5000, disableOnInteraction: false }
@@ -397,28 +401,30 @@ export default function CampusLocationDetailContent({
                     </span>
                   ) : null}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleFavourite}
-                  disabled={favLoading}
-                  className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                    favourited
-                      ? "border-rose-200 bg-rose-50 text-rose-700"
-                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Heart
-                    className={`h-4 w-4 ${favourited ? "fill-rose-500 text-rose-500" : ""}`}
-                  />
-                  {favourited ? "Loved" : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReportOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-                >
-                  Report
-                </button>
+                <div className="flex items-center gap-x-3">
+                  <button
+                    type="button"
+                    onClick={handleFavourite}
+                    disabled={favLoading}
+                    className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                      favourited
+                        ? "border-rose-200 bg-rose-50 text-rose-700"
+                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${favourited ? "fill-rose-500 text-rose-500" : ""}`}
+                    />
+                    {favourited ? "Loved" : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen((prev) => !prev)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  >
+                    Report
+                  </button>
+                </div>
               </div>
 
               {location.description ? (
@@ -456,7 +462,9 @@ export default function CampusLocationDetailContent({
                       Cancel
                     </button>
                     {reportNote ? (
-                      <span className="text-xs text-gray-500">{reportNote}</span>
+                      <span className="text-xs text-gray-500">
+                        {reportNote}
+                      </span>
                     ) : null}
                   </div>
                 </div>
