@@ -96,13 +96,23 @@ export const parcelEndpoints = {
 export const bloodDonorEndpoints = {
     register: `${baseURL}/blood-donor/register`,
     profile: `${baseURL}/blood-donor/profile`,
+    availability: `${baseURL}/blood-donor/availability`,
+    eligibility: `${baseURL}/blood-donor/eligibility`,
     find: `${baseURL}/blood-donor/find`,
+    stats: `${baseURL}/blood-donor/stats`,
     request: `${baseURL}/blood-donor/request`,
     requests: `${baseURL}/blood-donor/requests`,
     myRequests: `${baseURL}/blood-donor/my-requests`,
     requestStatus: (id: string) =>
         `${baseURL}/blood-donor/request/${encodeURIComponent(id)}/status`,
-    stats: `${baseURL}/blood-donor/stats`,
+    requestRespond: (id: string) =>
+        `${baseURL}/blood-donor/request/${encodeURIComponent(id)}/respond`,
+    donationLog: `${baseURL}/blood-donor/donation/log`,
+    donationConfirm: `${baseURL}/blood-donor/donation/confirm-received`,
+    donationHistory: `${baseURL}/blood-donor/donation/history`,
+    clubs: `${baseURL}/blood-donor/clubs`,
+    clubFollow: (id: string) =>
+        `${baseURL}/blood-donor/clubs/${encodeURIComponent(id)}/follow`,
 };
 
 export const addressEndpoints = {

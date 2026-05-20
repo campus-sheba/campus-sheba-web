@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Droplets, Plus } from "lucide-react";
@@ -63,7 +64,7 @@ export default function BloodLanding() {
     guestMode,
     universityId,
     pageSize: 6,
-    status: "Open",
+    status: "Active",
     enabled: guestMode ? Boolean(universityId) : true,
   });
 
@@ -213,7 +214,7 @@ export default function BloodLanding() {
               {donorsPreview.isLoading && donorsPreview.items.length === 0 ? (
                 <div className="mt-4">
                   <ResponsiveCardsGrid>
-                    {Array.from({ length: 6 }).map((_, i) => (
+                    {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
                         className="h-32 animate-pulse rounded-2xl bg-gray-100"

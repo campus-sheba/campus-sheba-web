@@ -25,6 +25,9 @@ export default function MyBloodRequestsPage() {
     void load();
   }, [load]);
 
+  const canAct = (status: string | undefined) =>
+    status === "Active" || status === "Partially Fulfilled" || status === "Open";
+
   const setStatus = (id: string, status: "Fulfilled" | "Cancelled") => {
     startTransition(async () => {
       const res = await updateBloodRequestStatusAction(id, status);
@@ -70,6 +73,7 @@ export default function MyBloodRequestsPage() {
                 <th className="px-4 py-3">Urgency</th>
                 <th className="px-4 py-3">Patient</th>
                 <th className="px-4 py-3">Location</th>
+                <th className="px-4 py-3">Units</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
@@ -83,9 +87,14 @@ export default function MyBloodRequestsPage() {
                   <td className="px-4 py-3 max-w-[200px] truncate" title={r.location}>
                     {r.location ?? "—"}
                   </td>
+                  <td className="px-4 py-3 text-xs text-gray-600">
+                    {r.fulfilledUnits != null && r.requiredUnits != null
+                      ? `${r.fulfilledUnits}/${r.requiredUnits}`
+                      : (r.requiredUnits ?? "—")}
+                  </td>
                   <td className="px-4 py-3">{r.status}</td>
                   <td className="px-4 py-3">
-                    {r.status === "Open" ? (
+                    {canAct(r.status) ? (
                       <div className="flex flex-wrap gap-2">
                         <Button
                           type="button"
@@ -107,7 +116,7 @@ export default function MyBloodRequestsPage() {
                         </Button>
                       </div>
                     ) : (
-                      "—"
+                      <span className="text-gray-400">—</span>
                     )}
                   </td>
                 </tr>
