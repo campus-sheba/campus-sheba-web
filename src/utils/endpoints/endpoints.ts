@@ -36,7 +36,9 @@ export const campusMapEndpoints = {
 export const emergencyEndpoints = {
     contacts: `${baseURL}/emergency/contacts`,
     contactsByCategory: `${baseURL}/emergency/contacts/by-category`,
+    contactsQuickDial: `${baseURL}/emergency/contacts/quick-dial`,
     contactById: (id: string) => `${baseURL}/emergency/contacts/${encodeURIComponent(id)}`,
+    contactReportIssue: (id: string) => `${baseURL}/emergency/contacts/${encodeURIComponent(id)}/report-issue`,
 };
 
 export const authenticationEndpoints = {
