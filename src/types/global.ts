@@ -42,6 +42,8 @@ export type UserProfile = AuthMe & {
   university?: University | null;
   address?: UniversityAddress | null;
   avatar?: string;
+  department?: string | { _id: string; name?: string };
+  semester?: string;
 };
 
 /**

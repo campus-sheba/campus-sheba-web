@@ -6,12 +6,14 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useAppState } from "@/contexts/AppStateContext";
 import { fetchBookCategories, fetchCreatorOwnBooks } from "@/services/books";
+import { registerDonationAction } from "@/services/book-donations";
 import type { BookListing } from "@/types/book";
 import type { BuySellCategory } from "@/types/buy-sell";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 
-const BOOK_TYPES = ["", "Selling", "Lending", "Donation"] as const;
+const BOOK_TYPES = ["", "Selling", "Lending", "Donation", "Swap", "Library Only"] as const;
 const QUALITIES = ["", "New", "Like New", "Good", "Acceptable"] as const;
+const STATUSES = ["", "Pending", "Approved", "Rejected", "Suspended", "Flagged"] as const;
 function formatMoney(n: number) {
   return `৳${n.toLocaleString()}`;
 }
@@ -20,6 +22,8 @@ function typeLabel(t: string) {
   if (t === "Selling") return "Sell";
   if (t === "Lending") return "Lend";
   if (t === "Donation") return "Donate";
+  if (t === "Swap") return "Swap";
+  if (t === "Library Only") return "Showcase";
   return t || "—";
 }
 
@@ -44,6 +48,9 @@ export default function MyBooksPage() {
   const [categoryId, setCategoryId] = useState("");
   const [bookType, setBookType] = useState("");
   const [quality, setQuality] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+  const [registeringId, setRegisteringId] = useState<string | null>(null);
 
   const limit = 15;
 
@@ -54,6 +61,7 @@ export default function MyBooksPage() {
     category: categoryId || undefined,
     type: bookType || undefined,
     quality: quality || undefined,
+    status: statusFilter || undefined,
     university: universityId,
   });
 
@@ -97,6 +105,18 @@ export default function MyBooksPage() {
 
   const hasMore = items.length < total;
 
+  const registerDonation = async (bookId: string) => {
+    setRegisteringId(bookId);
+    setActionMsg(null);
+    const res = await registerDonationAction(bookId);
+    setRegisteringId(null);
+    setActionMsg(
+      res.success
+        ? "Registered in donation queue. Manage requests under Book donations."
+        : res.message,
+    );
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -114,6 +134,30 @@ export default function MyBooksPage() {
             className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myBooks.newListing", "List a book")}
+          </Link>
+          <Link
+            href="/my-library"
+            className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+          >
+            My library
+          </Link>
+          <Link
+            href="/my-book-lent"
+            className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+          >
+            Lent out
+          </Link>
+          <Link
+            href="/my-book-borrowed"
+            className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+          >
+            Borrowed
+          </Link>
+          <Link
+            href="/my-book-donations"
+            className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+          >
+            Donations
           </Link>
           <Link
             href="/books"
@@ -190,6 +234,20 @@ export default function MyBooksPage() {
               ))}
             </select>
           </label>
+          <label className="flex min-w-[130px] flex-1 flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">Status</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+            >
+              {STATUSES.map((s) => (
+                <option key={s || "any-st"} value={s}>
+                  {s || tt("myBooks.any", "Any")}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="button"
             onClick={() => void fetchPage(1, false)}
@@ -203,6 +261,12 @@ export default function MyBooksPage() {
       {error ? (
         <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </p>
+      ) : null}
+
+      {actionMsg ? (
+        <p className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm">
+          {actionMsg}
         </p>
       ) : null}
 
@@ -311,6 +375,21 @@ export default function MyBooksPage() {
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
+                        {item.type === "Donation" && item.status === "Approved" ? (
+                          <>
+                            <button
+                              type="button"
+                              disabled={registeringId === item._id}
+                              onClick={() => void registerDonation(item._id)}
+                              className="font-semibold text-violet-700 hover:underline disabled:opacity-50"
+                            >
+                              {registeringId === item._id ? "…" : "Queue"}
+                            </button>
+                            <span className="mx-2 text-gray-300" aria-hidden>
+                              ·
+                            </span>
+                          </>
+                        ) : null}
                         <Link
                           href={`/my-books/${item._id}/edit`}
                           className="font-semibold text-gray-800 hover:underline"

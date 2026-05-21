@@ -228,7 +228,7 @@ export default function BloodLanding() {
                 </p>
               ) : (
                 <div className="mt-4">
-                  <ResponsiveCardsGrid>
+                  <ResponsiveCardsGrid >
                     {donorsPreview.items.map((d) => (
                       <DonorCard key={d._id} donor={d} />
                     ))}

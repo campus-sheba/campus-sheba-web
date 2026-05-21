@@ -185,17 +185,25 @@ export const reviewEndpoints = {
 };
 
 export const bookEndpoints = {
+    // Creator endpoints
     creatorBase: `${baseURL}/creator/books`,
     creatorSell: `${baseURL}/creator/books/sell`,
     creatorLend: `${baseURL}/creator/books/lend`,
     creatorDonate: `${baseURL}/creator/books/donate`,
+    creatorSwap: `${baseURL}/creator/books/swap`,
+    creatorLibraryOnly: `${baseURL}/creator/books/library-only`,
     creatorOwn: `${baseURL}/creator/books/own`,
     creatorById: (bookId: string) => `${baseURL}/creator/books/${encodeURIComponent(bookId)}`,
+    // User browse endpoints
     userBase: `${baseURL}/user/books`,
     userBorrowable: `${baseURL}/user/books/borrowable`,
     userMyListed: `${baseURL}/user/books/my-listed`,
     userBorrowed: `${baseURL}/user/books/borrowed`,
     userById: (bookId: string) => `${baseURL}/user/books/${encodeURIComponent(bookId)}`,
+    // Discovery feed endpoints (auth required)
+    feedSemester: `${baseURL}/user/books/feed/semester`,
+    feedSeniorPicks: `${baseURL}/user/books/feed/senior-picks`,
+    feedDepartment: (deptId: string) => `${baseURL}/user/books/feed/department/${encodeURIComponent(deptId)}`,
 };
 
 export const bookBorrowingEndpoints = {
@@ -207,6 +215,33 @@ export const bookBorrowingEndpoints = {
         `${baseURL}/book-borrowing/extend/${encodeURIComponent(borrowId)}/${encodeURIComponent(extendId)}`,
     borrowed: `${baseURL}/book-borrowing/borrowed`,
     lent: `${baseURL}/book-borrowing/lent`,
+};
+
+export const bookReviewEndpoints = {
+    base: `${baseURL}/book-review`,
+    byBook: (bookId: string) => `${baseURL}/book-review/${encodeURIComponent(bookId)}`,
+    byId: (reviewId: string) => `${baseURL}/book-review/${encodeURIComponent(reviewId)}`,
+};
+
+export const bookDonationEndpoints = {
+    base: `${baseURL}/book-donation`,
+    mine: `${baseURL}/book-donation/mine`,
+    byId: (donationId: string) => `${baseURL}/book-donation/${encodeURIComponent(donationId)}`,
+    request: (donationId: string) =>
+        `${baseURL}/book-donation/${encodeURIComponent(donationId)}/request`,
+    fulfill: (donationId: string, queueEntryId: string) =>
+        `${baseURL}/book-donation/${encodeURIComponent(donationId)}/fulfill/${encodeURIComponent(queueEntryId)}`,
+};
+
+export const userLibraryEndpoints = {
+    base: `${baseURL}/user/library`,
+    me: `${baseURL}/user/library/me`,
+    byId: (profileId: string) => `${baseURL}/user/library/${encodeURIComponent(profileId)}`,
+    readingList: `${baseURL}/user/library/reading-list`,
+    readingListBook: (bookId: string) =>
+        `${baseURL}/user/library/reading-list/${encodeURIComponent(bookId)}`,
+    follow: (profileId: string) =>
+        `${baseURL}/user/library/follow/${encodeURIComponent(profileId)}`,
 };
 
 export const buySellEndpoints = {

@@ -13,76 +13,74 @@ import { SectionHeader } from "@/components/marketplace/SectionHeader";
 import { useInView } from "@/components/marketplace/useInView";
 import { fetchBookCategoriesPublic } from "@/services/books.public";
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
+import { useBorrowableBooksList } from "@/modules/books/hooks/useBorrowableBooksList";
+import { useFeedBooks } from "@/modules/books/hooks/useFeedBooks";
 import type { BuySellCategory } from "@/types/buy-sell";
 import BookListingCard from "./BookListingCard";
 import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 
-function CategoryListingsSection({
-  category,
-  universityId,
-  tt,
+// ── Skeleton row ──────────────────────────────────────────────────────────────
+
+function SkeletonGrid({ count = 8 }: { count?: number }) {
+  return (
+    <ResponsiveCardsGrid>
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="aspect-[3/4] animate-pulse rounded-xl bg-gray-100"
+        />
+      ))}
+    </ResponsiveCardsGrid>
+  );
+}
+
+// ── Feed section — uses auth-required senior-picks / semester feeds ────────────
+
+function FeedSection({
+  feed,
+  deptId,
+  title,
+  subtitle,
+  viewAllHref,
 }: {
-  category: BuySellCategory;
-  universityId?: string;
-  tt: (key: string, fallback: string) => string;
+  feed: "senior-picks" | "semester" | "department";
+  deptId?: string;
+  title: string;
+  subtitle?: string;
+  viewAllHref: string;
 }) {
   const { ref, inView } = useInView<HTMLDivElement>({
     rootMargin: "600px 0px",
   });
-
-  const { items, isLoading, error } = useBooksList({
-    enabled: inView,
-    universityId,
-    debouncedSearch: "",
+  const { items, isLoading, error } = useFeedBooks({
+    feed,
+    deptId,
     pageSize: 8,
-    category: category._id,
+    enabled: inView && (feed !== "department" || Boolean(deptId)),
   });
 
-  if (inView && !isLoading && !error && items.length === 0) {
-    return null;
-  }
+  if (inView && !isLoading && !error && items.length === 0) return null;
 
   return (
     <div ref={ref}>
       <SectionWrapper spacing="sm" background="transparent" className="my-0">
         <SectionHeader
-          title={category.title}
-          subtitle={
-            category.description ||
-            tt("bookLanding.browseCategory", "Browse books in this category.")
-          }
-          viewAllHref={`/books/all?category=${encodeURIComponent(category._id)}`}
+          title={title}
+          subtitle={subtitle}
+          viewAllHref={viewAllHref}
         />
-
         {error ? (
           <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
-        ) : null}
-
-        {!inView ? (
+        ) : !inView || (isLoading && items.length === 0) ? (
           <div className="mt-4">
-            <ResponsiveCardsGrid>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] rounded-2xl bg-gray-50" />
-              ))}
-            </ResponsiveCardsGrid>
-          </div>
-        ) : isLoading && items.length === 0 ? (
-          <div className="mt-4">
-            <ResponsiveCardsGrid>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-[3/4] animate-pulse rounded-2xl bg-gray-100"
-                />
-              ))}
-            </ResponsiveCardsGrid>
+            <SkeletonGrid />
           </div>
         ) : (
           <div className="mt-4">
             <ResponsiveCardsGrid>
-              {items.slice(0, 8).map((item) => (
+              {items.map((item) => (
                 <BookListingCard key={item._id} item={item} />
               ))}
             </ResponsiveCardsGrid>
@@ -92,6 +90,61 @@ function CategoryListingsSection({
     </div>
   );
 }
+
+// ── Borrowable section — GET /user/books/borrowable ─────────────────────────
+
+function BorrowableListingsSection({
+  title,
+  subtitle,
+  viewAllHref,
+  universityId,
+  pageSize = 8,
+}: {
+  title: string;
+  subtitle?: string;
+  viewAllHref: string;
+  universityId?: string;
+  pageSize?: number;
+}) {
+  const { items, isLoading, error } = useBorrowableBooksList({
+    universityId,
+    pageSize,
+    availabilityStatus: "Available",
+  });
+
+  return (
+    <SectionWrapper spacing="sm" background="transparent" className="my-0">
+      <SectionHeader
+        title={title}
+        subtitle={subtitle}
+        viewAllHref={viewAllHref}
+      />
+      {error ? (
+        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : isLoading && items.length === 0 ? (
+        <div className="mt-4">
+          <SkeletonGrid />
+        </div>
+      ) : items.length === 0 ? (
+        <p className="mt-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
+          No borrowable books right now.
+        </p>
+      ) : (
+        <div className="mt-4">
+          <ResponsiveCardsGrid>
+            {items.slice(0, pageSize).map((item) => (
+              <BookListingCard key={item._id} item={item} />
+            ))}
+          </ResponsiveCardsGrid>
+        </div>
+      )}
+    </SectionWrapper>
+  );
+}
+
+// ── Listings section — uses public /user/books with type filter ───────────────
 
 function ListingsSection({
   title,
@@ -106,8 +159,7 @@ function ListingsSection({
   viewAllHref: string;
   universityId?: string;
   pageSize?: number;
-  /** API filter: Selling | Lending | Donation */
-  type?: "Selling" | "Lending" | "Donation";
+  type?: "Selling" | "Lending" | "Donation" | "Swap" | "Library Only";
 }) {
   const { items, isLoading, error } = useBooksList({
     universityId,
@@ -127,17 +179,9 @@ function ListingsSection({
         <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
-      ) : null}
-      {isLoading && items.length === 0 ? (
+      ) : isLoading && items.length === 0 ? (
         <div className="mt-4">
-          <ResponsiveCardsGrid>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[3/4] animate-pulse rounded-2xl bg-gray-100"
-              />
-            ))}
-          </ResponsiveCardsGrid>
+          <SkeletonGrid />
         </div>
       ) : items.length === 0 ? (
         <p className="mt-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
@@ -156,14 +200,81 @@ function ListingsSection({
   );
 }
 
+// ── Per-category lazy section ─────────────────────────────────────────────────
+
+function CategoryListingsSection({
+  category,
+  universityId,
+  tt,
+}: {
+  category: BuySellCategory;
+  universityId?: string;
+  tt: (key: string, fallback: string) => string;
+}) {
+  const { ref, inView } = useInView<HTMLDivElement>({
+    rootMargin: "600px 0px",
+  });
+  const { items, isLoading, error } = useBooksList({
+    enabled: inView,
+    universityId,
+    debouncedSearch: "",
+    pageSize: 8,
+    category: category._id,
+  });
+
+  if (inView && !isLoading && !error && items.length === 0) return null;
+
+  return (
+    <div ref={ref}>
+      <SectionWrapper spacing="sm" background="transparent" className="my-0">
+        <SectionHeader
+          title={category.title}
+          subtitle={
+            category.description ||
+            tt("bookLanding.browseCategory", "Browse books in this category.")
+          }
+          viewAllHref={`/books/all?category=${encodeURIComponent(category._id)}`}
+        />
+        {error ? (
+          <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        ) : !inView || (isLoading && items.length === 0) ? (
+          <div className="mt-4">
+            <SkeletonGrid />
+          </div>
+        ) : (
+          <div className="mt-4">
+            <ResponsiveCardsGrid>
+              {items.slice(0, 8).map((item) => (
+                <BookListingCard key={item._id} item={item} />
+              ))}
+            </ResponsiveCardsGrid>
+          </div>
+        )}
+      </SectionWrapper>
+    </div>
+  );
+}
+
+// ── Landing page ──────────────────────────────────────────────────────────────
+
 export default function BookLanding() {
   const t = useTranslations("common");
   const router = useRouter();
   const { state, dispatch } = useAppState();
   const universityId = state.university.selected?._id;
+  const isLoggedIn = state.auth.isAuthenticated;
+  const rawDept = state.user.profile?.department;
+  const departmentId =
+    typeof rawDept === "string"
+      ? rawDept
+      : rawDept && typeof rawDept === "object" && "_id" in rawDept
+        ? String((rawDept as { _id: string })._id)
+        : undefined;
+
   const tt = (key: string, fallback: string) =>
     t.has(key) ? t(key) : fallback;
-  const isLoggedIn = state.auth.isAuthenticated;
 
   const [categories, setCategories] = useState<BuySellCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -221,7 +332,7 @@ export default function BookLanding() {
             <p className="mt-1 text-sm text-gray-500">
               {tt(
                 "bookLanding.subtitle",
-                "Sell, lend, or donate textbooks on your campus.",
+                "Sell, lend, donate or swap textbooks on your campus.",
               )}
             </p>
           </div>
@@ -234,6 +345,12 @@ export default function BookLanding() {
               <Plus className="mr-2 h-4 w-4" />
               {tt("bookLanding.listBook", "List a book")}
             </button>
+            <Link
+              href="/my-library"
+              className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+            >
+              {tt("bookLanding.myLibrary", "My library")}
+            </Link>
             <Link
               href="/books/all"
               className="text-sm font-semibold text-[#00A651] hover:underline"
@@ -262,6 +379,7 @@ export default function BookLanding() {
               <FeatureHeroAds universityId={universityId} />
             </div>
 
+            {/* Categories pill row */}
             <SectionWrapper
               spacing="sm"
               background="transparent"
@@ -308,6 +426,45 @@ export default function BookLanding() {
             </SectionWrapper>
 
             <div className="mt-10 space-y-10">
+              {/* Senior picks — auth-gated feed (featured + top-rated) */}
+              {isLoggedIn && (
+                <FeedSection
+                  feed="senior-picks"
+                  title={tt("bookLanding.seniorPicks", "Senior picks")}
+                  subtitle={tt(
+                    "bookLanding.seniorPicksSub",
+                    "Featured and top-rated books from your campus.",
+                  )}
+                  viewAllHref="/books/all"
+                />
+              )}
+
+              {isLoggedIn && (
+                <FeedSection
+                  feed="semester"
+                  title={tt("bookLanding.semesterFeed", "For your semester")}
+                  subtitle={tt(
+                    "bookLanding.semesterFeedSub",
+                    "Books matching your department and semester.",
+                  )}
+                  viewAllHref="/books/all"
+                />
+              )}
+
+              {isLoggedIn && departmentId ? (
+                <FeedSection
+                  feed="department"
+                  deptId={departmentId}
+                  title={tt("bookLanding.departmentFeed", "Your department")}
+                  subtitle={tt(
+                    "bookLanding.departmentFeedSub",
+                    "All approved books in your department.",
+                  )}
+                  viewAllHref={`/books/all?department=${encodeURIComponent(departmentId)}`}
+                />
+              ) : null}
+
+              {/* Type sections — public */}
               <ListingsSection
                 title={tt("bookLanding.sectionSell", "Books for sale")}
                 subtitle={tt(
@@ -320,23 +477,48 @@ export default function BookLanding() {
                 type="Selling"
               />
 
-              <ListingsSection
+              <BorrowableListingsSection
                 title={tt("bookLanding.sectionLend", "Books to borrow")}
                 subtitle={tt(
                   "bookLanding.sectionLendSub",
                   "Borrow for a period — great for short-term needs.",
                 )}
                 universityId={universityId}
-                viewAllHref="/books/all?type=Lending"
+                viewAllHref="/books/all?type=Lending&availabilityStatus=Available"
                 pageSize={8}
-                type="Lending"
               />
 
+              <SectionWrapper
+                spacing="sm"
+                background="transparent"
+                className="my-0"
+              >
+                <SectionHeader
+                  title={tt("bookLanding.sectionDonate", "Free books")}
+                  subtitle={tt(
+                    "bookLanding.sectionDonateSub",
+                    "Donations from the community — grab what you need.",
+                  )}
+                  viewAllHref="/books/donations"
+                />
+                <p className="mt-2 text-sm text-gray-600">
+                  <Link
+                    href="/books/donations"
+                    className="font-semibold text-[#00A651] hover:underline"
+                  >
+                    Browse the donation queue →
+                  </Link>
+                </p>
+              </SectionWrapper>
+
               <ListingsSection
-                title={tt("bookLanding.sectionDonate", "Free books")}
+                title={tt(
+                  "bookLanding.sectionDonateListings",
+                  "Donation listings",
+                )}
                 subtitle={tt(
-                  "bookLanding.sectionDonateSub",
-                  "Donations from the community — grab what you need.",
+                  "bookLanding.sectionDonateListingsSub",
+                  "Approved donation-type books on campus.",
                 )}
                 universityId={universityId}
                 viewAllHref="/books/all?type=Donation"
@@ -344,49 +526,29 @@ export default function BookLanding() {
                 type="Donation"
               />
 
-              {categoriesError ? (
-                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-700">
-                  <p className="font-semibold">
-                    {tt(
-                      "bookLanding.categoriesUnavailable",
-                      "Categories unavailable",
-                    )}
-                  </p>
-                  <p className="mt-1 text-red-700/90">{categoriesError}</p>
-                  <button
-                    type="button"
-                    onClick={() => void loadCategories()}
-                    className="mt-3 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white"
-                  >
-                    {tt("bookLanding.retry", "Retry")}
-                  </button>
-                </div>
-              ) : categoriesLoading && allCategories.length === 0 ? (
-                <div className="space-y-3">
-                  <div className="h-6 w-48 rounded bg-gray-100" />
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-72 animate-pulse rounded-2xl bg-gray-100"
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : allCategories.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
-                  {tt("bookLanding.noCategories", "No book categories found.")}
-                </div>
-              ) : null}
+              <ListingsSection
+                title={tt("bookLanding.sectionSwap", "Books to swap")}
+                subtitle={tt(
+                  "bookLanding.sectionSwapSub",
+                  "Exchange your books — find mutual swap partners.",
+                )}
+                universityId={universityId}
+                viewAllHref="/books/all?type=Swap"
+                pageSize={8}
+                type="Swap"
+              />
 
-              {allCategories.map((c) => (
-                <CategoryListingsSection
-                  key={c._id}
-                  category={c}
-                  universityId={universityId}
-                  tt={tt}
-                />
-              ))}
+              <ListingsSection
+                title={tt("bookLanding.sectionLibrary", "Personal collections")}
+                subtitle={tt(
+                  "bookLanding.sectionLibrarySub",
+                  "Showcase-only books from campus readers.",
+                )}
+                universityId={universityId}
+                viewAllHref="/books/all?type=Library+Only"
+                pageSize={8}
+                type="Library Only"
+              />
             </div>
           </>
         )}

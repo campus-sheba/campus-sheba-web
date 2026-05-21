@@ -68,6 +68,10 @@ export default function MyBooksCreatePage() {
   const [borrowDuration, setBorrowDuration] = useState("14");
   const [maxExtensionDuration, setMaxExtensionDuration] = useState("7");
   const [allowsExtension, setAllowsExtension] = useState(true);
+  const [courseCode, setCourseCode] = useState("");
+  const [semester, setSemester] = useState("");
+  const [language, setLanguage] = useState("English");
+  const [swapNote, setSwapNote] = useState("");
 
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -183,27 +187,49 @@ export default function MyBooksCreatePage() {
 
     let payload: CreateBookPayload;
 
+    const sharedFields = {
+      title: title.trim(),
+      addressId,
+      photos: photoPayload,
+      category: categoryId,
+      buyingYear: buyingYear.trim(),
+      description: description.trim(),
+      sellerType: "individual",
+      department: departmentId,
+      contactName: contactName.trim(),
+      contactPhone: apiPhone,
+      contactEmail: contactEmail.trim() || undefined,
+      quality,
+      quantity: qty,
+      ...(author.trim() ? { author: author.trim() } : {}),
+      ...(edition.trim() ? { edition: edition.trim() } : {}),
+      ...(subject.trim() ? { subject: subject.trim() } : {}),
+      ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
+      ...(courseCode.trim() ? { courseCode: courseCode.trim() } : {}),
+      ...(semester.trim() ? { semester: semester.trim() } : {}),
+      ...(language.trim() ? { language: language.trim() } : {}),
+    };
+
     if (listingMode === "donate") {
       payload = {
-        title: title.trim(),
-        addressId,
-        photos: photoPayload,
-        category: categoryId,
-        buyingYear: buyingYear.trim(),
-        description: description.trim(),
+        ...sharedFields,
         type: "Donation",
-        sellerType: "individual",
-        department: departmentId,
-        contactName: contactName.trim(),
-        contactPhone: apiPhone,
-        contactEmail: contactEmail.trim() || undefined,
-        quality,
         price: 0,
-        quantity: qty,
-        ...(author.trim() ? { author: author.trim() } : {}),
-        ...(edition.trim() ? { edition: edition.trim() } : {}),
-        ...(subject.trim() ? { subject: subject.trim() } : {}),
-        ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
+      };
+    } else if (listingMode === "swap") {
+      payload = {
+        ...sharedFields,
+        type: "Swap",
+        price: 0,
+        ...(swapNote.trim()
+          ? { notes: [{ type: "text", content: swapNote.trim() }] }
+          : {}),
+      };
+    } else if (listingMode === "library-only") {
+      payload = {
+        ...sharedFields,
+        type: "Library Only",
+        price: 0,
       };
     } else {
       const priceNum = Number(price);
@@ -212,25 +238,9 @@ export default function MyBooksCreatePage() {
         return;
       }
       payload = {
-        title: title.trim(),
-        addressId,
-        photos: photoPayload,
-        category: categoryId,
-        buyingYear: buyingYear.trim(),
-        description: description.trim(),
+        ...sharedFields,
         type: listingMode === "sell" ? "Selling" : "Lending",
-        sellerType: "individual",
-        department: departmentId,
-        contactName: contactName.trim(),
-        contactPhone: apiPhone,
-        contactEmail: contactEmail.trim() || undefined,
-        quality,
         price: priceNum,
-        quantity: qty,
-        ...(author.trim() ? { author: author.trim() } : {}),
-        ...(edition.trim() ? { edition: edition.trim() } : {}),
-        ...(subject.trim() ? { subject: subject.trim() } : {}),
-        ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
       };
 
       if (listingMode === "sell" && discountPrice.trim()) {
@@ -275,7 +285,9 @@ export default function MyBooksCreatePage() {
           ← My books
         </Link>
         <h1 className="mt-2 text-xl font-bold tracking-tight text-gray-900">List a book</h1>
-        <p className="mt-1 text-sm text-gray-500">Sell, lend, or donate textbooks to students on your campus.</p>
+        <p className="mt-1 text-sm text-gray-500">
+          Sell, lend, donate, swap, or showcase books on your campus.
+        </p>
       </div>
 
       {loadMeta ? (
@@ -295,6 +307,8 @@ export default function MyBooksCreatePage() {
                 ["sell", "Sell"],
                 ["lend", "Lend"],
                 ["donate", "Donate"],
+                ["swap", "Swap"],
+                ["library-only", "Showcase"],
               ] as const
             ).map(([mode, label]) => (
               <button
@@ -423,6 +437,67 @@ export default function MyBooksCreatePage() {
                   />
                 </div>
               </div>
+              <div>
+                <label className={labelClass} htmlFor="bk-lang">
+                  Language
+                </label>
+                <input
+                  id="bk-lang"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className={`${inputClass} mt-1`}
+                  placeholder="e.g. English, Bangla"
+                />
+              </div>
+              {(listingMode === "swap" || listingMode === "lend" || listingMode === "sell") && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass} htmlFor="bk-course">
+                      Course code
+                    </label>
+                    <input
+                      id="bk-course"
+                      value={courseCode}
+                      onChange={(e) => setCourseCode(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                      placeholder="e.g. CSE-311"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="bk-semester">
+                      Semester
+                    </label>
+                    <input
+                      id="bk-semester"
+                      value={semester}
+                      onChange={(e) => setSemester(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                      placeholder="e.g. 3rd"
+                    />
+                  </div>
+                </div>
+              )}
+              {listingMode === "swap" ? (
+                <div>
+                  <label className={labelClass} htmlFor="bk-swap-note">
+                    What you want in return
+                  </label>
+                  <textarea
+                    id="bk-swap-note"
+                    value={swapNote}
+                    onChange={(e) => setSwapNote(e.target.value)}
+                    rows={2}
+                    className={`${inputClass} mt-1`}
+                    placeholder="e.g. Compiler Design or Microprocessor textbook"
+                  />
+                </div>
+              ) : null}
+              {listingMode === "library-only" ? (
+                <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                  Library-only listings appear on your profile showcase. They cannot be sold,
+                  borrowed, or ordered.
+                </p>
+              ) : null}
               <div>
                 <label className={labelClass} htmlFor="bk-publisher">
                   Publisher

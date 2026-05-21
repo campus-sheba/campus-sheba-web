@@ -87,6 +87,9 @@ export default function MyBooksEditPage({ book }: Props) {
   const [subject, setSubject] = useState(book.subject ?? "");
   const [buyingYear, setBuyingYear] = useState(book.buyingYear ?? "");
   const [publisher, setPublisher] = useState(book.publisher ?? "");
+  const [language, setLanguage] = useState(book.language ?? "English");
+  const [courseCode, setCourseCode] = useState(book.courseCode ?? "");
+  const [semester, setSemester] = useState(book.semester ?? "");
   const [quality, setQuality] = useState<BookQuality>(() => (book.quality as BookQuality) ?? "Good");
   const [description, setDescription] = useState(book.description ?? "");
 
@@ -233,6 +236,9 @@ export default function MyBooksEditPage({ book }: Props) {
       ...(edition.trim() ? { edition: edition.trim() } : {}),
       ...(subject.trim() ? { subject: subject.trim() } : {}),
       ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
+      ...(language.trim() ? { language: language.trim() } : {}),
+      ...(courseCode.trim() ? { courseCode: courseCode.trim() } : {}),
+      ...(semester.trim() ? { semester: semester.trim() } : {}),
     };
 
     if (listingType === "Donation") {
@@ -424,6 +430,41 @@ export default function MyBooksEditPage({ book }: Props) {
                   onChange={(e) => setPublisher(e.target.value)}
                   className={`${inputClass} mt-1`}
                 />
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="ebk-lang">
+                  Language
+                </label>
+                <input
+                  id="ebk-lang"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className={`${inputClass} mt-1`}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClass} htmlFor="ebk-course">
+                    Course code
+                  </label>
+                  <input
+                    id="ebk-course"
+                    value={courseCode}
+                    onChange={(e) => setCourseCode(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="ebk-semester">
+                    Semester
+                  </label>
+                  <input
+                    id="ebk-semester"
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  />
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
