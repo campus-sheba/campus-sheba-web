@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState, useTransition } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Check, ChevronLeft } from "lucide-react";
 
@@ -215,7 +216,21 @@ export default function SignupForm({ onSuccess, switchToLogin }: SignupFormProps
   };
 
   return (
-    <div className="space-y-5">
+    <div className="relative isolate space-y-5 overflow-hidden rounded-xl">
+      {/* Soft splash backdrop — sized to fit the form area */}
+      <Image
+        src="/assets/images/splash-bg.png"
+        alt=""
+        aria-hidden
+        fill
+        sizes="(max-width: 640px) 100vw, 28rem"
+        className="pointer-events-none -z-10 object-cover object-center opacity-30"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/90 to-white"
+      />
+
       <StepProgress current={step} />
 
       {step !== "phone" && (

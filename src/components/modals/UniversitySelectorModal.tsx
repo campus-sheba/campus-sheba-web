@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useAppState } from "@/contexts/AppStateContext";
 import { University } from "@/types/global";
 import { CookieHelper, StorageHelper } from "@/lib/appStateHelper";
@@ -22,7 +23,8 @@ export default function UniversitySelectorModal({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [universities, setUniversities] = useState<University[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const shouldHardLockScroll = isOpen && Boolean(isMandatory) && !state.university.selected;
+  const shouldHardLockScroll =
+    isOpen && Boolean(isMandatory) && !state.university.selected;
 
   // Lock page scroll while popup is open (extra strict for mandatory flow).
   useEffect(() => {
@@ -68,7 +70,8 @@ export default function UniversitySelectorModal({
   useEffect(() => {
     if (!isOpen) return;
     const cookieUniversity = CookieHelper.getUniversity();
-    const initialId = state.university.selected?._id ?? cookieUniversity?._id ?? null;
+    const initialId =
+      state.university.selected?._id ?? cookieUniversity?._id ?? null;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedId(initialId);
   }, [isOpen, state.university.selected?._id]);
@@ -148,76 +151,92 @@ export default function UniversitySelectorModal({
         isMandatory ? "bg-neutral-900/60" : "bg-neutral-900/45"
       }`}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Select Your University
-          </h2>
-          {!isMandatory && (
-            <button
-              onClick={handleClose}
-              className="text-neutral-400 hover:text-neutral-600 transition"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          )}
-        </div>
+      <div className="relative w-full max-w-md min-h-[230px] overflow-hidden rounded-[2rem] bg-white/90 shadow-2xl backdrop-blur-xl">
+        {/* Splash background, scaled to fit the whole modal */}
+        <Image
+          src="/assets/images/splash-bg.png"
+          alt=""
+          fill
+          priority
+          className="pointer-events-none object-cover object-bottom opacity-25 scale-110"
+        />
+        {/* Soft white overlay so content stays legible */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-white/70"
+        />
 
-        {/* Content */}
-        <div className="p-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader className="w-6 h-6 text-emerald-600 animate-spin" />
-            </div>
-          ) : (
-            <>
-              {/* Dropdown */}
-              <select
-                value={selectedId || ""}
-                onChange={(e) => setSelectedId(e.target.value || null)}
-                className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm font-medium text-neutral-900 bg-white"
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-neutral-200/80 px-6 py-4">
+            <h2 className="text-lg font-semibold text-neutral-900">
+              Select Your University
+            </h2>
+            {!isMandatory && (
+              <button
+                onClick={handleClose}
+                className="text-neutral-400 hover:text-neutral-600 transition"
+                aria-label="Close"
               >
-                <option value="">Choose a university...</option>
-                {universities?.map((university) => (
-                  <option key={university._id} value={university._id}>
-                    {university.name}
-                  </option>
-                ))}
-              </select>
+                ✕
+              </button>
+            )}
+          </div>
 
-              {/* Info Text */}
-              <p className="mt-3 text-xs text-neutral-500">
-                {isMandatory
-                  ? "Select your university to continue browsing Campus Sheba."
-                  : "You can change this anytime in your profile settings."}
-              </p>
-
-              {/* Actions */}
-              <div className="mt-6 flex gap-3">
-                {!isMandatory && (
-                  <button
-                    onClick={handleClose}
-                    className="flex-1 px-4 py-2.5 border border-neutral-300 rounded-lg font-medium text-sm text-neutral-700 hover:bg-neutral-50 transition"
-                  >
-                    Cancel
-                  </button>
-                )}
-                <button
-                  onClick={handleConfirm}
-                  disabled={!selectedId}
-                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${
-                    selectedId
-                      ? "bg-emerald-600 hover:bg-emerald-700"
-                      : "bg-neutral-400"
-                  }`}
-                >
-                  Confirm
-                </button>
+          {/* Content */}
+          <div className="p-6">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader className="w-6 h-6 text-emerald-600 animate-spin" />
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                {/* Dropdown */}
+                <select
+                  value={selectedId || ""}
+                  onChange={(e) => setSelectedId(e.target.value || null)}
+                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600 outline-none text-sm font-medium text-neutral-900 bg-white"
+                >
+                  <option value="">Choose a university...</option>
+                  {universities?.map((university) => (
+                    <option key={university._id} value={university._id}>
+                      {university.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Info Text */}
+                <p className="mt-3 text-xs text-neutral-500">
+                  {isMandatory
+                    ? "Select your university to continue browsing Campus Sheba."
+                    : "You can change this anytime in your profile settings."}
+                </p>
+
+                {/* Actions */}
+                <div className="mt-6 flex gap-3">
+                  {!isMandatory && (
+                    <button
+                      onClick={handleClose}
+                      className="flex-1 px-4 py-2.5 border border-neutral-300 rounded-lg font-medium text-sm text-neutral-700 bg-white hover:bg-neutral-50 transition"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    onClick={handleConfirm}
+                    disabled={!selectedId}
+                    className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      selectedId
+                        ? "bg-emerald-600 hover:bg-emerald-700"
+                        : "bg-neutral-400"
+                    }`}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

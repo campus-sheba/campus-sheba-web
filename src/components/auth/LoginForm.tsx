@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -88,46 +89,62 @@ export default function LoginForm({ onSuccess, switchToSignup }: LoginFormProps)
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <PhoneInputField
-        label={t("phoneNumber")}
-        placeholder={t("phonePlaceholder")}
-        value={form.phone}
-        error={errors.phone}
-        onChange={(value) =>
-          setForm((prev) => ({ ...prev, phone: normalizePhoneDigits(value) }))
-        }
+    <div className="relative isolate overflow-hidden rounded-xl">
+      {/* Soft splash backdrop — sized to fit the form area */}
+      <Image
+        src="/assets/images/splash-bg.png"
+        alt=""
+        aria-hidden
+        fill
+        sizes="(max-width: 640px) 100vw, 28rem"
+        className="pointer-events-none -z-10 object-cover object-center opacity-30"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/90 to-white"
       />
 
-      <div>
-        <PinInputField
-          label={t("pin")}
-          value={form.pin}
-          error={errors.pin}
-          onChange={(value) => setForm((prev) => ({ ...prev, pin: value }))}
+      <form onSubmit={handleSubmit} className="relative space-y-4 p-1">
+        <PhoneInputField
+          label={t("phoneNumber")}
+          placeholder={t("phonePlaceholder")}
+          value={form.phone}
+          error={errors.phone}
+          onChange={(value) =>
+            setForm((prev) => ({ ...prev, phone: normalizePhoneDigits(value) }))
+          }
         />
-        <div className="mt-1.5 text-right">
-          <button
-            type="button"
-            onClick={() =>
-              toast.info("Password reset is coming soon. Please contact support.")
-            }
-            className="text-xs font-medium text-[#E30B12] hover:underline"
-          >
-            {t("forgotPin")}
-          </button>
+
+        <div>
+          <PinInputField
+            label={t("pin")}
+            value={form.pin}
+            error={errors.pin}
+            onChange={(value) => setForm((prev) => ({ ...prev, pin: value }))}
+          />
+          <div className="mt-1.5 text-right">
+            <button
+              type="button"
+              onClick={() =>
+                toast.info("Password reset is coming soon. Please contact support.")
+              }
+              className="text-xs font-medium text-[#E30B12] hover:underline"
+            >
+              {t("forgotPin")}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <FieldError message={errors.general} />
+        <FieldError message={errors.general} />
 
-      <AuthSubmitButton
-        isPending={isPending}
-        pendingText={t("signingIn")}
-        idleText={t("logIn")}
-      />
+        <AuthSubmitButton
+          isPending={isPending}
+          pendingText={t("signingIn")}
+          idleText={t("logIn")}
+        />
 
-      {switchToSignup}
-    </form>
+        {switchToSignup}
+      </form>
+    </div>
   );
 }

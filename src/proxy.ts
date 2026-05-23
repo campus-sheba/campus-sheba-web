@@ -87,11 +87,19 @@ function isAccessTokenLive(token: string | undefined): boolean {
  * Exchange a refresh token for a fresh access/refresh pair. Returns the new
  * tokens on success so the caller can write them onto the response cookies.
  */
+const REFRESH_TIMEOUT_MS = 4000;
+
 async function attemptRefresh(
   refreshToken: string,
 ): Promise<{ accessToken: string; refreshToken: string } | null> {
   const url = authenticationEndpoints.refresh;
   if (!url || url.includes("undefined")) return null;
+
+  // Middleware blocks the user's navigation while this runs, so a slow or hung
+  // auth API must never stall the page. Cap the round-trip and fail fast — the
+  // client API layer can still recover via its own 401 handling.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REFRESH_TIMEOUT_MS);
 
   try {
     const response = await fetch(url, {
@@ -102,6 +110,7 @@ async function attemptRefresh(
         Accept: "application/json",
       },
       cache: "no-store",
+      signal: controller.signal,
     });
 
     if (!response.ok) return null;
@@ -109,6 +118,8 @@ async function attemptRefresh(
     return parseRefreshTokens(await response.json());
   } catch {
     return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -139,27 +150,36 @@ export async function proxy(request: NextRequest) {
     ? pathname
     : pathname.replace(/^\/[^/]+/, "") || "/";
 
-  let isAuthenticated = isAccessTokenLive(accessToken);
-  let refreshedTokens: { accessToken: string; refreshToken: string } | null = null;
-  let refreshFailed = false;
-
-  // Access token dead/missing but a refresh token exists → try a silent refresh
-  // so an expiring session survives navigation without bouncing the user to login.
-  if (!isAuthenticated && refreshToken) {
-    refreshedTokens = await attemptRefresh(refreshToken);
-    if (refreshedTokens) {
-      isAuthenticated = true;
-    } else {
-      refreshFailed = true;
-    }
-  }
-
   const isProtected =
     PROTECTED_PREFIXES.some((prefix) => matchesPrefix(cleanPathname, prefix)) ||
     PROTECTED_EXACT_PREFIXES.some((prefix) => matchesPrefix(cleanPathname, prefix));
   const isAuthOnly = AUTH_ONLY_PREFIXES.some((prefix) =>
     matchesPrefix(cleanPathname, prefix),
   );
+
+  let isAuthenticated = isAccessTokenLive(accessToken);
+  let refreshedTokens: { accessToken: string; refreshToken: string } | null = null;
+  let refreshFailed = false;
+
+  // Only spend a network round-trip on the silent refresh where the answer
+  // actually changes behaviour: protected routes (need a live session or we
+  // bounce to login) and auth-only routes (need to know if we should bounce a
+  // signed-in user home). Public-page navigations and server-action POSTs to
+  // public routes skip it entirely — they were paying 10–25s for nothing.
+  if ((isProtected || isAuthOnly) && !isAuthenticated && refreshToken) {
+    refreshedTokens = await attemptRefresh(refreshToken);
+    if (refreshedTokens) {
+      isAuthenticated = true;
+      // Make the fresh tokens visible to downstream handlers (RSC fetches,
+      // server actions) in THIS request, not just the next browser hit — this
+      // prevents a second refresh cascade when their authed API calls would
+      // otherwise see the dead token and 401.
+      request.cookies.set("accessToken", refreshedTokens.accessToken);
+      request.cookies.set("refreshToken", refreshedTokens.refreshToken);
+    } else {
+      refreshFailed = true;
+    }
+  }
 
   // ── Protected route, no valid session → redirect to login with callbackUrl ──
   if (isProtected && !isAuthenticated) {

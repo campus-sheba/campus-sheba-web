@@ -211,6 +211,7 @@ export type UserLibraryProfile = {
   bio?: string;
   visibility: LibraryVisibility;
   readingList: ReadingListEntry[];
+  recommendations?: BookListing[];
   following: string[];
   followers: string[];
   reputationScore: number;

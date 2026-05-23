@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { uploadMediaFiles, type UploadedMediaMeta } from "@/lib/media/client";
@@ -37,8 +38,19 @@ function buildApiPhone(digits: string): string {
 
 type ListingMode = BookCreateMode;
 
+const LISTING_MODES: ListingMode[] = ["sell", "lend", "donate", "swap", "library-only"];
+
+function resolveInitialMode(value: string | null): ListingMode {
+  if (!value) return "sell";
+  const normalized = value.toLowerCase();
+  return (LISTING_MODES as string[]).includes(normalized)
+    ? (normalized as ListingMode)
+    : "sell";
+}
+
 export default function MyBooksCreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { state } = useAppState();
 
   const universityId = state.university.selected?._id ?? state.user.profile?.university?._id;
@@ -48,7 +60,9 @@ export default function MyBooksCreatePage() {
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loadMeta, setLoadMeta] = useState(true);
 
-  const [listingMode, setListingMode] = useState<ListingMode>("sell");
+  const [listingMode, setListingMode] = useState<ListingMode>(() =>
+    resolveInitialMode(searchParams?.get("mode") ?? null),
+  );
 
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");

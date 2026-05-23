@@ -20,7 +20,8 @@ import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 
 export default function LibraryProfileView() {
   const params = useParams();
-  const profileId = typeof params?.profileId === "string" ? params.profileId : "";
+  const profileId =
+    typeof params?.profileId === "string" ? params.profileId : "";
   const router = useRouter();
   const { state, dispatch } = useAppState();
   const currentUserId = state.user.profile?._id;
@@ -81,7 +82,13 @@ export default function LibraryProfileView() {
       const res = isFollowing
         ? await unfollowLibraryAction(profileId)
         : await followLibraryAction(profileId);
-      setMsg(res.success ? (isFollowing ? "Unfollowed." : "Following!") : res.message);
+      setMsg(
+        res.success
+          ? isFollowing
+            ? "Unfollowed."
+            : "Following!"
+          : res.message,
+      );
       if (res.success) {
         setIsFollowing(!isFollowing);
         void load();
@@ -91,7 +98,7 @@ export default function LibraryProfileView() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="mx-auto max-w-3xl pb-16 pt-2">
+      <ContentWrapper padding="md" className="mx-auto max-w-3xl pb-16 pt-2">
         <AppBreadcrumb
           items={[
             { label: "Home", href: "/" },
@@ -105,7 +112,10 @@ export default function LibraryProfileView() {
         ) : error ? (
           <div className="mt-8 rounded-xl border border-red-100 bg-red-50 px-4 py-6 text-center">
             <p className="text-sm text-red-700">{error}</p>
-            <Link href="/books" className="mt-3 inline-block text-sm font-semibold text-[#E30B12]">
+            <Link
+              href="/books"
+              className="mt-3 inline-block text-sm font-semibold text-[#E30B12]"
+            >
               ← Back to books
             </Link>
           </div>
@@ -117,12 +127,15 @@ export default function LibraryProfileView() {
                   <BookMarked className="h-6 w-6" />
                 </span>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">{profile.displayName}</h1>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {profile.displayName}
+                  </h1>
                   {profile.bio ? (
                     <p className="mt-2 text-sm text-gray-600">{profile.bio}</p>
                   ) : null}
                   <p className="mt-2 text-xs text-gray-500">
-                    Reputation {profile.reputationScore} · {profile.totalBooksShared} books shared ·{" "}
+                    Reputation {profile.reputationScore} ·{" "}
+                    {profile.totalBooksShared} books shared ·{" "}
                     {profile.followers?.length ?? 0} followers
                   </p>
                 </div>
@@ -162,7 +175,9 @@ export default function LibraryProfileView() {
                 Reading list
               </h2>
               {!profile.readingList?.length ? (
-                <p className="mt-4 text-sm text-gray-500">No books on this reading list yet.</p>
+                <p className="mt-4 text-sm text-gray-500">
+                  No books on this reading list yet.
+                </p>
               ) : (
                 <ul className="mt-4 space-y-3">
                   {profile.readingList.map((entry) => {
@@ -192,7 +207,9 @@ export default function LibraryProfileView() {
                             {book.title}
                           </Link>
                           {book.author ? (
-                            <p className="text-xs text-gray-500">{book.author}</p>
+                            <p className="text-xs text-gray-500">
+                              {book.author}
+                            </p>
                           ) : null}
                           <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-gray-700">
                             {entry.status}

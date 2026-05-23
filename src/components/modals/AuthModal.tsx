@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { Paragraph, Title } from "@/components/ui";
@@ -39,14 +40,42 @@ export default function AuthModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/50 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        {/* Decorative brand banner */}
+        <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-rose-50 via-white to-rose-50">
+          <Image
+            src="/assets/images/splash-bg.png"
+            alt=""
+            aria-hidden
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 28rem"
+            className="object-cover object-top opacity-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-white" />
+          <div className="absolute inset-x-0 bottom-2 flex justify-center">
+            <Image
+              src="/assets/images/logo-icon.svg"
+              alt="Campus Sheba"
+              width={44}
+              height={44}
+              className="h-11 w-11 drop-shadow-sm"
+            />
+          </div>
+        </div>
+
         <SectionWrapper
           spacing="none"
           background="transparent"
           className="my-0 border-b border-neutral-100 px-6 py-4"
         >
           <div className="flex items-center justify-between">
-            <Title as="h2" size="lg" weight="semibold" className="text-neutral-900">
+            <Title
+              as="h2"
+              size="lg"
+              weight="semibold"
+              className="text-neutral-900"
+            >
               {activeTab === "login" ? t("signIn") : t("createAccount")}
             </Title>
             <button
@@ -59,12 +88,19 @@ export default function AuthModal({
           </div>
         </SectionWrapper>
 
-        <SectionWrapper spacing="none" background="transparent" className="my-0 p-6">
+        <SectionWrapper
+          spacing="none"
+          background="transparent"
+          className="my-0 p-6"
+        >
           {activeTab === "login" ? (
             <LoginForm
               onSuccess={onClose}
               switchToSignup={
-                <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
+                <Paragraph
+                  className="mt-4 text-center text-xs text-neutral-600"
+                  color="default"
+                >
                   {t("dontHaveAccount")}{" "}
                   <button
                     type="button"
@@ -80,7 +116,10 @@ export default function AuthModal({
             <SignupForm
               onSuccess={onClose}
               switchToLogin={
-                <Paragraph className="mt-4 text-center text-xs text-neutral-600" color="default">
+                <Paragraph
+                  className="mt-4 text-center text-xs text-neutral-600"
+                  color="default"
+                >
                   {t("alreadyHaveAccount")}{" "}
                   <button
                     type="button"

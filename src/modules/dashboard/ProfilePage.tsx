@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -36,6 +36,7 @@ import { resolveProfilePhotoUrl } from "@/utils/media/profilePhoto";
 import {
   DashboardProfile,
   ProfilePayload,
+  getUniversityMetadataAction,
   sendUpdateEmailCodeAction,
   updateProfileAction,
   verifyUpdateEmailAction,
@@ -45,8 +46,9 @@ type OptionItem = { _id: string; name: string; code?: string };
 
 type ProfilePageProps = {
   profile: DashboardProfile;
-  halls: OptionItem[];
-  departments: OptionItem[];
+  /** Optional seed; when omitted they're lazy-loaded for the edit form only. */
+  halls?: OptionItem[];
+  departments?: OptionItem[];
 };
 
 type FormState = {
@@ -216,8 +218,8 @@ function resolveMetadataName(value: unknown, fallback?: string): string {
 
 export default function ProfilePage({
   profile,
-  halls,
-  departments,
+  halls: initialHalls,
+  departments: initialDepartments,
 }: ProfilePageProps) {
   const router = useRouter();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -235,8 +237,36 @@ export default function ProfilePage({
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Edit-form dropdown options. Seeded from props when provided, otherwise
+  // lazy-loaded on the client so the initial navigation isn't blocked on a
+  // second API round-trip. The department/hall *values* come pre-resolved from
+  // the populated profile objects, so the view never needs these arrays.
+  const [halls, setHalls] = useState<OptionItem[]>(initialHalls ?? []);
+  const [departments, setDepartments] = useState<OptionItem[]>(
+    initialDepartments ?? [],
+  );
+  const [metadataLoaded, setMetadataLoaded] = useState(
+    Boolean(initialHalls && initialDepartments),
+  );
+
   const university =
     typeof profile.university === "object" ? profile.university : null;
+  const universityId = university?._id;
+
+  useEffect(() => {
+    if (metadataLoaded || !isEditing) return;
+    let active = true;
+    void (async () => {
+      const result = await getUniversityMetadataAction(universityId);
+      if (!active) return;
+      setHalls(result.halls);
+      setDepartments(result.departments);
+      setMetadataLoaded(true);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [isEditing, metadataLoaded, universityId]);
   const coverPhotoRaw = university?.coverPhoto as
     | string
     | { url?: string }
