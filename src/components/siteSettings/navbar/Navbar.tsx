@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, User, Wallet } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import GlobalSearch from "./GlobalSearch";
 import Logo from "./Logo";
 import CampusTopbar from "./CampusTopbar";
 import {
@@ -21,10 +23,15 @@ import {
   NavbarMobileToggle,
 } from "./NavbarMobileSections";
 import { useTranslations } from "next-intl";
-import NotificationDropdown from "./NotificationDropdown";
+import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+import { resolveProfilePhotoUrl } from "@/utils/media/profilePhoto";
+import { emitClientLogout, isSessionExpiredMessage } from "@/lib/sessionSync";
+import NavbarWallet from "./NavbarWallet";
+
+const WALLET_VISIBLE_KEY = "campus-sheba:wallet-balance-visible";
 
 // ─── Navbar Component ─────────────────────────────────────────
-const Navbar = ({ locale }: { locale: string }) => {
+const Navbar = () => {
   const t = useTranslations("common.navbar");
   const pathname = usePathname();
   const { state: appState, dispatch: appDispatch } = useAppState();
@@ -36,9 +43,18 @@ const Navbar = ({ locale }: { locale: string }) => {
   const [servicesMenu, setServicesMenu] = useState(fallbackServicesMenu);
   const servicesRef = useRef<HTMLDivElement>(null);
   const selectedUniversityId = appState.university.selected?._id;
-  const router = useRouter();
+  const userProfile = appState.user.profile;
+  const profileName = userProfile?.name?.trim() || userProfile?.phone || t("profile");
+  const profileAvatar = resolveProfilePhotoUrl(
+    userProfile?.photo,
+    userProfile?.avatar,
+  );
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [walletBalanceVisible, setWalletBalanceVisible] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem(WALLET_VISIBLE_KEY) === "1";
+  });
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -52,6 +68,9 @@ const Navbar = ({ locale }: { locale: string }) => {
           typeof res.data.balance === "number" ? res.data.balance : 0,
         );
       } else {
+        if (res.message && isSessionExpiredMessage(res.message)) {
+          emitClientLogout();
+        }
         setWalletBalance(null);
       }
       setWalletLoading(false);
@@ -114,9 +133,14 @@ const Navbar = ({ locale }: { locale: string }) => {
 
   // Now using global auth state from AppStateContext
 
-  const handleLanguageChange = (newLocale: string) => {
-    const path = pathname ? pathname.split("/").slice(2).join("/") : "";
-    router.push(`/${newLocale}/${path}`);
+  const toggleWalletBalanceVisible = () => {
+    setWalletBalanceVisible((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(WALLET_VISIBLE_KEY, next ? "1" : "0");
+      }
+      return next;
+    });
   };
 
   const openLogin = () =>
@@ -156,20 +180,11 @@ const Navbar = ({ locale }: { locale: string }) => {
             >
               <Logo />
             </Link>
-          </div>
-          {/* ─── Desktop Right CTAs ─── */}
-          <div className="hidden lg:flex items-center gap-3">
-            {/* ─── Desktop Navigation ─── */}
-            <div className="hidden lg:flex items-center gap-1 me-5">
-              <div className="relative w-[320px] xl:w-[680px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                <input
-                  type="text"
-                  placeholder={t("searchPlaceholder")}
-                  className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-3 text-sm text-neutral-700 outline-none transition-all placeholder:text-neutral-400 focus:border-[#E30A13]/50 focus:ring-2 focus:ring-[#E30A13]/15"
-                  aria-label={t("searchAria")}
-                />
-              </div>
+            <div className="hidden lg:flex items-center gap-1 mx-5">
+              <GlobalSearch
+                universityId={selectedUniversityId}
+                className="w-[320px] xl:w-[500px]"
+              />
               {/* Primary Links */}
 
               {/* Services Mega Menu */}
@@ -257,9 +272,10 @@ const Navbar = ({ locale }: { locale: string }) => {
                     </div>
                   </div>
                 )}
+                {/* about us dropdown */}
               </div>
 
-              {/* <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.label}
@@ -273,53 +289,42 @@ const Navbar = ({ locale }: { locale: string }) => {
                     {link.label}
                   </Link>
                 ))}
-              </div> */}
+              </div>
             </div>
-            <select
-              value={locale}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              className="text-xs font-medium text-neutral-500 bg-transparent border-none focus:outline-none cursor-pointer hover:text-neutral-900 transition-colors appearance-none"
-              aria-label={t("selectLanguage")}
-              id="topbar-language-select"
-            >
-              <option value="en" className="bg-white text-neutral-900">
-                EN
-              </option>
-              <option value="bn" className="bg-white text-neutral-900">
-                বাং
-              </option>
-            </select>
+          </div>
+          {/* ─── Desktop Right CTAs ─── */}
+          <div className="hidden lg:flex items-center gap-3 border-red-700">
+            {/* ─── Desktop Navigation ─── */}
+
             {isLoggedIn ? (
-              <Link
-                href="/wallet"
-                id="nav-wallet-btn"
-                className="inline-flex h-10 max-w-[9.5rem] items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/90 px-3 text-[#00A651] transition-colors hover:bg-emerald-50"
-                title={t("wallet")}
-                aria-label={`${t("wallet")}: ${walletDisplayLoading ? "…" : walletDisplayBalance != null ? `৳${walletDisplayBalance.toLocaleString()}` : "—"}`}
-              >
-                <Wallet
-                  className="h-5 w-5 shrink-0"
-                  strokeWidth={2}
-                  aria-hidden
-                />
-                <span className="truncate text-xs font-bold tabular-nums">
-                  {walletDisplayLoading
-                    ? "…"
-                    : walletDisplayBalance != null
-                      ? `৳${walletDisplayBalance.toLocaleString()}`
-                      : "—"}
-                </span>
-              </Link>
+              <NavbarWallet
+                balance={walletDisplayBalance}
+                loading={walletDisplayLoading}
+                visible={walletBalanceVisible}
+                onToggleVisible={toggleWalletBalanceVisible}
+              />
             ) : null}
             {isLoggedIn ? (
               <Link
-                href={`/profile`}
+                href="/profile"
                 id="nav-profile-btn"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-green-DEFAULT/30 text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
-                title="Profile"
+                className="inline-flex h-10 max-w-[11rem] items-center gap-2 rounded-full border border-brand-green-DEFAULT/30 py-1 pl-1 pr-3 text-brand-green-DEFAULT transition-colors hover:bg-brand-green-50"
+                title={profileName}
                 aria-label={t("profile")}
               >
-                <User className="h-5 w-5" strokeWidth={2} />
+                <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-white">
+                  <Image
+                    src={profileAvatar}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="32px"
+                    unoptimized={shouldUnoptimizeRemoteImage(profileAvatar)}
+                  />
+                </span>
+                <span className="hidden max-w-[7rem] truncate text-sm font-semibold text-neutral-800 xl:inline">
+                  {profileName}
+                </span>
               </Link>
             ) : (
               <>
@@ -337,10 +342,6 @@ const Navbar = ({ locale }: { locale: string }) => {
                 </button>
               </>
             )}
-
-            <div className="flex items-center">
-              <NotificationDropdown isAuthenticated={isLoggedIn} />
-            </div>
           </div>
 
           {/* ─── Mobile Right: logo + bar icon only ─── */}
@@ -376,6 +377,7 @@ const Navbar = ({ locale }: { locale: string }) => {
         navLinks={navLinks}
         servicesMenu={servicesMenu}
         selectedUniversityName={appState.university.selected?.name}
+        selectedUniversityId={selectedUniversityId}
         onOpenLogin={openLogin}
         onOpenSignup={openSignup}
       />

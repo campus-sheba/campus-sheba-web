@@ -13,6 +13,7 @@ import Loading from "@/components/common/Loading";
 import Navbar from "@/components/siteSettings/navbar/Navbar";
 import Footer from "@/components/siteSettings/footer/Footer";
 import CartButton from "@/modules/cart/CartButton";
+import SupportWidget from "@/modules/support/SupportWidget";
 import { LayoutClientProviders } from "@/components/providers/LayoutClientProviders";
 
 const urbanist = Urbanist({
@@ -74,12 +75,13 @@ export const metadata: Metadata = {
 function AppShell({ locale, children }: { locale: string; children: React.ReactNode }) {
   return (
     <Suspense fallback={<Loading />}>
-      <Navbar locale={locale} />
+      <Navbar />
       <main className="pt-[calc(var(--navbar-height)+var(--topbar-height))]">
         {children}
       </main>
       <Footer />
       <CartButton />
+      <SupportWidget />
     </Suspense>
   );
 }

@@ -21,6 +21,11 @@ export const careersEndpoints = {
     sendApplication: `${baseURL}/career/send-cv`,
 };
 
+export const searchEndpoints = {
+    search: `${baseURL}/search`,
+    suggestions: `${baseURL}/search/suggestions`,
+};
+
 export const campusMapEndpoints = {
     list: `${baseURL}/campus-map`,
     featured: `${baseURL}/campus-map/featured`,
@@ -265,6 +270,13 @@ export const referralEndpoints = {
     myCode: `${baseURL}/referral/my-code`,
     myReferrals: `${baseURL}/referral/my-referrals`,
     leaderboard: `${baseURL}/referral/leaderboard`,
+};
+
+export const supportEndpoints = {
+    base: `${baseURL}/support/tickets`,
+    byId: (id: string) => `${baseURL}/support/tickets/${encodeURIComponent(id)}`,
+    reply: (id: string) => `${baseURL}/support/tickets/${encodeURIComponent(id)}/reply`,
+    reopen: (id: string) => `${baseURL}/support/tickets/${encodeURIComponent(id)}/reopen`,
 };
 
 /** Browse shops, products, and food (guest or authenticated; university from cookie or query). */

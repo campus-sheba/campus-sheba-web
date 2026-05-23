@@ -156,7 +156,7 @@ export default function DashboardSidebar({ user }: Props) {
 
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
-        <form action={logoutAction.bind(null, locale)} method="POST">
+        <form action={logoutAction.bind(null, locale)}>
           <Button
             type="submit"
             variant="ghost"

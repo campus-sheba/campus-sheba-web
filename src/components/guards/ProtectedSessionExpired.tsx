@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useAppState } from "@/contexts/AppStateContext";
 import { clearAuthCookies } from "@/services/auth";
-import { CookieHelper } from "@/lib/appStateHelper";
+import { emitClientLogout } from "@/lib/sessionSync";
 
 export default function ProtectedSessionExpired() {
   const t = useTranslations("common.protected");
@@ -20,8 +20,7 @@ export default function ProtectedSessionExpired() {
       } catch (e) {
         console.error(e);
       }
-      CookieHelper.clearAuth();
-      dispatch({ type: "CLEAR_AUTH" });
+      emitClientLogout();
       dispatch({ type: "SET_AUTH_LOADING", payload: false });
       dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
     })();

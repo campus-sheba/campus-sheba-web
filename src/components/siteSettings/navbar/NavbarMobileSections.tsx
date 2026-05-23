@@ -6,12 +6,12 @@ import {
   LayoutGrid,
   MapPin,
   Menu,
-  Search,
   User,
   Wallet,
   X,
 } from "lucide-react";
 import Logo from "./Logo";
+import GlobalSearch from "./GlobalSearch";
 import type { ServiceMenuItem } from "./navbar.constants";
 
 type MobileSectionsProps = {
@@ -22,6 +22,7 @@ type MobileSectionsProps = {
   navLinks: Array<{ label: string; href: string }>;
   servicesMenu: ServiceMenuItem[];
   selectedUniversityName?: string;
+  selectedUniversityId?: string;
   onOpenLogin: () => void;
   onOpenSignup: () => void;
   /** Bottom bar only — optional for drawer. */
@@ -90,14 +91,31 @@ export function NavbarMobileBottom({
           <Link
             href="/wallet"
             id="bottom-nav-wallet"
-            className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 transition-colors ${
-              pathname?.includes("/wallet") ? "text-[#00A651]" : "text-neutral-600"
+            className={`flex flex-col items-center justify-center min-w-[64px] py-1.5 transition-colors ${
+              pathname?.includes("/wallet")
+                ? "text-[#00A651]"
+                : "text-neutral-600"
             }`}
           >
-            <Wallet className="w-5 h-5" strokeWidth={2} aria-hidden />
-            <span className="text-[10px] font-medium leading-none">Wallet</span>
-            <span className="max-w-[4.25rem] truncate text-center text-[9px] font-bold tabular-nums leading-tight text-[#00A651]">
-              {walletLoading ? "…" : walletBalance != null ? `৳${walletBalance.toLocaleString()}` : "—"}
+            <div
+              className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all ${
+                pathname?.includes("/wallet")
+                  ? "bg-emerald-50"
+                  : "bg-neutral-100"
+              }`}
+            >
+              <Wallet className="w-4 h-4" strokeWidth={2.2} aria-hidden />
+              <span className="text-[10px] font-semibold leading-none">
+                {walletLoading
+                  ? "..."
+                  : walletBalance != null
+                    ? `৳${walletBalance.toLocaleString()}`
+                    : "0"}
+              </span>
+            </div>
+
+            <span className="text-[9px] mt-0.5 font-medium opacity-70">
+              Wallet
             </span>
           </Link>
         ) : (
@@ -105,10 +123,15 @@ export function NavbarMobileBottom({
             type="button"
             id="bottom-nav-wallet"
             onClick={onOpenLogin}
-            className="flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-2 text-neutral-600 transition-colors hover:text-[#00A651]"
+            className="flex flex-col items-center justify-center min-w-[64px] py-1.5 text-neutral-600 transition-colors hover:text-[#00A651]"
           >
-            <Wallet className="w-5 h-5" strokeWidth={2} aria-hidden />
-            <span className="text-[10px] font-medium">Wallet</span>
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+              <Wallet className="w-4 h-4" strokeWidth={2.2} aria-hidden />
+            </div>
+
+            <span className="text-[9px] mt-0.5 font-medium opacity-70">
+              Wallet
+            </span>
           </button>
         )}
         {isLoggedIn ? (
@@ -146,6 +169,7 @@ export function NavbarMobileDrawer({
   navLinks,
   servicesMenu,
   selectedUniversityName,
+  selectedUniversityId,
   onOpenLogin,
   onOpenSignup,
 }: Omit<MobileSectionsProps, "pathname">) {
@@ -192,15 +216,10 @@ export function NavbarMobileDrawer({
           </div>
         </div>
 
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search services, products..."
-            className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-3 text-sm text-neutral-700 outline-none placeholder:text-neutral-400 focus:border-[#E30A13]/50 focus:ring-2 focus:ring-[#E30A13]/15"
-            aria-label="Search campus services"
-          />
-        </div>
+        <GlobalSearch
+          universityId={selectedUniversityId}
+          onNavigate={() => setMobileOpen(false)}
+        />
 
         <div className="space-y-1">
           {/* {navLinks.map((link) => (

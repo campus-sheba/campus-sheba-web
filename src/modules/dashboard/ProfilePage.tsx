@@ -10,6 +10,7 @@ import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { uploadMediaFiles } from "@/lib/media/client";
 import { MediaFeatureName } from "@/types/media";
+import { resolveProfilePhotoUrl } from "@/utils/media/profilePhoto";
 import {
   DashboardProfile,
   ProfilePayload,
@@ -101,11 +102,16 @@ export default function ProfilePage({
 
   const university =
     typeof profile.university === "object" ? profile.university : null;
-  const coverPhoto = university?.coverPhoto || "/placeholder.jpg";
-  const displayAvatar =
-    localAvatarUrl ||
-    profile.photo ||
-    "/assets/images/blank-phone.svg";
+  const coverPhotoRaw = university?.coverPhoto as
+    | string
+    | { url?: string }
+    | null
+    | undefined;
+  const coverPhoto =
+    (typeof coverPhotoRaw === "string"
+      ? coverPhotoRaw.trim()
+      : coverPhotoRaw?.url?.trim()) || "/placeholder.jpg";
+  const displayAvatar = localAvatarUrl || resolveProfilePhotoUrl(profile.photo);
 
   const initialForm = useMemo<FormState>(
     () => ({
