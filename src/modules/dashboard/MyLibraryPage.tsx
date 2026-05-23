@@ -19,7 +19,7 @@ import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 const READING_STATUSES: ReadingStatus[] = ["reading", "completed", "wishlist"];
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#E30B12]";
 
 export default function MyLibraryPage() {
   const [profile, setProfile] = useState<UserLibraryProfile | null>(null);
@@ -135,7 +135,7 @@ export default function MyLibraryPage() {
             ← Books
           </Link>
           <h1 className="mt-2 flex items-center gap-2 text-xl font-bold text-gray-900">
-            <BookMarked className="h-6 w-6 text-[#00A651]" />
+            <BookMarked className="h-6 w-6 text-[#E30B12]" />
             My library profile
           </h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -145,7 +145,7 @@ export default function MyLibraryPage() {
         {profile ? (
           <Link
             href={`/books/library/${profile._id}`}
-            className="text-sm font-semibold text-[#00A651] hover:underline"
+            className="text-sm font-semibold text-[#E30B12] hover:underline"
           >
             View public profile →
           </Link>
@@ -281,7 +281,7 @@ export default function MyLibraryPage() {
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/books/${book._id}`}
-                          className="font-semibold text-gray-900 hover:text-[#00A651]"
+                          className="font-semibold text-gray-900 hover:text-[#E30B12]"
                         >
                           {book.title}
                         </Link>

@@ -83,10 +83,10 @@ export default function MyLostFoundPage() {
           <p className="text-sm text-gray-500">{tt("myLostFound.subtitle", "Posts you created.")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href="/my-lost-found/new" className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95">
+          <Link href="/my-lost-found/new" className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95">
             {tt("myLostFound.new", "New post")}
           </Link>
-          <Link href="/lost-found/all" className="text-sm font-semibold text-[#00A651] hover:underline">
+          <Link href="/lost-found/all" className="text-sm font-semibold text-[#E30B12] hover:underline">
             {tt("myLostFound.browse", "Browse")} →
           </Link>
         </div>
@@ -100,7 +100,7 @@ export default function MyLostFoundPage() {
               type="search"
               value={searchKey}
               onChange={(e) => setSearchKey(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
           </label>
           <label className="flex min-w-[140px] flex-1 flex-col gap-1">
@@ -108,7 +108,7 @@ export default function MyLostFoundPage() {
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               <option value="">{tt("myLostFound.all", "All")}</option>
               {categories.map((c) => (
@@ -123,7 +123,7 @@ export default function MyLostFoundPage() {
             <select
               value={lfType}
               onChange={(e) => setLfType(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {LF_TYPES.map((x) => (
                 <option key={x || "any"} value={x}>
@@ -135,7 +135,7 @@ export default function MyLostFoundPage() {
           <button
             type="button"
             onClick={() => void fetchPage(1, false)}
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myLostFound.apply", "Apply")}
           </button>
@@ -199,7 +199,7 @@ export default function MyLostFoundPage() {
                           {tt("myLostFound.edit", "Edit")}
                         </Link>
                         <span className="mx-2 text-gray-300">·</span>
-                        <Link href={`/lost-found/${item._id}`} className="font-semibold text-[#00A651] hover:underline">
+                        <Link href={`/lost-found/${item._id}`} className="font-semibold text-[#E30B12] hover:underline">
                           {tt("myLostFound.view", "View")}
                         </Link>
                       </td>

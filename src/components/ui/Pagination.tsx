@@ -82,7 +82,7 @@ export default function Pagination({
             onClick={() => go(p)}
             className={`${btnBase} ${
               p === page
-                ? "border-[#00A651] bg-[#00A651] text-white"
+                ? "border-[#E30B12] bg-[#E30B12] text-white"
                 : "border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >

@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 export default async function DashboardProfilePage() {
   const t = await getTranslations("common.profile");
   const profileResult = await getProfileAction();
+  console.log("profileResult", profileResult);
   const profile =
     profileResult.success && profileResult.data ? profileResult.data : null;
 

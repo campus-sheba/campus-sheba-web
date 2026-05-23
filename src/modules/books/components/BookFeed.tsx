@@ -6,7 +6,7 @@ import { Search, Package, SlidersHorizontal, X } from "lucide-react";
 import { useAppState } from "@/contexts/AppStateContext";
 import { useTranslations } from "next-intl";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import { Button } from "@/components/ui";
+import { Pagination } from "@/components/ui";
 import { fetchBookCategoriesPublic } from "@/services/books.public";
 import { getUniversityMetadataAction } from "@/services/user";
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
@@ -124,7 +124,9 @@ export default function BookFeed() {
       ? Number(maxBorrowDays)
       : undefined;
 
-  const { items, total, isLoading, error, hasMore, loadMore } = useBooksList({
+  const PAGE_SIZE = 12;
+  const { items, total, page, totalPages, isLoading, error, goToPage } = useBooksList({
+    pageSize: PAGE_SIZE,
     universityId,
     debouncedSearch,
     category: categoryId || undefined,
@@ -221,19 +223,19 @@ export default function BookFeed() {
                   "Search title, author, course…",
                 )}
                 disabled={!universityId}
-                className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none ring-[#00A651]/20 focus:border-[#00A651] focus:ring-2 disabled:bg-gray-50"
+                className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none ring-[#E30B12]/20 focus:border-[#E30B12] focus:ring-2 disabled:bg-gray-50"
               />
             </div>
             <button
               type="button"
               onClick={() => setShowFilters((v) => !v)}
               disabled={!universityId}
-              className={`relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition disabled:opacity-50 ${showFilters ? "border-[#00A651] bg-[#00A651]/5 text-[#00A651]" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
+              className={`relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition disabled:opacity-50 ${showFilters ? "border-[#E30B12] bg-[#E30B12]/5 text-[#E30B12]" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
             >
               <SlidersHorizontal className="h-4 w-4" />
               {tt("bookFeed.filters", "Filters")}
               {activeFilterCount > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#00A651] text-[9px] font-bold text-white">
+                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#E30B12] text-[9px] font-bold text-white">
                   {activeFilterCount}
                 </span>
               )}
@@ -247,7 +249,7 @@ export default function BookFeed() {
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               >
                 <option value="">{tt("bookFeed.allCategories", "All categories")}</option>
                 {categories.map((c) => (
@@ -262,7 +264,7 @@ export default function BookFeed() {
                 value={bookType}
                 onChange={(e) => setBookType(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               >
                 {BOOK_TYPES.map((v) => (
                   <option key={v || "all"} value={v}>
@@ -276,7 +278,7 @@ export default function BookFeed() {
                 value={quality}
                 onChange={(e) => setQuality(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               >
                 {QUALITIES.map((v) => (
                   <option key={v || "anyq"} value={v}>
@@ -290,7 +292,7 @@ export default function BookFeed() {
                 value={availability}
                 onChange={(e) => setAvailability(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               >
                 {AVAILABILITIES.map((v) => (
                   <option key={v || "anyav"} value={v}>
@@ -308,7 +310,7 @@ export default function BookFeed() {
                 value={semester}
                 onChange={(e) => setSemester(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               />
 
               {/* Course code */}
@@ -318,7 +320,7 @@ export default function BookFeed() {
                 value={courseCode}
                 onChange={(e) => setCourseCode(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               />
 
               <input
@@ -327,14 +329,14 @@ export default function BookFeed() {
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               />
 
               <select
                 value={departmentId}
                 onChange={(e) => setDepartmentId(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               >
                 <option value="">{tt("bookFeed.allDepartments", "All departments")}</option>
                 {departments.map((d) => (
@@ -351,7 +353,7 @@ export default function BookFeed() {
                       type="checkbox"
                       checked={allowsExtension}
                       onChange={(e) => setAllowsExtension(e.target.checked)}
-                      className="rounded border-gray-300 text-[#00A651]"
+                      className="rounded border-gray-300 text-[#E30B12]"
                     />
                     {tt("bookFeed.allowsExtension", "Allows extension")}
                   </label>
@@ -362,7 +364,7 @@ export default function BookFeed() {
                     value={minBorrowDays}
                     onChange={(e) => setMinBorrowDays(e.target.value)}
                     disabled={!universityId}
-                    className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                    className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
                   />
                   <input
                     type="number"
@@ -371,7 +373,7 @@ export default function BookFeed() {
                     value={maxBorrowDays}
                     onChange={(e) => setMaxBorrowDays(e.target.value)}
                     disabled={!universityId}
-                    className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                    className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
                   />
                 </>
               ) : null}
@@ -384,7 +386,7 @@ export default function BookFeed() {
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
                 disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
               />
 
               {/* Price range */}
@@ -397,7 +399,7 @@ export default function BookFeed() {
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
                   disabled={!universityId}
-                  className="w-1/2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                  className="w-1/2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
                 />
                 <input
                   type="number"
@@ -407,7 +409,7 @@ export default function BookFeed() {
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
                   disabled={!universityId}
-                  className="w-1/2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#00A651] disabled:bg-gray-50"
+                  className="w-1/2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
                 />
               </div>
 
@@ -459,7 +461,7 @@ export default function BookFeed() {
             <p className="mt-4 text-xs text-gray-500">
               {total === 0 && !isLoading
                 ? tt("bookFeed.noMatch", "No books match your filters.")
-                : `${tt("bookFeed.showing", "Showing")} ${items.length} ${tt("bookFeed.of", "of")} ${total} ${tt("bookFeed.listings", "listings")}`}
+                : `${tt("bookFeed.showing", "Showing")} ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} ${tt("bookFeed.of", "of")} ${total} ${tt("bookFeed.listings", "listings")}`}
             </p>
 
             {isLoading && items.length === 0 ? (
@@ -476,23 +478,14 @@ export default function BookFeed() {
               </div>
             )}
 
-            {isLoading && items.length > 0 && (
-              <p className="mt-6 text-center text-sm text-gray-500">
-                {tt("bookFeed.loadingMore", "Loading more…")}
-              </p>
-            )}
-
-            {hasMore && items.length > 0 && !isLoading && (
+            {items.length > 0 && totalPages > 1 && (
               <div className="mt-8 flex justify-center">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  uppercase={false}
-                  onClick={loadMore}
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
                   disabled={isLoading}
-                >
-                  {tt("bookFeed.loadMore", "Load more")}
-                </Button>
+                  onPageChange={goToPage}
+                />
               </div>
             )}
           </>

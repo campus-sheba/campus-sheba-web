@@ -481,6 +481,18 @@
     "creating": "তৈরি হচ্ছে...",
     "dontHaveAccount": "অ্যাকাউন্ট নেই?",
     "alreadyHaveAccount": "আগে থেকেই অ্যাকাউন্ট আছে?",
-    "signUp": "সাইন আপ"
+    "signUp": "সাইন আপ",
+    "stepPhone": "ফোন",
+    "stepVerify": "যাচাই",
+    "stepProfile": "প্রোফাইল",
+    "loginSubtitle": "আবার স্বাগতম! ক্যাম্পাস সেবায় চালিয়ে যেতে সাইন ইন করুন।",
+    "signupSubtitle": "কয়েকটি সহজ ধাপে আপনার অ্যাকাউন্ট তৈরি করুন।",
+    "logIn": "লগ ইন",
+    "forgotPin": "পিন ভুলে গেছেন?",
+    "agreeRequired": "চালিয়ে যেতে শর্তাবলী গ্রহণ করুন।",
+    "agreement": "আমি সম্মত আছি",
+    "termsConditions": "শর্তাবলী",
+    "and": "এবং",
+    "privacyPolicy": "গোপনীয়তা নীতি"
   }
 }

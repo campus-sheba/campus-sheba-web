@@ -105,7 +105,7 @@ export default function MyOrdersPage() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               <option value="">All types</option>
               <option value="BuySell">Buy &amp; Sell</option>
@@ -118,7 +118,7 @@ export default function MyOrdersPage() {
             <select
               value={filterPayment}
               onChange={(e) => setFilterPayment(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               <option value="">Any</option>
               <option value="Unpaid">Unpaid</option>
@@ -130,7 +130,7 @@ export default function MyOrdersPage() {
             <select
               value={filterSort}
               onChange={(e) => setFilterSort(e.target.value as "ASC" | "DESC")}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               <option value="DESC">Newest</option>
               <option value="ASC">Oldest</option>
@@ -142,7 +142,7 @@ export default function MyOrdersPage() {
               placeholder="e.g. Pending"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
           </label>
           <label className="flex w-[140px] flex-col gap-1">
@@ -151,7 +151,7 @@ export default function MyOrdersPage() {
               type="date"
               value={filterDateFrom}
               onChange={(e) => setFilterDateFrom(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
           </label>
           <label className="flex w-[140px] flex-col gap-1">
@@ -160,13 +160,13 @@ export default function MyOrdersPage() {
               type="date"
               value={filterDateTo}
               onChange={(e) => setFilterDateTo(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
           </label>
           <button
             type="button"
             onClick={() => void fetchPage(1, false)}
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             Apply
           </button>
@@ -222,14 +222,14 @@ export default function MyOrdersPage() {
                           {itemCount > 0 ? `${itemCount} · ${preview}` : "—"}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums text-[#00A651]">
+                      <td className="whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums text-[#E30B12]">
                         {formatMoney(o.total)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-gray-600">{o.paymentStatus ?? "—"}</td>
                       <td className="px-4 py-3 text-right">
                         <Link
                           href={`/my-orders/${o._id}`}
-                          className="text-sm font-semibold text-[#00A651] hover:underline"
+                          className="text-sm font-semibold text-[#E30B12] hover:underline"
                         >
                           View
                         </Link>

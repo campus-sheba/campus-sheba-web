@@ -105,7 +105,7 @@ export default function LibraryProfileView() {
         ) : error ? (
           <div className="mt-8 rounded-xl border border-red-100 bg-red-50 px-4 py-6 text-center">
             <p className="text-sm text-red-700">{error}</p>
-            <Link href="/books" className="mt-3 inline-block text-sm font-semibold text-[#00A651]">
+            <Link href="/books" className="mt-3 inline-block text-sm font-semibold text-[#E30B12]">
               ← Back to books
             </Link>
           </div>
@@ -113,7 +113,7 @@ export default function LibraryProfileView() {
           <div className="mt-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#00A651]/10 text-[#00A651]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E30B12]/10 text-[#E30B12]">
                   <BookMarked className="h-6 w-6" />
                 </span>
                 <div>
@@ -187,7 +187,7 @@ export default function LibraryProfileView() {
                         <div className="min-w-0 flex-1">
                           <Link
                             href={`/books/${book._id}`}
-                            className="font-semibold text-gray-900 hover:text-[#00A651]"
+                            className="font-semibold text-gray-900 hover:text-[#E30B12]"
                           >
                             {book.title}
                           </Link>

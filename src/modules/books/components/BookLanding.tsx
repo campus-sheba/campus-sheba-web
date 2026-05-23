@@ -340,7 +340,7 @@ export default function BookLanding() {
             <button
               type="button"
               onClick={openListBook}
-              className="flex items-center rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+              className="flex items-center rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
             >
               <Plus className="mr-2 h-4 w-4" />
               {tt("bookLanding.listBook", "List a book")}
@@ -353,7 +353,7 @@ export default function BookLanding() {
             </Link>
             <Link
               href="/books/all"
-              className="text-sm font-semibold text-[#00A651] hover:underline"
+              className="text-sm font-semibold text-[#E30B12] hover:underline"
             >
               {tt("bookLanding.browseAll", "Browse all")} →
             </Link>
@@ -415,7 +415,7 @@ export default function BookLanding() {
                       <Link
                         key={c._id}
                         href={`/books/all?category=${encodeURIComponent(c._id)}`}
-                        className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#00A651] hover:text-[#00A651]"
+                        className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#E30B12] hover:text-[#E30B12]"
                       >
                         {c.title}
                       </Link>
@@ -504,7 +504,7 @@ export default function BookLanding() {
                 <p className="mt-2 text-sm text-gray-600">
                   <Link
                     href="/books/donations"
-                    className="font-semibold text-[#00A651] hover:underline"
+                    className="font-semibold text-[#E30B12] hover:underline"
                   >
                     Browse the donation queue →
                   </Link>

@@ -11,7 +11,7 @@ import type { CoinBalance, CoinConfig, CoinTransaction } from "@/types/points";
 import { ArrowDownLeft, ArrowUpRight, Coins, Loader2, RefreshCw } from "lucide-react";
 import Button from "@/components/ui/Button";
 
-const ACCENT = "#00A651";
+const ACCENT = "#E30B12";
 
 const REASON_LABELS: Record<string, string> = {
   REFERRAL_SIGNUP: "Referral Signup Bonus",
@@ -79,7 +79,7 @@ export default function CampusCoinsPage() {
   if (loading && !balance) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-9 w-9 animate-spin text-[#00A651]" />
+        <Loader2 className="h-9 w-9 animate-spin text-[#E30B12]" />
       </div>
     );
   }
@@ -167,7 +167,7 @@ export default function CampusCoinsPage() {
                 step={1}
                 value={redeemCoins}
                 onChange={(e) => setRedeemCoins(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#00A651] focus:ring-2 focus:ring-[#00A651]/20"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#E30B12] focus:ring-2 focus:ring-[#E30B12]/20"
                 placeholder={String(minRedeem || 500)}
                 required
               />

@@ -108,7 +108,7 @@ export default function SettingsPage({
         </h2>
         <div className="mt-4 flex items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#00A651]/10 text-[#00A651]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E30B12]/10 text-[#E30B12]">
               <Bell className="h-5 w-5" />
             </span>
             <div>
@@ -125,7 +125,7 @@ export default function SettingsPage({
             disabled={isPending}
             onClick={toggleNotifications}
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
-              notify ? "bg-[#00A651]" : "bg-gray-300"
+              notify ? "bg-[#E30B12]" : "bg-gray-300"
             }`}
           >
             <span
@@ -138,7 +138,7 @@ export default function SettingsPage({
         {feedback && (
           <p
             className={`mt-3 text-xs ${
-              feedback.ok ? "text-[#00A651]" : "text-red-600"
+              feedback.ok ? "text-[#E30B12]" : "text-red-600"
             }`}
           >
             {feedback.text}

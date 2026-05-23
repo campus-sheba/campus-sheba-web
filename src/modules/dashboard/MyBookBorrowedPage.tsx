@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui";
+import { Button, Pagination } from "@/components/ui";
 import {
   fetchBorrowedBooks,
   requestBorrowExtensionAction,
 } from "@/services/book-borrowing";
 import type { BookBorrowRecord, BookListing } from "@/types/book";
+
+const PAGE_SIZE = 10;
 
 function bookTitle(book: BookListing | string): string {
   if (typeof book === "object" && book?.title) return book.title;
@@ -29,6 +31,8 @@ function formatDate(iso?: string) {
 
 export default function MyBookBorrowedPage() {
   const [items, setItems] = useState<BookBorrowRecord[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
@@ -37,27 +41,34 @@ export default function MyBookBorrowedPage() {
   const [extendReason, setExtendReason] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (nextPage: number = page) => {
     setLoading(true);
     setMsg(null);
     try {
       const res = await fetchBorrowedBooks({
-        page: 1,
-        limit: 50,
+        page: nextPage,
+        limit: PAGE_SIZE,
         status: statusFilter || undefined,
       });
       setItems(res.data ?? []);
+      setTotal(res.total ?? 0);
+      setPage(nextPage);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Failed to load.");
       setItems([]);
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
+  // Reset to page 1 when filter changes
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const submitExtension = (borrowRequestId: string) => {
     if (!extendDate) {
@@ -97,7 +108,7 @@ export default function MyBookBorrowedPage() {
         </div>
         <Link
           href="/books/all?type=Lending"
-          className="inline-flex w-fit items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:border-[#00A651]"
+          className="inline-flex w-fit items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:border-[#E30B12]"
         >
           Find books to borrow
         </Link>
@@ -219,6 +230,20 @@ export default function MyBookBorrowedPage() {
           })}
         </div>
       )}
+
+      {!loading && items.length > 0 && totalPages > 1 ? (
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p className="text-xs text-gray-500">
+            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+          </p>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            disabled={loading}
+            onPageChange={(p) => void load(p)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

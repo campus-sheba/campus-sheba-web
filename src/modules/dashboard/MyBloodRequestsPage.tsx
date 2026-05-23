@@ -52,7 +52,7 @@ export default function MyBloodRequestsPage() {
         </div>
         <Link
           href="/my-blood-requests/new"
-          className="inline-flex w-fit items-center rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+          className="inline-flex w-fit items-center rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
         >
           New request
         </Link>

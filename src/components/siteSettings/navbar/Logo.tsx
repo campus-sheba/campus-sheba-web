@@ -5,7 +5,7 @@ const Logo = () => {
   return (
     <div className="flex items-center gap-x-1">
       <Image
-        src="/assets/images/logo.svg"
+        src="/assets/images/logo-icon.svg"
         alt="Logo"
         width={32}
         height={32}

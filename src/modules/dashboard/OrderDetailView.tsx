@@ -149,7 +149,7 @@ export default function OrderDetailView({ order }: { order: UserOrderRow }) {
         ) : null}
         <div className="mt-2 flex justify-between border-t border-gray-200 pt-2 text-base font-bold text-gray-900">
           <span>Total</span>
-          <span className="tabular-nums text-[#00A651]">{formatMoney(order.total)}</span>
+          <span className="tabular-nums text-[#E30B12]">{formatMoney(order.total)}</span>
         </div>
       </div>
     </div>

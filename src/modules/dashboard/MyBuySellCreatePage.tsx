@@ -25,7 +25,7 @@ const CONDITIONS = [
 const MAX_PHOTOS = 5;
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#E30B12]";
 const labelClass = "text-xs font-medium text-gray-500";
 
 export default function MyBuySellCreatePage() {
@@ -309,7 +309,7 @@ export default function MyBuySellCreatePage() {
                   type="checkbox"
                   checked={negotiable}
                   onChange={(e) => setNegotiable(e.target.checked)}
-                  className="rounded border-gray-300 text-[#00A651] focus:ring-[#00A651]"
+                  className="rounded border-gray-300 text-[#E30B12] focus:ring-[#E30B12]"
                 />
                 Price is negotiable
               </label>
@@ -340,7 +340,7 @@ export default function MyBuySellCreatePage() {
                     No delivery addresses yet.{" "}
                     <Link
                       href="/my-addresses"
-                      className="font-semibold text-[#00A651] underline"
+                      className="font-semibold text-[#E30B12] underline"
                     >
                       Add one
                     </Link>
@@ -392,7 +392,7 @@ export default function MyBuySellCreatePage() {
                     </div>
                   ))}
                 </div>
-                <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-[#00A651] hover:text-[#00A651]">
+                <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-[#E30B12] hover:text-[#E30B12]">
                   <input
                     type="file"
                     accept="image/*"
@@ -460,7 +460,7 @@ export default function MyBuySellCreatePage() {
             <button
               type="submit"
               disabled={submitting || loadMeta}
-              className="rounded-lg bg-[#00A651] px-5 py-2.5 text-sm font-semibold text-white active:brightness-95 disabled:opacity-50"
+              className="rounded-lg bg-[#E30B12] px-5 py-2.5 text-sm font-semibold text-white active:brightness-95 disabled:opacity-50"
             >
               {submitting ? "Publishing…" : "Publish listing"}
             </button>

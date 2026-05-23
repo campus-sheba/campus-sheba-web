@@ -10,6 +10,7 @@ import { registerDonationAction } from "@/services/book-donations";
 import type { BookListing } from "@/types/book";
 import type { BuySellCategory } from "@/types/buy-sell";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+import { Pagination } from "@/components/ui";
 
 const BOOK_TYPES = ["", "Selling", "Lending", "Donation", "Swap", "Library Only"] as const;
 const QUALITIES = ["", "New", "Like New", "Good", "Acceptable"] as const;
@@ -41,7 +42,6 @@ export default function MyBooksPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [searchKey, setSearchKey] = useState("");
@@ -76,15 +76,14 @@ export default function MyBooksPage() {
     })();
   }, []);
 
-  const fetchPage = async (nextPage: number, append: boolean) => {
-    if (append) setLoadingMore(true);
-    else setLoading(true);
+  const fetchPage = async (nextPage: number) => {
+    setLoading(true);
     setError(null);
     try {
       const res = await fetchCreatorOwnBooks(buildApiParams(nextPage));
       const rows = Array.isArray(res.data) ? res.data : [];
       setTotal(typeof res.total === "number" ? res.total : rows.length);
-      setItems((prev) => (append ? [...prev, ...rows] : rows));
+      setItems(rows);
       setPage(nextPage);
     } catch (e) {
       setError(
@@ -94,16 +93,15 @@ export default function MyBooksPage() {
       );
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    void fetchPage(1, false);
+    void fetchPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- apply filters manually
   }, []);
 
-  const hasMore = items.length < total;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const registerDonation = async (bookId: string) => {
     setRegisteringId(bookId);
@@ -131,7 +129,7 @@ export default function MyBooksPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/my-books/new"
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myBooks.newListing", "List a book")}
           </Link>
@@ -161,7 +159,7 @@ export default function MyBooksPage() {
           </Link>
           <Link
             href="/books"
-            className="text-sm font-semibold text-[#00A651] hover:underline"
+            className="text-sm font-semibold text-[#E30B12] hover:underline"
           >
             {tt("myBooks.browse", "Browse books")} →
           </Link>
@@ -182,7 +180,7 @@ export default function MyBooksPage() {
               )}
               value={searchKey}
               onChange={(e) => setSearchKey(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
           </label>
           <label className="flex min-w-[160px] flex-1 flex-col gap-1">
@@ -192,7 +190,7 @@ export default function MyBooksPage() {
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               <option value="">{tt("myBooks.all", "All")}</option>
               {categories.map((c) => (
@@ -209,7 +207,7 @@ export default function MyBooksPage() {
             <select
               value={bookType}
               onChange={(e) => setBookType(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {BOOK_TYPES.map((x) => (
                 <option key={x || "any-type"} value={x}>
@@ -225,7 +223,7 @@ export default function MyBooksPage() {
             <select
               value={quality}
               onChange={(e) => setQuality(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {QUALITIES.map((q) => (
                 <option key={q || "any-q"} value={q}>
@@ -239,7 +237,7 @@ export default function MyBooksPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {STATUSES.map((s) => (
                 <option key={s || "any-st"} value={s}>
@@ -250,8 +248,8 @@ export default function MyBooksPage() {
           </label>
           <button
             type="button"
-            onClick={() => void fetchPage(1, false)}
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+            onClick={() => void fetchPage(1)}
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myBooks.apply", "Apply")}
           </button>
@@ -344,7 +342,7 @@ export default function MyBooksPage() {
                       <td className="whitespace-nowrap px-4 py-2.5 text-gray-600">
                         {typeLabel(item.type)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#00A651]">
+                      <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#E30B12]">
                         {showPrice ? (
                           <span>Free</span>
                         ) : (
@@ -401,7 +399,7 @@ export default function MyBooksPage() {
                         </span>
                         <Link
                           href={`/books/${item._id}`}
-                          className="font-semibold text-[#00A651] hover:underline"
+                          className="font-semibold text-[#E30B12] hover:underline"
                         >
                           {tt("myBooks.view", "View")}
                         </Link>
@@ -415,17 +413,19 @@ export default function MyBooksPage() {
         </div>
       )}
 
-      {hasMore && !loading ? (
-        <button
-          type="button"
-          disabled={loadingMore}
-          onClick={() => void fetchPage(page + 1, true)}
-          className="w-full rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          {loadingMore
-            ? tt("myBooks.loadingShort", "Loading…")
-            : tt("myBooks.loadMore", "Load more")}
-        </button>
+      {!loading && items.length > 0 ? (
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p className="text-xs text-gray-500">
+            {tt("myBooks.showing", "Showing")} {(page - 1) * limit + 1}–
+            {Math.min(page * limit, total)} {tt("myBooks.of", "of")} {total}
+          </p>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            disabled={loading}
+            onPageChange={(p) => void fetchPage(p)}
+          />
+        </div>
       ) : null}
     </div>
   );

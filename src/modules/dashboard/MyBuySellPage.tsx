@@ -85,11 +85,11 @@ export default function MyBuySellPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/my-buy-sell/new"
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myBuySell.newListing", "New listing")}
           </Link>
-          <Link href="/buy-sell" className="text-sm font-semibold text-[#00A651] hover:underline">
+          <Link href="/buy-sell" className="text-sm font-semibold text-[#E30B12] hover:underline">
             {tt("myBuySell.browseMarketplace", "Browse marketplace")} →
           </Link>
         </div>
@@ -104,7 +104,7 @@ export default function MyBuySellPage() {
               placeholder={tt("myBuySell.searchPlaceholder", "Title, brand, description...")}
               value={searchKey}
               onChange={(e) => setSearchKey(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
           </label>
           <label className="flex min-w-[160px] flex-1 flex-col gap-1">
@@ -112,7 +112,7 @@ export default function MyBuySellPage() {
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               <option value="">{tt("myBuySell.all", "All")}</option>
               {categories.map((c) => (
@@ -127,7 +127,7 @@ export default function MyBuySellPage() {
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {CONDITIONS.map((c) => (
                 <option key={c || "any"} value={c}>
@@ -141,7 +141,7 @@ export default function MyBuySellPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {STATUSES.map((s) => (
                 <option key={s || "any-status"} value={s}>
@@ -153,7 +153,7 @@ export default function MyBuySellPage() {
           <button
             type="button"
             onClick={() => void fetchPage(1)}
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myBuySell.apply", "Apply")}
           </button>
@@ -215,7 +215,7 @@ export default function MyBuySellPage() {
                         <p className="mt-0.5 text-xs text-gray-400">{tt("myBuySell.updated", "Updated")} {updated}</p>
                       </td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-gray-600">{item.condition ?? "—"}</td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#00A651]">
+                      <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#E30B12]">
                         {formatMoney(item.price)}
                         {item.negotiable ? (
                           <span className="ml-1 text-[10px] font-normal text-amber-700">neg.</span>
@@ -242,7 +242,7 @@ export default function MyBuySellPage() {
                         </span>
                         <Link
                           href={`/buy-sell/${item._id}`}
-                          className="font-semibold text-[#00A651] hover:underline"
+                          className="font-semibold text-[#E30B12] hover:underline"
                         >
                           {tt("myBuySell.view", "View")}
                         </Link>

@@ -6,8 +6,10 @@ import { Gift } from "lucide-react";
 import { useAppState } from "@/contexts/AppStateContext";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
-import { Button } from "@/components/ui";
+import { Button, Pagination } from "@/components/ui";
 import { fetchAvailableDonations, requestDonationAction } from "@/services/book-donations";
+
+const PAGE_SIZE = 12;
 import type { BookDonation, BookListing } from "@/types/book";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 import Image from "next/image";
@@ -20,6 +22,8 @@ export default function BookDonationsBrowse() {
   const { state, dispatch } = useAppState();
   const isLoggedIn = state.auth.isAuthenticated;
   const [items, setItems] = useState<BookDonation[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -27,7 +31,7 @@ export default function BookDonationsBrowse() {
   const [requestMessage, setRequestMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (nextPage: number = page) => {
     if (!isLoggedIn) {
       setLoading(false);
       setItems([]);
@@ -36,19 +40,25 @@ export default function BookDonationsBrowse() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchAvailableDonations(1, 30);
+      const res = await fetchAvailableDonations(nextPage, PAGE_SIZE);
       setItems(res.data ?? []);
+      setTotal(res.total ?? 0);
+      setPage(nextPage);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load donations.");
       setItems([]);
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const openRequest = (donationId: string) => {
     if (!isLoggedIn) {
@@ -166,7 +176,7 @@ export default function BookDonationsBrowse() {
                     {book?._id ? (
                       <Link
                         href={`/books/${book._id}`}
-                        className="mt-2 inline-block text-xs font-semibold text-[#00A651] hover:underline"
+                        className="mt-2 inline-block text-xs font-semibold text-[#E30B12] hover:underline"
                       >
                         View listing →
                       </Link>
@@ -219,6 +229,20 @@ export default function BookDonationsBrowse() {
             })}
           </div>
         )}
+
+        {isLoggedIn && !loading && items.length > 0 && totalPages > 1 ? (
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+            <p className="text-xs text-gray-500">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+            </p>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              disabled={loading}
+              onPageChange={(p) => void load(p)}
+            />
+          </div>
+        ) : null}
       </ContentWrapper>
     </SectionWrapper>
   );

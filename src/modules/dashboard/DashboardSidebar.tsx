@@ -120,13 +120,15 @@ export default function DashboardSidebar({ user }: Props) {
         aria-current={active ? "page" : undefined}
         className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
           active
-            ? "bg-[#00A651]/10 text-[#00A651]"
+            ? "bg-[#E30B12]/10 text-[#E30B12]"
             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
         }`}
       >
         <item.icon
           className={`h-[18px] w-[18px] flex-shrink-0 ${
-            active ? "text-[#00A651]" : "text-gray-400 group-hover:text-gray-600"
+            active
+              ? "text-[#E30B12]"
+              : "text-gray-400 group-hover:text-gray-600"
           }`}
         />
         {item.label}
@@ -146,9 +148,9 @@ export default function DashboardSidebar({ user }: Props) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* User card */}
-      <div className="border-b border-gray-100 p-4">
+      {/* <div className="border-b border-gray-100 p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#00A651] to-[#00c46a] text-base font-bold text-white">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#E30B12] to-[#00c46a] text-base font-bold text-white">
             {initials}
           </div>
           <div className="min-w-0">
@@ -160,7 +162,7 @@ export default function DashboardSidebar({ user }: Props) {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Grouped navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-3 scrollbar-hide">
@@ -247,7 +249,7 @@ export default function DashboardSidebar({ user }: Props) {
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-full w-60 flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:flex">
+      <aside className="sticky top-0 hidden h-full w-60 flex-shrink-0 flex-col overflow-hidden rounded border border-gray-100 bg-white shadow-sm lg:flex">
         <SidebarContent />
       </aside>
     </>

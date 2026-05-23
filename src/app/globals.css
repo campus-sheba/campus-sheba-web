@@ -6,10 +6,17 @@
    CSS CUSTOM PROPERTIES - CAMPUS SHEBA DS
    ============================================ */
 :root {
-  --color-brand-green: #00a651;
+  /* Campus Sheba primary brand colour is RED (#E30B12, taken from the logo).
+     The `--color-brand-green` token is retained for backward compatibility
+     with any old class refs but now resolves to the brand red so the whole
+     site stays on-brand without a rename sweep. New code: prefer
+     `--color-brand-primary` or the constants in `src/utils/brand.ts`. */
+  --color-brand-primary: #e30b12;
+  --color-brand-primary-hover: #b70910;
+  --color-brand-green: #e30b12;
   --color-brand-navy: #0d1b2a;
   --color-brand-amber: #f5a623;
-  --color-brand-red: #e84545;
+  --color-brand-red: #e30b12;
   --topbar-height: 38px;
   --background: #ffffff;
   --foreground: #111827;
@@ -133,7 +140,7 @@
     transform: scale(0.97);
   }
   .btn:focus-visible {
-    outline: 2px solid #00a651;
+    outline: 2px solid #e30b12;
     outline-offset: 2px;
   }
 
@@ -146,7 +153,7 @@
     border-radius: 0.5rem;
     padding: 0.625rem 1.25rem;
     font-size: 0.875rem;
-    background-color: #00a651;
+    background-color: #e30b12;
     color: white;
     border: none;
     cursor: pointer;
@@ -155,8 +162,8 @@
   }
 
   .btn-primary:hover {
-    background-color: #008541;
-    box-shadow: 0 4px 12px rgba(0, 166, 81, 0.3);
+    background-color: #b70910;
+    box-shadow: 0 4px 12px rgba(227, 11, 18, 0.3);
   }
   .btn-primary:active {
     transform: scale(0.97);
@@ -171,7 +178,7 @@
     border-radius: 0.75rem;
     padding: 0.875rem 1.75rem;
     font-size: 1rem;
-    background-color: #00a651;
+    background-color: #e30b12;
     color: white;
     border: none;
     cursor: pointer;
@@ -180,7 +187,7 @@
   }
 
   .btn-primary-lg:hover {
-    background-color: #008541;
+    background-color: #b70910;
   }
   .btn-primary-lg:active {
     transform: scale(0.97);
@@ -403,7 +410,7 @@
   }
 
   .gradient-text-green {
-    background: linear-gradient(135deg, #00a651 0%, #00d46b 100%);
+    background: linear-gradient(135deg, #e30b12 0%, #f54a4f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

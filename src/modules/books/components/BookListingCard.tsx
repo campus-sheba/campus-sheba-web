@@ -25,7 +25,7 @@ function typeBadge(type: BookType): BadgeConfig {
     case "Request Based":
       return { label: "Request", className: "bg-amber-600/90" };
     default:
-      return { label: "Sell", className: "bg-[#00A651]/90" };
+      return { label: "Sell", className: "bg-[#E30B12]/90" };
   }
 }
 
@@ -60,7 +60,7 @@ function ctaColor(type: BookType): string {
     case "Request Based":
       return "bg-amber-600 hover:brightness-105";
     default:
-      return "bg-[#00A651] hover:brightness-105";
+      return "bg-[#E30B12] hover:brightness-105";
   }
 }
 
@@ -205,7 +205,7 @@ export default function BookListingCard({ item }: Props) {
         )}
 
         <div className="mt-auto flex items-baseline justify-between pt-1">
-          <span className="text-sm font-bold text-[#00A651] md:text-base">{priceLabel}</span>
+          <span className="text-sm font-bold text-[#E30B12] md:text-base">{priceLabel}</span>
           {ownerName && (
             <span className="line-clamp-1 max-w-[6rem] text-[9px] text-gray-400 md:text-[10px]">
               {ownerName}

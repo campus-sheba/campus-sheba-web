@@ -168,4 +168,6 @@ export type DashboardProfile = AuthMe & {
     roomNo?: string;
     campus?: string;
     university?: University | string | null;
+    referralCode?: string;
+    totalReferrals?: number;
 };

@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { ArrowLeft, ShoppingCart, Star, Phone, BookOpen, ArrowLeftRight, Gift, Archive } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Star, Phone, BookOpen, ArrowLeftRight, Gift, Archive, BookmarkPlus } from "lucide-react";
+import { toast } from "sonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { AppStateAction } from "@/types/global";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
@@ -24,7 +25,8 @@ import {
   submitBookReviewAction,
   deleteBookReviewAction,
 } from "@/services/book-reviews";
-import type { BookListing, BookReview, BookOwnerRef } from "@/types/book";
+import { addToReadingListAction } from "@/services/user-library";
+import type { BookListing, BookReview, BookOwnerRef, ReadingStatus } from "@/types/book";
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
 import { useAppState } from "@/contexts/AppStateContext";
 import BookListingCard from "./BookListingCard";
@@ -197,7 +199,7 @@ function ReviewsSection({
               "bookDetail.reviewPlaceholder",
               "Describe the book condition, your experience with the owner…",
             )}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#00A651] focus:outline-none"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#E30B12] focus:outline-none"
           />
           <Button
             type="button"
@@ -294,10 +296,11 @@ function LendingActionPanel({
 }) {
   const [dueDate, setDueDate] = useState("");
   const [borrowNote, setBorrowNote] = useState("");
-  const [deposit, setDeposit] = useState(item.safekeepingCharge ?? 0);
   const [msg, setMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Deposit is set by the lender on the listing; borrower cannot alter it.
+  const deposit = item.safekeepingCharge ?? 0;
   const available = item.availabilityStatus === "Available" || !item.availabilityStatus;
 
   const onRequest = () => {
@@ -362,21 +365,14 @@ function LendingActionPanel({
       {item.safekeepingCharge != null && item.safekeepingCharge > 0 && (
         <div className="rounded-lg border border-sky-100 bg-white p-3 text-sm">
           <p className="font-medium text-gray-800">
-            Security deposit: ৳{item.safekeepingCharge}
+            Security deposit: <span className="font-bold">৳{item.safekeepingCharge}</span>
           </p>
           <p className="mt-0.5 text-xs text-gray-500">
-            Refunded on return. Deducted for damage or late return.
+            {tt(
+              "bookDetail.depositHint",
+              "Held from your wallet on approval. Refunded on return (less any damage or late fee).",
+            )}
           </p>
-          <label className="mt-2 block text-xs font-medium text-gray-600">
-            Deposit amount
-            <input
-              type="number"
-              min={0}
-              value={deposit}
-              onChange={(e) => setDeposit(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-            />
-          </label>
         </div>
       )}
 
@@ -634,7 +630,7 @@ function DonationActionPanel({
             "bookDetail.donationBrowseQueue",
             "Browse the donation queue or contact the donor below.",
           )}{" "}
-          <Link href="/books/donations" className="font-semibold text-[#00A651] hover:underline">
+          <Link href="/books/donations" className="font-semibold text-[#E30B12] hover:underline">
             Donation queue →
           </Link>
         </p>
@@ -644,6 +640,85 @@ function DonationActionPanel({
           {msg}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** Compact "track this book" action — works for any book type, logged-in only. */
+function AddToReadingListAction({
+  bookId,
+  isLoggedIn,
+  onRequireAuth,
+  tt,
+}: {
+  bookId: string;
+  isLoggedIn: boolean;
+  onRequireAuth: () => void;
+  tt: (k: string, f: string) => string;
+}) {
+  const [status, setStatus] = useState<ReadingStatus>("wishlist");
+  const [added, setAdded] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const onAdd = () => {
+    if (!isLoggedIn) {
+      onRequireAuth();
+      return;
+    }
+    startTransition(async () => {
+      const res = await addToReadingListAction({ bookId, status });
+      if (res.success) {
+        setAdded(true);
+        toast.success(
+          tt("bookDetail.addedToReadingList", "Added to your reading list."),
+        );
+      } else {
+        const message =
+          (res as { message?: string }).message ??
+          tt("bookDetail.readingListFailed", "Could not add to reading list.");
+        if (message.toLowerCase().includes("duplicate") || message.includes("409")) {
+          setAdded(true);
+          toast.info(
+            tt("bookDetail.alreadyOnReadingList", "Already on your reading list."),
+          );
+        } else {
+          toast.error(message);
+        }
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-white px-4 py-3">
+      <BookmarkPlus className="h-4 w-4 text-[#E30B12]" />
+      <span className="text-sm font-medium text-gray-800">
+        {tt("bookDetail.trackThisBook", "Track this book")}
+      </span>
+      <select
+        value={status}
+        onChange={(e) => setStatus(e.target.value as ReadingStatus)}
+        disabled={isPending || added}
+        className="rounded-lg border border-gray-200 px-2 py-1 text-xs"
+        aria-label="Reading status"
+      >
+        <option value="wishlist">{tt("bookDetail.statusWishlist", "Wishlist")}</option>
+        <option value="reading">{tt("bookDetail.statusReading", "Reading")}</option>
+        <option value="completed">{tt("bookDetail.statusCompleted", "Completed")}</option>
+      </select>
+      <Button
+        type="button"
+        variant="outline"
+        uppercase={false}
+        className="h-8 shrink-0 text-xs"
+        disabled={isPending || added}
+        onClick={onAdd}
+      >
+        {added
+          ? tt("bookDetail.onReadingList", "On your list")
+          : isPending
+            ? tt("bookDetail.adding", "Adding…")
+            : tt("bookDetail.addToReadingList", "Add to list")}
+      </Button>
     </div>
   );
 }
@@ -662,7 +737,7 @@ function LibraryOnlyPanel({ tt }: { tt: (k: string, f: string) => string }) {
           "bookDetail.libraryOnlyHint",
           "This is a showcase listing. Browse reading lists on student library profiles.",
         )}{" "}
-        <Link href="/my-library" className="font-semibold text-[#00A651] hover:underline">
+        <Link href="/my-library" className="font-semibold text-[#E30B12] hover:underline">
           My library →
         </Link>
       </p>
@@ -737,7 +812,7 @@ export default function BookDetail() {
         </p>
         <Link
           href="/books"
-          className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#00A651]"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#E30B12]"
         >
           <ArrowLeft className="h-4 w-4" />
           {tt("bookDetail.backToBooks", "Back to books")}
@@ -823,10 +898,10 @@ export default function BookDetail() {
             <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
               <div className="flex flex-wrap items-baseline gap-3">
                 {displayPrice == null ? (
-                  <span className="text-3xl font-bold text-[#00A651]">Free</span>
+                  <span className="text-3xl font-bold text-[#E30B12]">Free</span>
                 ) : (
                   <>
-                    <span className="text-3xl font-bold text-[#00A651]">
+                    <span className="text-3xl font-bold text-[#E30B12]">
                       ৳{displayPrice.toLocaleString()}
                     </span>
                     {item.discountPrice != null && item.discountPrice < item.price && (
@@ -892,7 +967,7 @@ export default function BookDetail() {
                   {sellerPhone && (
                     <a
                       href={`tel:${sellerPhone}`}
-                      className="flex items-center gap-1 text-xs text-[#00A651] hover:underline"
+                      className="flex items-center gap-1 text-xs text-[#E30B12] hover:underline"
                     >
                       <Phone className="h-3 w-3" />
                       {sellerPhone}
@@ -904,6 +979,16 @@ export default function BookDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Reading list — universal, works for any book type */}
+            <AddToReadingListAction
+              bookId={item._id}
+              isLoggedIn={isLoggedIn}
+              onRequireAuth={() =>
+                dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } })
+              }
+              tt={tt}
+            />
 
             {/* Action panel based on type */}
             {item.type === "Lending" && (

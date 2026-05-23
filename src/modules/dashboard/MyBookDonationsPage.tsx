@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui";
+import { Button, Pagination } from "@/components/ui";
+
+const PAGE_SIZE = 10;
 import {
   cancelDonationAction,
   fetchMyDonations,
   fulfillDonationAction,
-  registerDonationAction,
 } from "@/services/book-donations";
 import type { BookDonation, BookListing, DonationQueueEntry } from "@/types/book";
 
@@ -24,46 +25,35 @@ function requesterLabel(entry: DonationQueueEntry): string {
 
 export default function MyBookDonationsPage() {
   const [items, setItems] = useState<BookDonation[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
-  const [registerBookId, setRegisterBookId] = useState("");
-  const [donorMessage, setDonorMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (nextPage: number = page) => {
     setLoading(true);
     setMsg(null);
     try {
-      const res = await fetchMyDonations(1, 50);
+      const res = await fetchMyDonations(nextPage, PAGE_SIZE);
       setItems(res.data ?? []);
+      setTotal(res.total ?? 0);
+      setPage(nextPage);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Failed to load.");
       setItems([]);
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const register = () => {
-    const id = registerBookId.trim();
-    if (!id) {
-      setMsg("Enter the approved donation book ID.");
-      return;
-    }
-    startTransition(async () => {
-      const res = await registerDonationAction(id, donorMessage.trim() || undefined);
-      setMsg(res.success ? "Donation registered in queue." : res.message);
-      if (res.success) {
-        setRegisterBookId("");
-        setDonorMessage("");
-        void load();
-      }
-    });
-  };
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const fulfill = (donationId: string, queueEntryId: string) => {
     startTransition(async () => {
@@ -99,35 +89,21 @@ export default function MyBookDonationsPage() {
       </div>
 
       <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
-        <p className="text-sm font-semibold text-gray-900">Register a donation in queue</p>
+        <p className="text-sm font-semibold text-gray-900">Register a donation in the queue</p>
         <p className="mt-1 text-xs text-gray-600">
-          After admin approves a Donation listing, paste its book ID here.
+          Once a Donation-type listing is approved, register it in the donation queue so other
+          students can request it.
         </p>
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <input
-            type="text"
-            placeholder="Book ID"
-            value={registerBookId}
-            onChange={(e) => setRegisterBookId(e.target.value)}
-            className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
-          />
-          <input
-            type="text"
-            placeholder="Message to requesters (optional)"
-            value={donorMessage}
-            onChange={(e) => setDonorMessage(e.target.value)}
-            className="flex-[2] rounded-lg border border-gray-200 px-3 py-2 text-sm"
-          />
-          <Button
-            type="button"
-            uppercase={false}
-            className="h-10 shrink-0"
-            disabled={isPending}
-            onClick={register}
-          >
-            Register
-          </Button>
-        </div>
+        <Link
+          href="/my-books?type=Donation&status=Approved"
+          className="mt-3 inline-flex items-center rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
+        >
+          Go to my Donation listings →
+        </Link>
+        <p className="mt-2 text-xs text-gray-500">
+          Approved Donation listings show a one-click <strong>Queue</strong> button on the My
+          Books page.
+        </p>
       </div>
 
       {msg ? (
@@ -200,6 +176,20 @@ export default function MyBookDonationsPage() {
           ))}
         </div>
       )}
+
+      {!loading && items.length > 0 && totalPages > 1 ? (
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p className="text-xs text-gray-500">
+            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+          </p>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            disabled={loading}
+            onPageChange={(p) => void load(p)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -17,7 +17,7 @@ const PAY: ParcelPaymentMethod[] = ["Cash on Delivery", "Wallet", "Online"];
 const MAX_PHOTOS = 5;
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#E30B12]";
 const labelClass = "text-xs font-medium text-gray-500";
 
 function normalizePhoneDigits(value: string): string {
@@ -311,7 +311,7 @@ export default function MyParcelCreatePage() {
                 </div>
               ))}
             </div>
-            <label className="mt-2 inline-flex cursor-pointer rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-[#00A651]">
+            <label className="mt-2 inline-flex cursor-pointer rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-[#E30B12]">
               <input
                 type="file"
                 accept="image/*"
@@ -341,7 +341,7 @@ export default function MyParcelCreatePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-[#00A651] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-lg bg-[#E30B12] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
               {submitting ? "Booking…" : "Book parcel"}
             </button>

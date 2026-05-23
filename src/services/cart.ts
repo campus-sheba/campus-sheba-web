@@ -27,12 +27,16 @@ export async function getCartAction() {
 
 export async function addToCartAction(input: {
   contentId: string;
+  /** Module the item belongs to: "book", "buy-sell", "food", etc. Sent as
+   * `moduleType` per the v1 Cart API; `type` is kept for backward-compat. */
   type: string;
   quantity?: number;
 }) {
   try {
     const response = await postPrivate<{ data: Cart }>(cartEndpoints.cart, {
       contentId: input.contentId,
+      moduleType: input.type,
+      // Backwards-compat with any older backend deployments still expecting `type`.
       type: input.type,
       quantity: input.quantity ?? 1,
     }, cartOpts);
