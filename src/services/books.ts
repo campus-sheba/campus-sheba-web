@@ -4,6 +4,8 @@ import type {
   BookListing,
   BookPaginatedResponse,
   CreateBookPayload,
+  CreateShelfBookPayload,
+  PromoteBookPayload,
   UpdateBookPayload,
 } from "@/types/book";
 import type { BuySellCategory } from "@/types/buy-sell";
@@ -357,6 +359,57 @@ export async function createBookListingAction(
     const message = error instanceof Error ? error.message : "Failed to create listing";
     return { success: false as const, message, bookId: null as string | null };
   }
+}
+
+/** Add a showcase book via the slim shelf endpoint (server forces type/price/qty). */
+export async function addShelfBookAction(payload: CreateShelfBookPayload) {
+  try {
+    const response = await postPrivate<unknown>(bookEndpoints.creatorShelf, payload, {
+      includeUniversity: false,
+    });
+    const bookId = unwrapCreatedBookId(response);
+    return { success: true as const, bookId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to add shelf book";
+    return { success: false as const, message, bookId: null as string | null };
+  }
+}
+
+/** Promote a Library Only book into a transactional lane (re-moderated). */
+export async function promoteBookAction(id: string, payload: PromoteBookPayload) {
+  const trimmed = id?.trim();
+  if (!trimmed) {
+    return { success: false as const, message: "Invalid book id" };
+  }
+  try {
+    await postPrivate<unknown>(bookEndpoints.creatorPromote(trimmed), payload, {
+      includeUniversity: false,
+    });
+    return { success: true as const };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to promote book";
+    return { success: false as const, message };
+  }
+}
+
+/** Fetch another user's approved shelf (public, optional auth). */
+export async function fetchBooksByOwner(
+  ownerId: string,
+  params: { type?: string; status?: string; searchKey?: string; page?: number; limit?: number } = {},
+): Promise<BookPaginatedResponse> {
+  const trimmed = ownerId?.trim();
+  if (!trimmed) return { page: 1, limit: 20, total: 0, data: [] };
+  const q = new URLSearchParams();
+  if (params.type) q.set("type", params.type);
+  if (params.status) q.set("status", params.status);
+  if (params.searchKey?.trim()) q.set("searchKey", params.searchKey.trim());
+  if (params.page != null) q.set("page", String(params.page));
+  if (params.limit != null) q.set("limit", String(params.limit));
+  const query = q.toString();
+  const base = bookEndpoints.userByOwner(trimmed);
+  const url = query ? `${base}?${query}` : base;
+  const res = await getPublic<unknown>(url, { includeUniversity: false });
+  return unwrapBookPaginatedResponse(res);
 }
 
 export async function updateBookAction(id: string, payload: UpdateBookPayload) {

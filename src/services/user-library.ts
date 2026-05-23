@@ -3,12 +3,15 @@
 import type {
   AddReadingListPayload,
   CreateLibraryProfilePayload,
+  LibraryProfileCard,
+  LibraryProfileListParams,
+  LibraryProfileListResponse,
   UpdateLibraryProfilePayload,
   UpdateReadingListPayload,
   UserLibraryProfile,
 } from "@/types/book";
 import { deletePrivate } from "@/utils/api/delete";
-import { getPrivate } from "@/utils/api/get";
+import { getPrivate, getPublic } from "@/utils/api/get";
 import { patchPrivate } from "@/utils/api/patch";
 import { postPrivate } from "@/utils/api/post";
 import { userLibraryEndpoints } from "@/utils/endpoints/endpoints";
@@ -21,6 +24,47 @@ function unwrapProfile(response: unknown): UserLibraryProfile | null {
   }
   if ("_id" in r) return response as UserLibraryProfile;
   return null;
+}
+
+function unwrapProfileList(response: unknown): LibraryProfileListResponse {
+  const empty: LibraryProfileListResponse = { page: 1, limit: 20, total: 0, data: [] };
+  if (!response || typeof response !== "object") return empty;
+  const r = response as Record<string, unknown>;
+  const rows = Array.isArray(r.data) ? (r.data as LibraryProfileCard[]) : [];
+  return {
+    page: typeof r.page === "number" ? r.page : 1,
+    limit: typeof r.limit === "number" ? r.limit : 20,
+    total: typeof r.total === "number" ? r.total : rows.length,
+    data: rows,
+  };
+}
+
+/** Discover public library profiles (search / sort / paginate). */
+export async function listLibraryProfilesAction(
+  params: LibraryProfileListParams = {},
+) {
+  try {
+    const q = new URLSearchParams();
+    if (params.search?.trim()) q.set("search", params.search.trim());
+    if (params.university) q.set("university", params.university);
+    if (params.sortBy) q.set("sortBy", params.sortBy);
+    if (params.page != null) q.set("page", String(params.page));
+    if (params.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const url = query ? `${userLibraryEndpoints.base}?${query}` : userLibraryEndpoints.base;
+    const res = await getPublic<unknown>(url, { includeUniversity: false });
+    return { success: true as const, ...unwrapProfileList(res) };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load profiles";
+    return {
+      success: false as const,
+      message,
+      page: 1,
+      limit: 20,
+      total: 0,
+      data: [] as LibraryProfileCard[],
+    };
+  }
 }
 
 export async function fetchMyLibraryProfileAction() {
@@ -42,7 +86,7 @@ export async function fetchLibraryProfileByIdAction(profileId: string) {
     return { success: false as const, message: "Invalid profile id", data: null };
   }
   try {
-    const res = await getPrivate<unknown>(userLibraryEndpoints.byId(trimmed), {
+    const res = await getPublic<unknown>(userLibraryEndpoints.byId(trimmed), {
       includeUniversity: false,
     });
     const data = unwrapProfile(res);

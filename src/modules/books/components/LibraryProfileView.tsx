@@ -4,18 +4,19 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
-import { BookMarked, UserPlus, UserMinus } from "lucide-react";
+import { BookMarked, BookOpen, UserPlus, UserMinus } from "lucide-react";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { Button } from "@/components/ui";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { useAppState } from "@/contexts/AppStateContext";
+import { fetchBooksByOwner } from "@/services/books";
 import {
   fetchLibraryProfileByIdAction,
   fetchMyLibraryProfileAction,
   followLibraryAction,
   unfollowLibraryAction,
 } from "@/services/user-library";
-import type { UserLibraryProfile } from "@/types/book";
+import { resolveLibraryOwnerId, type BookListing, type UserLibraryProfile } from "@/types/book";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 
 export default function LibraryProfileView() {
@@ -34,6 +35,8 @@ export default function LibraryProfileView() {
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [shelf, setShelf] = useState<BookListing[]>([]);
+  const [shelfLoading, setShelfLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!profileId) return;
@@ -57,6 +60,14 @@ export default function LibraryProfileView() {
         setProfile(null);
       } else {
         setProfile(res.data);
+        const ownerId = resolveLibraryOwnerId(res.data.owner);
+        if (ownerId) {
+          setShelfLoading(true);
+          fetchBooksByOwner(ownerId, { type: "Library Only", limit: 20 })
+            .then((books) => setShelf(books.data))
+            .catch(() => setShelf([]))
+            .finally(() => setShelfLoading(false));
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load profile.");
@@ -103,7 +114,7 @@ export default function LibraryProfileView() {
           items={[
             { label: "Home", href: "/" },
             { label: "Books", href: "/books" },
-            { label: "Library", href: "/books" },
+            { label: "Libraries", href: "/books/libraries" },
           ]}
         />
 
@@ -140,7 +151,8 @@ export default function LibraryProfileView() {
                   </p>
                 </div>
               </div>
-              {currentUserId && profile.owner !== currentUserId ? (
+              {currentUserId &&
+              resolveLibraryOwnerId(profile.owner) !== currentUserId ? (
                 <Button
                   type="button"
                   variant={isFollowing ? "outline" : "primary"}
@@ -169,6 +181,66 @@ export default function LibraryProfileView() {
                 {msg}
               </p>
             ) : null}
+
+            <section className="mt-10">
+              <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                <BookOpen className="h-4 w-4 text-[#E30B12]" />
+                Bookshelf
+              </h2>
+              {shelfLoading ? (
+                <p className="mt-4 text-sm text-gray-500">Loading shelf…</p>
+              ) : !shelf.length ? (
+                <p className="mt-4 text-sm text-gray-500">
+                  No public books on this shelf yet.
+                </p>
+              ) : (
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {shelf.map((book) => {
+                    const photo = book.photos?.[0]?.url;
+                    return (
+                      <li
+                        key={book._id}
+                        className="flex gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm"
+                      >
+                        <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                          {photo ? (
+                            <Image
+                              src={photo}
+                              alt={book.title}
+                              fill
+                              className="object-cover"
+                              unoptimized={shouldUnoptimizeRemoteImage(photo)}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-gray-300">
+                              <BookOpen className="h-5 w-5" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            href={`/books/${book._id}`}
+                            className="line-clamp-2 font-semibold text-gray-900 hover:text-[#E30B12]"
+                          >
+                            {book.title}
+                          </Link>
+                          {book.author ? (
+                            <p className="text-xs text-gray-500">
+                              {book.author}
+                            </p>
+                          ) : null}
+                          {book.quality ? (
+                            <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                              {String(book.quality)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
 
             <section className="mt-10">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">

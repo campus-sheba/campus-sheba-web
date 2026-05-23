@@ -346,6 +346,12 @@ export default function BookLanding() {
               {tt("bookLanding.listBook", "List a book")}
             </button>
             <Link
+              href="/books/libraries"
+              className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+            >
+              {tt("bookLanding.campusLibraries", "Campus libraries")}
+            </Link>
+            <Link
               href="/my-library"
               className="text-sm font-semibold text-gray-700 hover:text-gray-900"
             >

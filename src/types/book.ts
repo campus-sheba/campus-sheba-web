@@ -203,10 +203,27 @@ export type ReadingListEntry = {
   addedAt: string;
 };
 
+export type LibraryProfileOwnerRef =
+  | string
+  | {
+      _id: string;
+      name?: string;
+      photo?: string | { url?: string };
+    };
+
+/** Resolve owner id whether API returns a string or populated owner object. */
+export function resolveLibraryOwnerId(
+  owner: LibraryProfileOwnerRef | undefined,
+): string | undefined {
+  if (!owner) return undefined;
+  if (typeof owner === "string") return owner;
+  return owner._id;
+}
+
 export type UserLibraryProfile = {
   _id: string;
-  owner: string;
-  university: string;
+  owner: LibraryProfileOwnerRef;
+  university: string | { _id: string; name?: string };
   displayName: string;
   bio?: string;
   visibility: LibraryVisibility;
@@ -331,4 +348,75 @@ export type AddReadingListPayload = {
 
 export type UpdateReadingListPayload = {
   status: ReadingStatus;
+};
+
+// ── Shelf (showcase) & promote ──────────────────────────────────────────────
+
+/** Slim payload for POST /creator/books/shelf — server forces type/price/qty. */
+export type CreateShelfBookPayload = {
+  title: string;
+  photos: BookPhotoPayload[];
+  category: string;
+  department: string;
+  buyingYear: string;
+  description: string;
+  quality: BookQuality;
+  author?: string;
+  edition?: string;
+  publisher?: string;
+  subject?: string;
+  semester?: string;
+  courseCode?: string;
+  language?: string;
+  notes?: BookNote[];
+};
+
+/** Promotable lanes for a Library Only book. */
+export type PromoteBookType = "Selling" | "Lending" | "Donation" | "Swap";
+
+/** Payload for POST /creator/books/:id/promote — fields vary by target type. */
+export type PromoteBookPayload = {
+  type: PromoteBookType;
+  addressId: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail?: string;
+  price?: number;
+  discountPrice?: number;
+  quantity?: number;
+  borrowDuration?: number;
+  maxExtensionDuration?: number;
+  allowsExtension?: boolean;
+  safekeepingCharge?: number;
+};
+
+export type LibrarySortBy = "reputation" | "recent" | "followers";
+
+export type LibraryProfileListParams = {
+  search?: string;
+  university?: string;
+  sortBy?: LibrarySortBy;
+  page?: number;
+  limit?: number;
+};
+
+/** Lightweight card returned by GET /user/library (discovery). */
+export type LibraryProfileCard = {
+  _id: string;
+  owner: LibraryProfileOwnerRef;
+  university?: { _id: string; name?: string } | string;
+  displayName: string;
+  bio?: string;
+  visibility: LibraryVisibility;
+  reputationScore: number;
+  totalBooksShared: number;
+  followersCount: number;
+  createdAt: string;
+};
+
+export type LibraryProfileListResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: LibraryProfileCard[];
 };

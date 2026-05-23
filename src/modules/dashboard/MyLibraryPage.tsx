@@ -15,6 +15,7 @@ import {
   Pencil,
   Plus,
   Sparkles,
+  TrendingUp,
   Trash2,
   UserPlus,
   Users,
@@ -22,7 +23,12 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui";
-import { deleteBookAction, fetchCreatorOwnBooks } from "@/services/books";
+import { getAddressesAction } from "@/services/addresses";
+import {
+  deleteBookAction,
+  fetchCreatorOwnBooks,
+  promoteBookAction,
+} from "@/services/books";
 import {
   addToReadingListAction,
   createLibraryProfileAction,
@@ -31,14 +37,24 @@ import {
   updateLibraryProfileAction,
   updateReadingListStatusAction,
 } from "@/services/user-library";
+import type { UserAddress } from "@/types/address";
 import type {
   BookListing,
   BookStatus,
   LibraryVisibility,
+  PromoteBookPayload,
+  PromoteBookType,
   ReadingStatus,
   UserLibraryProfile,
 } from "@/types/book";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+
+const PROMOTE_TYPES: PromoteBookType[] = [
+  "Selling",
+  "Lending",
+  "Donation",
+  "Swap",
+];
 
 const READING_STATUSES: ReadingStatus[] = ["reading", "completed", "wishlist"];
 
@@ -89,6 +105,29 @@ export default function MyLibraryPage() {
   const [shelfTotal, setShelfTotal] = useState(0);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<BookListing | null>(null);
+
+  // Promote (showcase → transactional)
+  const [promoteTarget, setPromoteTarget] = useState<BookListing | null>(null);
+  const [pickupAddresses, setPickupAddresses] = useState<UserAddress[]>([]);
+  const [promoteForm, setPromoteForm] = useState<{
+    type: PromoteBookType;
+    addressId: string;
+    contactName: string;
+    contactPhone: string;
+    price: string;
+    discountPrice: string;
+    borrowDuration: string;
+    safekeepingCharge: string;
+  }>({
+    type: "Selling",
+    addressId: "",
+    contactName: "",
+    contactPhone: "",
+    price: "",
+    discountPrice: "",
+    borrowDuration: "14",
+    safekeepingCharge: "",
+  });
 
   // Active tab
   const [activeTab, setActiveTab] = useState<
@@ -246,6 +285,84 @@ export default function MyLibraryPage() {
     });
   };
 
+  const openPromote = (book: BookListing) => {
+    setPromoteTarget(book);
+    setPromoteForm({
+      type: "Selling",
+      addressId: "",
+      contactName: profile?.displayName ?? "",
+      contactPhone: "",
+      price: "",
+      discountPrice: "",
+      borrowDuration: "14",
+      safekeepingCharge: "",
+    });
+    void (async () => {
+      const res = await getAddressesAction("PICKUP");
+      const list = res.success ? res.data : [];
+      setPickupAddresses(list);
+      const preferred = list.find((a) => a.isDefault) ?? list[0];
+      if (preferred) {
+        setPromoteForm((prev) => ({ ...prev, addressId: preferred._id }));
+      }
+    })();
+  };
+
+  const submitPromote = () => {
+    if (!promoteTarget) return;
+    const f = promoteForm;
+    if (!f.addressId) {
+      setMsg({ ok: false, text: "Select a pickup address." });
+      return;
+    }
+    if (!f.contactName.trim() || !f.contactPhone.trim()) {
+      setMsg({ ok: false, text: "Contact name and phone are required." });
+      return;
+    }
+    if ((f.type === "Selling" || f.type === "Swap") && !f.price.trim()) {
+      setMsg({ ok: false, text: "Price is required for this listing type." });
+      return;
+    }
+    if (f.type === "Lending" && !f.borrowDuration.trim()) {
+      setMsg({ ok: false, text: "Borrow duration is required for lending." });
+      return;
+    }
+
+    const payload: PromoteBookPayload = {
+      type: f.type,
+      addressId: f.addressId,
+      contactName: f.contactName.trim(),
+      contactPhone: f.contactPhone.trim(),
+    };
+    if (f.type === "Selling" || f.type === "Swap") {
+      payload.price = Number(f.price);
+      if (f.type === "Selling" && f.discountPrice.trim()) {
+        payload.discountPrice = Number(f.discountPrice);
+      }
+    }
+    if (f.type === "Lending") {
+      payload.borrowDuration = Number(f.borrowDuration);
+      if (f.safekeepingCharge.trim()) {
+        payload.safekeepingCharge = Number(f.safekeepingCharge);
+      }
+    }
+
+    const target = promoteTarget;
+    startTransition(async () => {
+      const res = await promoteBookAction(target._id, payload);
+      if (res.success) {
+        setPromoteTarget(null);
+        setMsg({
+          ok: true,
+          text: `"${target.title}" promoted to ${f.type}. It's pending re-approval.`,
+        });
+        void loadShelf();
+      } else {
+        setMsg({ ok: false, text: res.message ?? "Failed to promote book." });
+      }
+    });
+  };
+
   if (loading) {
     return <p className="text-sm text-gray-500">Loading library…</p>;
   }
@@ -269,15 +386,24 @@ export default function MyLibraryPage() {
             students.
           </p>
         </div>
-        {profile ? (
+        <div className="flex flex-wrap items-center gap-3">
           <Link
-            href={`/books/library/${profile._id}`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E30B12] hover:underline"
+            href="/books/libraries"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-gray-900"
           >
-            View public profile
-            <ExternalLink className="h-3.5 w-3.5" />
+            <Users className="h-3.5 w-3.5" />
+            Discover libraries
           </Link>
-        ) : null}
+          {profile ? (
+            <Link
+              href={`/books/library/${profile._id}`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E30B12] hover:underline"
+            >
+              View public profile
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       {msg ? (
@@ -621,6 +747,15 @@ export default function MyLibraryPage() {
                               <Pencil className="h-3 w-3" />
                               Edit
                             </Link>
+                            <button
+                              type="button"
+                              disabled={isPending}
+                              onClick={() => openPromote(book)}
+                              className="inline-flex items-center gap-1 rounded-md border border-[#E30B12]/30 bg-white px-2 py-1 text-[11px] font-semibold text-[#E30B12] hover:bg-[#E30B12]/5 disabled:opacity-60"
+                            >
+                              <TrendingUp className="h-3 w-3" />
+                              Promote
+                            </button>
                             <button
                               type="button"
                               disabled={isPending}
@@ -1015,6 +1150,241 @@ export default function MyLibraryPage() {
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
               >
                 {pendingDeleteId ? "Removing…" : "Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Promote modal */}
+      {promoteTarget ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6"
+          onClick={() => (isPending ? undefined : setPromoteTarget(null))}
+        >
+          <div
+            className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+                  <TrendingUp className="h-4 w-4 text-[#E30B12]" />
+                  Promote book
+                </h3>
+                <p className="mt-1 text-xs text-gray-500">
+                  List &ldquo;{promoteTarget.title}&rdquo; for sale, lending,
+                  donation, or swap. It will be re-reviewed before going live.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPromoteTarget(null)}
+                disabled={isPending}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <label className="block">
+                <span className="text-xs font-medium text-gray-600">
+                  Listing type
+                </span>
+                <select
+                  value={promoteForm.type}
+                  onChange={(e) =>
+                    setPromoteForm((prev) => ({
+                      ...prev,
+                      type: e.target.value as PromoteBookType,
+                    }))
+                  }
+                  className={`${inputClass} mt-1`}
+                >
+                  {PROMOTE_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-medium text-gray-600">
+                  Pickup address
+                </span>
+                <select
+                  value={promoteForm.addressId}
+                  onChange={(e) =>
+                    setPromoteForm((prev) => ({
+                      ...prev,
+                      addressId: e.target.value,
+                    }))
+                  }
+                  className={`${inputClass} mt-1`}
+                >
+                  <option value="">Select a pickup address</option>
+                  {pickupAddresses.map((addr) => (
+                    <option key={addr._id} value={addr._id}>
+                      {addr.address}
+                    </option>
+                  ))}
+                </select>
+                {pickupAddresses.length === 0 ? (
+                  <Link
+                    href="/my-addresses"
+                    className="mt-1 inline-block text-xs font-semibold text-[#E30B12] hover:underline"
+                  >
+                    Add a pickup address →
+                  </Link>
+                ) : null}
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-xs font-medium text-gray-600">
+                    Contact name
+                  </span>
+                  <input
+                    value={promoteForm.contactName}
+                    onChange={(e) =>
+                      setPromoteForm((prev) => ({
+                        ...prev,
+                        contactName: e.target.value,
+                      }))
+                    }
+                    className={`${inputClass} mt-1`}
+                    placeholder="Your name"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-medium text-gray-600">
+                    Contact phone
+                  </span>
+                  <input
+                    value={promoteForm.contactPhone}
+                    onChange={(e) =>
+                      setPromoteForm((prev) => ({
+                        ...prev,
+                        contactPhone: e.target.value,
+                      }))
+                    }
+                    className={`${inputClass} mt-1`}
+                    placeholder="01XXXXXXXXX"
+                  />
+                </label>
+              </div>
+
+              {promoteForm.type === "Selling" ||
+              promoteForm.type === "Swap" ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="text-xs font-medium text-gray-600">
+                      Price (৳)
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={promoteForm.price}
+                      onChange={(e) =>
+                        setPromoteForm((prev) => ({
+                          ...prev,
+                          price: e.target.value,
+                        }))
+                      }
+                      className={`${inputClass} mt-1`}
+                      placeholder="0"
+                    />
+                  </label>
+                  {promoteForm.type === "Selling" ? (
+                    <label className="block">
+                      <span className="text-xs font-medium text-gray-600">
+                        Discount price (optional)
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={promoteForm.discountPrice}
+                        onChange={(e) =>
+                          setPromoteForm((prev) => ({
+                            ...prev,
+                            discountPrice: e.target.value,
+                          }))
+                        }
+                        className={`${inputClass} mt-1`}
+                        placeholder="Less than price"
+                      />
+                    </label>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {promoteForm.type === "Lending" ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="text-xs font-medium text-gray-600">
+                      Borrow duration (days)
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={promoteForm.borrowDuration}
+                      onChange={(e) =>
+                        setPromoteForm((prev) => ({
+                          ...prev,
+                          borrowDuration: e.target.value,
+                        }))
+                      }
+                      className={`${inputClass} mt-1`}
+                      placeholder="14"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-medium text-gray-600">
+                      Safekeeping charge (৳)
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={promoteForm.safekeepingCharge}
+                      onChange={(e) =>
+                        setPromoteForm((prev) => ({
+                          ...prev,
+                          safekeepingCharge: e.target.value,
+                        }))
+                      }
+                      className={`${inputClass} mt-1`}
+                      placeholder="Optional"
+                    />
+                  </label>
+                </div>
+              ) : null}
+
+              {promoteForm.type === "Donation" ? (
+                <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
+                  Donation listings are free — no price needed.
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPromoteTarget(null)}
+                disabled={isPending}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitPromote}
+                disabled={isPending}
+                className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white hover:bg-[#B70910] disabled:opacity-60"
+              >
+                {isPending ? "Promoting…" : "Promote"}
               </button>
             </div>
           </div>

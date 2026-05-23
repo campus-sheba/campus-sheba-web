@@ -196,7 +196,11 @@ export const bookEndpoints = {
     creatorLend: `${baseURL}/creator/books/lend`,
     creatorDonate: `${baseURL}/creator/books/donate`,
     creatorSwap: `${baseURL}/creator/books/swap`,
+    /** @deprecated Use creatorShelf (slim payload) for showcase books. */
     creatorLibraryOnly: `${baseURL}/creator/books/library-only`,
+    creatorShelf: `${baseURL}/creator/books/shelf`,
+    creatorPromote: (bookId: string) =>
+        `${baseURL}/creator/books/${encodeURIComponent(bookId)}/promote`,
     creatorOwn: `${baseURL}/creator/books/own`,
     creatorById: (bookId: string) => `${baseURL}/creator/books/${encodeURIComponent(bookId)}`,
     // User browse endpoints
@@ -204,6 +208,8 @@ export const bookEndpoints = {
     userBorrowable: `${baseURL}/user/books/borrowable`,
     userMyListed: `${baseURL}/user/books/my-listed`,
     userBorrowed: `${baseURL}/user/books/borrowed`,
+    userByOwner: (ownerId: string) =>
+        `${baseURL}/user/books/by-owner/${encodeURIComponent(ownerId)}`,
     userById: (bookId: string) => `${baseURL}/user/books/${encodeURIComponent(bookId)}`,
     // Discovery feed endpoints (auth required)
     feedSemester: `${baseURL}/user/books/feed/semester`,
