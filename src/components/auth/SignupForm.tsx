@@ -4,6 +4,8 @@ import { Fragment, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Check, ChevronLeft } from "lucide-react";
 
+import { Link } from "@/i18n/navigation";
+
 import {
   completeSignupAction,
   sendOtpAction,
@@ -58,9 +60,9 @@ function StepProgress({ current }: { current: SignupStep }) {
                 className={[
                   "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors",
                   isDone
-                    ? "bg-emerald-600 text-white"
+                    ? "bg-[#E30B12] text-white"
                     : isActive
-                      ? "border-2 border-emerald-600 text-emerald-700"
+                      ? "border-2 border-[#E30B12] text-[#E30B12]"
                       : "border-2 border-neutral-200 text-neutral-400",
                 ].join(" ")}
               >
@@ -69,7 +71,7 @@ function StepProgress({ current }: { current: SignupStep }) {
               <span
                 className={[
                   "text-[11px] font-medium",
-                  isActive ? "text-emerald-700" : "text-neutral-400",
+                  isActive ? "text-[#E30B12]" : "text-neutral-400",
                 ].join(" ")}
               >
                 {labels[step]}
@@ -79,7 +81,7 @@ function StepProgress({ current }: { current: SignupStep }) {
               <span
                 className={[
                   "mx-1 mb-4 h-0.5 w-8 rounded-full transition-colors sm:w-12",
-                  index < currentIndex ? "bg-emerald-600" : "bg-neutral-200",
+                  index < currentIndex ? "bg-[#E30B12]" : "bg-neutral-200",
                 ].join(" ")}
               />
             )}
@@ -100,6 +102,7 @@ export default function SignupForm({ onSuccess, switchToLogin }: SignupFormProps
   const { state, login, selectUniversity } = useAppState();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<SignupStep>("phone");
+  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState({
     phone: "",
     otp: "",
@@ -171,6 +174,7 @@ export default function SignupForm({ onSuccess, switchToLogin }: SignupFormProps
     if (pinError) newErrors.pin = pinError;
     if (!form.confirmPin) newErrors.confirmPin = t("confirmPinRequired");
     if (form.pin !== form.confirmPin) newErrors.confirmPin = t("pinsNoMatch");
+    if (!agreed) newErrors.agree = t("agreeRequired");
     if (!state.university.selected?._id) {
       newErrors.general = t("selectUniversityBeforeSignup");
     }
@@ -282,6 +286,29 @@ export default function SignupForm({ onSuccess, switchToLogin }: SignupFormProps
             error={errors.confirmPin}
             onChange={(value) => setForm((prev) => ({ ...prev, confirmPin: value }))}
           />
+
+          <div>
+            <label className="flex items-start gap-2.5 text-xs text-neutral-600">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#E30B12] focus:ring-[#E30B12]"
+              />
+              <span>
+                {t("agreement")}{" "}
+                <Link href="/terms-condition" className="font-medium text-[#E30B12] hover:underline">
+                  {t("termsConditions")}
+                </Link>{" "}
+                {t("and")}{" "}
+                <Link href="/privacy-policy" className="font-medium text-[#E30B12] hover:underline">
+                  {t("privacyPolicy")}
+                </Link>
+              </span>
+            </label>
+            <FieldError message={errors.agree} />
+          </div>
+
           <AuthSubmitButton
             isPending={isPending}
             pendingText={t("creating")}

@@ -32,7 +32,7 @@ function LoginPageInner() {
             {t("dontHaveAccount")}{" "}
             <Link
               href={signupHref(callbackUrl)}
-              className="font-semibold text-emerald-600 hover:underline"
+              className="font-semibold text-[#E30B12] hover:underline"
             >
               {t("signUp")}
             </Link>

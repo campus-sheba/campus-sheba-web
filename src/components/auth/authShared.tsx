@@ -1,10 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-import { Phone, Lock } from "lucide-react";
+import { useRef, useState } from "react";
+import { Phone, Lock, User, Eye, EyeOff, type LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui";
-import { cn } from "@/utils/utils";
 import type { University } from "@/types/global";
 import {
   getOrCreateDeviceId,
@@ -17,15 +15,21 @@ import { subscribeUserNotificationsAction } from "@/app/actions/notifications";
 /**
  * Presentational + pure helpers shared by the auth modal and the dedicated
  * /login and /signup pages, so the two surfaces stay visually and behaviourally
- * identical without duplicating field logic.
+ * identical. Styled to the Campus Sheba mobile design language: clean white
+ * cards, icon-prefixed inputs, and full-width brand-red actions.
  */
+
+/** Campus Sheba brand red (matches the logo `#E30B12`). */
+export const BRAND_RED = "#E30B12";
 
 export const OTP_LENGTH = 6;
 
-const FIELD_LABEL_CLASS = "mb-1 block text-sm font-medium text-neutral-700";
-const FIELD_ERROR_CLASS = "mt-1 text-xs text-red-500";
-const INPUT_BASE_CLASS =
-  "w-full border border-neutral-300 rounded-lg py-2.5 outline-none text-sm focus:ring-2 focus:ring-emerald-100 focus:border-emerald-600";
+const FIELD_LABEL_CLASS = "mb-1.5 block text-sm font-medium text-neutral-700";
+const FIELD_ERROR_CLASS = "mt-1 text-xs text-red-600";
+const INPUT_SHELL_CLASS =
+  "flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 transition-colors focus-within:border-[#E30B12] focus-within:ring-2 focus-within:ring-[#E30B12]/15";
+const INPUT_CLASS =
+  "w-full bg-transparent py-3 text-sm text-neutral-900 outline-none placeholder:text-neutral-400";
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return <label className={FIELD_LABEL_CLASS}>{children}</label>;
@@ -54,17 +58,15 @@ export function PhoneInputField({
   return (
     <div>
       <FieldLabel>{label}</FieldLabel>
-      <div className="flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100">
-        <span className="inline-flex items-center gap-1 border-r border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm font-semibold text-neutral-700">
-          <Phone className="h-4 w-4 text-neutral-400" />
-          (+88)
-        </span>
+      <div className={INPUT_SHELL_CLASS}>
+        <Phone className="h-[18px] w-[18px] shrink-0 text-neutral-400" />
+        <span className="text-sm font-medium text-neutral-500">+88</span>
         <input
           type="tel"
           inputMode="numeric"
           pattern="[0-9]*"
           placeholder={placeholder}
-          className="w-full px-3 py-2.5 text-sm outline-none"
+          className={INPUT_CLASS}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
@@ -79,34 +81,40 @@ type PinInputFieldProps = {
   value: string;
   error?: string;
   placeholder?: string;
-  className?: string;
-  withIcon?: boolean;
   onChange: (value: string) => void;
+  /** keep API parity with previous callers; lock icon shows by default */
+  withIcon?: boolean;
 };
 
 export function PinInputField({
   label,
   value,
   error,
-  placeholder = "****",
-  className,
-  withIcon = false,
+  placeholder = "••••",
   onChange,
 }: PinInputFieldProps) {
+  const [visible, setVisible] = useState(false);
   return (
     <div>
       <FieldLabel>{label}</FieldLabel>
-      <div className={cn(withIcon && "relative")}>
-        {withIcon && (
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-        )}
+      <div className={INPUT_SHELL_CLASS}>
+        <Lock className="h-[18px] w-[18px] shrink-0 text-neutral-400" />
         <input
-          type="password"
+          type={visible ? "text" : "password"}
+          inputMode="numeric"
           placeholder={placeholder}
-          className={cn(INPUT_BASE_CLASS, withIcon ? "pl-10 pr-4" : "px-4", className)}
+          className={INPUT_CLASS}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
+        <button
+          type="button"
+          onClick={() => setVisible((prev) => !prev)}
+          aria-label={visible ? "Hide PIN" : "Show PIN"}
+          className="shrink-0 p-1 text-neutral-400 transition-colors hover:text-neutral-600"
+        >
+          {visible ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+        </button>
       </div>
       <FieldError message={error} />
     </div>
@@ -118,24 +126,29 @@ export function TextInputField({
   placeholder,
   value,
   error,
+  icon: Icon = User,
   onChange,
 }: {
   label: string;
   placeholder: string;
   value: string;
   error?: string;
+  icon?: LucideIcon;
   onChange: (value: string) => void;
 }) {
   return (
     <div>
       <FieldLabel>{label}</FieldLabel>
-      <input
-        type="text"
-        placeholder={placeholder}
-        className={cn(INPUT_BASE_CLASS, "px-4")}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
+      <div className={INPUT_SHELL_CLASS}>
+        <Icon className="h-[18px] w-[18px] shrink-0 text-neutral-400" />
+        <input
+          type="text"
+          placeholder={placeholder}
+          className={INPUT_CLASS}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </div>
       <FieldError message={error} />
     </div>
   );
@@ -153,17 +166,15 @@ export function OtpInput({
   label: string;
   onChange: (value: string) => void;
 }) {
-  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const chars = value.padEnd(OTP_LENGTH, " ").slice(0, OTP_LENGTH).split("");
+  const refs = useRef<Array<HTMLInputElement | null>>([]);
 
   const handleDigit = (index: number, raw: string) => {
     const digit = raw.replace(/\D/g, "").slice(-1);
     const next = [...chars];
     next[index] = digit || " ";
     onChange(next.join("").replace(/\s/g, ""));
-    if (digit && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (digit && index < OTP_LENGTH - 1) refs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (
@@ -177,7 +188,7 @@ export function OtpInput({
       onChange(next.join("").replace(/\s/g, ""));
       return;
     }
-    if (index > 0) inputRefs.current[index - 1]?.focus();
+    if (index > 0) refs.current[index - 1]?.focus();
   };
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
@@ -187,7 +198,7 @@ export function OtpInput({
       .replace(/\D/g, "")
       .slice(0, OTP_LENGTH);
     onChange(pasted);
-    inputRefs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
+    refs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
   };
 
   return (
@@ -198,13 +209,13 @@ export function OtpInput({
           <input
             key={index}
             ref={(element) => {
-              inputRefs.current[index] = element;
+              refs.current[index] = element;
             }}
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={1}
-            className="h-11 w-11 rounded-lg border border-neutral-300 text-center text-base font-semibold text-neutral-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            className="h-12 w-12 rounded-xl border border-neutral-200 text-center text-base font-semibold text-neutral-900 outline-none focus:border-[#E30B12] focus:ring-2 focus:ring-[#E30B12]/15"
             value={chars[index] === " " ? "" : chars[index]}
             onChange={(event) => handleDigit(index, event.target.value)}
             onKeyDown={(event) => handleKeyDown(index, event)}
@@ -227,16 +238,13 @@ export function AuthSubmitButton({
   pendingText: string;
 }) {
   return (
-    <Button
+    <button
       type="submit"
       disabled={isPending}
-      variant="secondary"
-      fullWidth
-      uppercase={false}
-      className="rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+      className="w-full rounded-xl bg-[#E30B12] py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-[#c70910] active:brightness-95 disabled:opacity-60"
     >
       {isPending ? pendingText : idleText}
-    </Button>
+    </button>
   );
 }
 

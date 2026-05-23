@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 import { loginAction } from "@/app/[locale]/(auth)/login/actions";
 import { useAppState } from "@/contexts/AppStateContext";
@@ -98,20 +99,32 @@ export default function LoginForm({ onSuccess, switchToSignup }: LoginFormProps)
         }
       />
 
-      <PinInputField
-        label={t("pin")}
-        value={form.pin}
-        error={errors.pin}
-        withIcon
-        onChange={(value) => setForm((prev) => ({ ...prev, pin: value }))}
-      />
+      <div>
+        <PinInputField
+          label={t("pin")}
+          value={form.pin}
+          error={errors.pin}
+          onChange={(value) => setForm((prev) => ({ ...prev, pin: value }))}
+        />
+        <div className="mt-1.5 text-right">
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("Password reset is coming soon. Please contact support.")
+            }
+            className="text-xs font-medium text-[#E30B12] hover:underline"
+          >
+            {t("forgotPin")}
+          </button>
+        </div>
+      </div>
 
       <FieldError message={errors.general} />
 
       <AuthSubmitButton
         isPending={isPending}
         pendingText={t("signingIn")}
-        idleText={t("signIn")}
+        idleText={t("logIn")}
       />
 
       {switchToSignup}

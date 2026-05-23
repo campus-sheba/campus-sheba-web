@@ -486,6 +486,13 @@
     "stepVerify": "Verify",
     "stepProfile": "Profile",
     "loginSubtitle": "Welcome back! Sign in to continue to Campus Sheba.",
-    "signupSubtitle": "Create your account in a few quick steps."
+    "signupSubtitle": "Create your account in a few quick steps.",
+    "logIn": "Log In",
+    "forgotPin": "Forgot PIN?",
+    "agreeRequired": "Please accept the Terms & Conditions to continue.",
+    "agreement": "I agree to the",
+    "termsConditions": "Terms & Conditions",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy"
   }
 }
