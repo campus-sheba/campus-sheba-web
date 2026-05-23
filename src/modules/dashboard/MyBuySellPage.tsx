@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { fetchBuySellCategories, fetchCreatorOwnBuySell } from "@/services/buy-sell";
 import type { BuySellCategory, BuySellListing } from "@/types/buy-sell";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+import { Pagination } from "@/components/ui";
 
 const CONDITIONS = ["", "New", "Used - Like New", "Used - Good", "Used - Fair"] as const;
 const STATUSES = ["", "Pending", "Approved", "Rejected", "Sold"] as const;
@@ -23,7 +24,6 @@ export default function MyBuySellPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [searchKey, setSearchKey] = useState("");
@@ -53,29 +53,27 @@ export default function MyBuySellPage() {
     })();
   }, []);
 
-  const fetchPage = async (nextPage: number, append: boolean) => {
-    if (append) setLoadingMore(true);
-    else setLoading(true);
+  const fetchPage = async (nextPage: number) => {
+    setLoading(true);
     setError(null);
     try {
       const res = await fetchCreatorOwnBuySell(buildApiParams(nextPage));
       setTotal(res.total);
-      setItems((prev) => (append ? [...prev, ...res.data] : res.data));
+      setItems(res.data);
       setPage(nextPage);
     } catch (e) {
       setError(e instanceof Error ? e.message : tt("myBuySell.failedLoadListings", "Failed to load listings."));
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    void fetchPage(1, false);
+    void fetchPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initial load only
   }, []);
 
-  const hasMore = items.length < total;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return (
     <div className="space-y-5">
@@ -154,7 +152,7 @@ export default function MyBuySellPage() {
           </label>
           <button
             type="button"
-            onClick={() => void fetchPage(1, false)}
+            onClick={() => void fetchPage(1)}
             className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95"
           >
             {tt("myBuySell.apply", "Apply")}
@@ -258,15 +256,19 @@ export default function MyBuySellPage() {
         </div>
       )}
 
-      {hasMore && !loading ? (
-        <button
-          type="button"
-          disabled={loadingMore}
-          onClick={() => void fetchPage(page + 1, true)}
-          className="w-full rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          {loadingMore ? tt("myBuySell.loading", "Loading...") : tt("myBuySell.loadMore", "Load more")}
-        </button>
+      {!loading && items.length > 0 ? (
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p className="text-xs text-gray-500">
+            {tt("myBuySell.showing", "Showing")} {(page - 1) * limit + 1}–
+            {Math.min(page * limit, total)} {tt("myBuySell.of", "of")} {total}
+          </p>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            disabled={loading}
+            onPageChange={(p) => void fetchPage(p)}
+          />
+        </div>
       ) : null}
     </div>
   );

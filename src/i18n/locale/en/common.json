@@ -481,6 +481,11 @@
     "creating": "Creating...",
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
-    "signUp": "Sign up"
+    "signUp": "Sign up",
+    "stepPhone": "Phone",
+    "stepVerify": "Verify",
+    "stepProfile": "Profile",
+    "loginSubtitle": "Welcome back! Sign in to continue to Campus Sheba.",
+    "signupSubtitle": "Create your account in a few quick steps."
   }
 }

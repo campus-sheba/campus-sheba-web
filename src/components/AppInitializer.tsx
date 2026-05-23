@@ -17,10 +17,12 @@ export function AppInitializer() {
 
   useEffect(() => {
     const initializeApp = () => {
-      const token = CookieHelper.getAccessToken();
+      // Auth tokens are httpOnly (unreadable here); the non-httpOnly `user`
+      // cookie is the client-visible signal of an active session.
+      const hasSession = CookieHelper.getUserProfile() !== null;
       const university = CookieHelper.getUniversity();
-      // 1) Registered user with token: do not force university popup.
-      if (token) {
+      // 1) Registered user with a session: do not force university popup.
+      if (hasSession) {
         if (university) {
           dispatch({ type: "SET_UNIVERSITY", payload: university });
         }
@@ -52,10 +54,10 @@ export function useAppInitialization() {
   const { dispatch } = useAppState();
 
   useEffect(() => {
-    const token = CookieHelper.getAccessToken();
+    const hasSession = CookieHelper.getUserProfile() !== null;
     const university = CookieHelper.getUniversity();
 
-    if (!token && !university) {
+    if (!hasSession && !university) {
       dispatch({ type: "OPEN_UNIVERSITY_SELECTOR", payload: { isMandatory: true } });
     }
   }, [dispatch]);

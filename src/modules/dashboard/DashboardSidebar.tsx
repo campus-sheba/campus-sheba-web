@@ -4,26 +4,28 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import {
   LayoutDashboard,
-  ShoppingBag,
-  BookOpen,
-  BookMarked,
-  Droplets,
-  GraduationCap,
-  Briefcase,
-  Heart,
-  Archive,
   MapPin,
   Wallet,
+  Coins,
+  Users,
   Settings,
-  Bike,
+  BookOpen,
+  BookMarked,
+  BookCopy,
+  BookUp,
+  BookHeart,
+  Tag,
+  Receipt,
+  Droplets,
+  HeartPulse,
+  ChevronDown,
   LogOut,
   X,
   Menu,
-  Coins,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
+
 import { Button } from "@/components/ui";
 import { logoutAction } from "@/services/user";
 
@@ -41,130 +43,165 @@ type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
-  color: string;
 };
 
-const primaryItems: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/profile",
-    icon: LayoutDashboard,
-    color: "text-gray-600",
-  },
-  {
-    label: "My Shop",
-    href: "/my-shop",
-    icon: ShoppingBag,
-    color: "text-pink-600",
-  },
-  {
-    label: "Addresses",
-    href: "/my-addresses",
-    icon: MapPin,
-    color: "text-blue-500",
-  },
-  { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-[#00A651]" },
-  { label: "Campus Coins", href: "/campus-coins", icon: Coins, color: "text-amber-500" },
-  { label: "Refer & Earn", href: "/refer-and-earn", icon: Users, color: "text-blue-500" },
+type NavGroup = {
+  id: string;
+  label: string;
+  items: NavItem[];
+};
 
+/**
+ * Phase-1 dashboard navigation. Trimmed to the modules we actually ship and
+ * organised into domain groups (Account, Books, Marketplace, Blood Bank) so the
+ * sidebar reads as a clean, scannable menu rather than one long flat list.
+ */
+const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    color: "text-gray-500",
+    id: "account",
+    label: "Account",
+    items: [
+      { label: "Dashboard", href: "/profile", icon: LayoutDashboard },
+      { label: "Addresses", href: "/my-addresses", icon: MapPin },
+      { label: "Wallet", href: "/wallet", icon: Wallet },
+      { label: "Campus Coins", href: "/campus-coins", icon: Coins },
+      { label: "Refer & Earn", href: "/refer-and-earn", icon: Users },
+      { label: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
+  {
+    id: "books",
+    label: "Books",
+    items: [
+      { label: "My Books", href: "/my-books", icon: BookOpen },
+      { label: "My Library", href: "/my-library", icon: BookMarked },
+      { label: "Borrowed Books", href: "/my-book-borrowed", icon: BookCopy },
+      { label: "Lent Books", href: "/my-book-lent", icon: BookUp },
+      { label: "Book Donations", href: "/my-book-donations", icon: BookHeart },
+    ],
+  },
+  {
+    id: "marketplace",
+    label: "Marketplace",
+    items: [
+      { label: "Buy & Sell", href: "/my-buy-sell", icon: Tag },
+      { label: "My Orders", href: "/my-orders", icon: Receipt },
+    ],
+  },
+  {
+    id: "blood",
+    label: "Blood Bank",
+    items: [
+      { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets },
+      { label: "Donor Profile", href: "/my-blood-donor", icon: HeartPulse },
+    ],
   },
 ];
-
-const serviceItems: NavItem[] = [
-  { label: "Lost & Found", href: "/my-lost-found", icon: MapPin, color: "text-yellow-600" },
-  { label: "Delivery", href: "/my-delivery", icon: Bike, color: "text-purple-600" },
-  { label: "Marketplace", href: "/my-marketplace", icon: ShoppingBag, color: "text-emerald-600" },
-  { label: "Books", href: "/my-books", icon: BookOpen, color: "text-blue-600" },
-  { label: "My library", href: "/my-library", icon: BookMarked, color: "text-teal-600" },
-  { label: "Borrowed books", href: "/my-book-borrowed", icon: BookOpen, color: "text-sky-600" },
-  { label: "Lent books", href: "/my-book-lent", icon: BookOpen, color: "text-indigo-600" },
-  { label: "Book donations", href: "/my-book-donations", icon: BookOpen, color: "text-violet-600" },
-  { label: "Blood Requests", href: "/my-blood-requests", icon: Droplets, color: "text-red-600" },
-  { label: "Tuition", href: "/my-tuition", icon: GraduationCap, color: "text-amber-600" },
-  { label: "Job Applications", href: "/my-job-applications", icon: Briefcase, color: "text-sky-600" },
-  { label: "Donations", href: "/my-donations", icon: Heart, color: "text-green-600" },
-  { label: "Parcels", href: "/my-parcels", icon: Archive, color: "text-violet-600" },
-];
-
 
 export default function DashboardSidebar({ user }: Props) {
   const pathname = usePathname();
-  // Extract locale from pathname (e.g. /en/..., /bn/...)
   const locale = pathname.split("/")[1] || "en";
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
-  const isActive = (href: string) => {
-    // next-intl's usePathname returns the locale-prefixed path
-    return pathname === href || pathname.startsWith(href + "/");
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
+
+  const toggleGroup = (id: string) =>
+    setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const renderNavItem = (item: NavItem) => {
+    const active = isActive(item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setMobileOpen(false)}
+        aria-current={active ? "page" : undefined}
+        className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          active
+            ? "bg-[#00A651]/10 text-[#00A651]"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }`}
+      >
+        <item.icon
+          className={`h-[18px] w-[18px] flex-shrink-0 ${
+            active ? "text-[#00A651]" : "text-gray-400 group-hover:text-gray-600"
+          }`}
+        />
+        {item.label}
+      </Link>
+    );
   };
 
-  const renderNavItem = (item: NavItem) => (
-    <Link
-      key={item.href + item.label}
-      href={`${item.href}`}
-      onClick={() => setMobileOpen(false)}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-        isActive(item.href)
-          ? "bg-[#E30A13]/8 text-[#E30A13]"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-      }`}
-    >
-      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive(item.href) ? "text-[#E30A13]" : item.color}`} />
-      {item.label}
-    </Link>
-  );
-
   const initials = user?.name
-    ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
     : "U";
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      {/* User Info */}
-      <div className="p-5 border-b border-gray-100">
+    <div className="flex h-full flex-col">
+      {/* User card */}
+      <div className="border-b border-gray-100 p-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#E30A13] to-[#ff4d56] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#00A651] to-[#00c46a] text-base font-bold text-white">
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-gray-900 truncate">{user?.name || "Student"}</p>
-            <p className="text-xs text-gray-500 truncate">{user?.phone || user?.email || "—"}</p>
+            <p className="truncate text-sm font-semibold text-gray-900">
+              {user?.name || "Student"}
+            </p>
+            <p className="truncate text-xs text-gray-500">
+              {user?.phone || user?.email || "—"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3">
-        <div className="space-y-0.5">
-          {primaryItems.map(renderNavItem)}
-        </div>
-
-        <div className="pt-3 mt-3 border-t border-gray-100">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
-            Service Centers
-          </p>
-          <div className="space-y-0.5">
-            {serviceItems.map(renderNavItem)}
-          </div>
-        </div>
+      {/* Grouped navigation */}
+      <nav className="flex-1 space-y-1 overflow-y-auto p-3 scrollbar-hide">
+        {NAV_GROUPS.map((group) => {
+          const isCollapsed = collapsed[group.id];
+          return (
+            <div key={group.id} className="pb-1">
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.id)}
+                className="flex w-full items-center justify-between px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400 transition-colors hover:text-gray-600"
+                aria-expanded={!isCollapsed}
+              >
+                {group.label}
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform ${
+                    isCollapsed ? "-rotate-90" : ""
+                  }`}
+                />
+              </button>
+              {!isCollapsed && (
+                <div className="mt-0.5 space-y-0.5">
+                  {group.items.map(renderNavItem)}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-gray-100">
+      <div className="border-t border-gray-100 p-3">
         <form action={logoutAction.bind(null, locale)}>
           <Button
             type="submit"
             variant="ghost"
             fullWidth
             uppercase={false}
-            className="justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600"
+            className="justify-start gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600"
           >
-            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <LogOut className="h-[18px] w-[18px] flex-shrink-0" />
             Log Out
           </Button>
         </form>
@@ -177,37 +214,40 @@ export default function DashboardSidebar({ user }: Props) {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-24 left-4 z-50 w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700"
+        className="fixed bottom-24 left-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-md lg:hidden"
         aria-label="Open dashboard menu"
       >
-        <Menu className="w-4 h-4" />
+        <Menu className="h-4 w-4" />
       </button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-[60] lg:hidden"
+          className="fixed inset-0 z-[60] bg-black/40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Mobile drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white z-[61] shadow-2xl transform transition-transform duration-300 lg:hidden ${
+        className={`fixed left-0 top-0 z-[61] h-full w-64 transform bg-white shadow-2xl transition-transform duration-300 lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
           <span className="text-sm font-semibold text-gray-700">Dashboard</span>
-          <button onClick={() => setMobileOpen(false)} className="p-1 rounded-lg hover:bg-gray-100">
-            <X className="w-4 h-4 text-gray-500" />
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1 text-gray-500 hover:bg-gray-100"
+          >
+            <X className="h-4 w-4" />
           </button>
         </div>
         <SidebarContent />
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm sticky top-0 h-full overflow-hidden">
+      <aside className="sticky top-0 hidden h-full w-60 flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:flex">
         <SidebarContent />
       </aside>
     </>
