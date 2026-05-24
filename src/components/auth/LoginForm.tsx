@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
+import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -39,6 +40,9 @@ export default function LoginForm({ onSuccess, switchToSignup }: LoginFormProps)
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({ phone: "", pin: "", role: "User" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Set once login succeeds and the caller starts navigating. Keeps a loader on
+  // screen during the redirect/RSC fetch instead of flashing the idle form back.
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -84,9 +88,23 @@ export default function LoginForm({ onSuccess, switchToSignup }: LoginFormProps)
       void subscribeToPushNotifications();
 
       setForm({ phone: "", pin: "", role: "User" });
+      // Show the loader and hand off; the component unmounts when the caller
+      // finishes navigating (or closes the modal), so this never needs resetting.
+      setIsRedirecting(true);
       onSuccess?.(profileForState);
     });
   };
+
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+        <LoaderCircle className="h-8 w-8 animate-spin text-[#E30B12]" />
+        <p className="text-sm font-medium text-neutral-700">
+          {t("continueSignIn")}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative isolate overflow-hidden rounded-xl">

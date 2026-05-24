@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
+import { normalizeCallbackPath } from "@/i18n/callbackUrl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Heading, Paragraph } from "@/components/ui";
 import SignupForm from "@/components/auth/SignupForm";
@@ -45,10 +46,7 @@ function SignupPageInner() {
 
 /** Only allow same-origin relative callbacks to avoid open-redirects. */
 function safeCallback(callbackUrl: string | null): string {
-  if (callbackUrl && callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")) {
-    return callbackUrl;
-  }
-  return "/";
+  return normalizeCallbackPath(callbackUrl);
 }
 
 function loginHref(callbackUrl: string | null): string {

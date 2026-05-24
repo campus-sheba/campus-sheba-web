@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { ArrowLeft, ShoppingCart, Star, Phone, BookOpen, ArrowLeftRight, Gift, Archive, BookmarkPlus } from "lucide-react";
+import { ArrowLeft, Star, Phone, BookOpen, ArrowLeftRight, Gift, Archive, BookmarkPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { AppStateAction } from "@/types/global";
@@ -12,7 +12,7 @@ import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { ImageGallery } from "@/components/marketplace/ImageGallery";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
-import { addToCartAction } from "@/services/cart";
+import { buyNowAction } from "@/services/cart";
 import { emitCartUpdated } from "@/lib/cartEvents";
 import { fetchUserBookById } from "@/services/books";
 import { requestBookBorrowAction } from "@/services/book-borrowing";
@@ -30,7 +30,15 @@ import type { BookListing, BookReview, BookOwnerRef, ReadingStatus } from "@/typ
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
 import { useAppState } from "@/contexts/AppStateContext";
 import BookListingCard from "./BookListingCard";
+import { isBookOwner } from "@/modules/orders/orderFulfillment";
 import { useTranslations } from "next-intl";
+
+/**
+ * MVP pilot scope: only Sell + Showcase flows are exposed in the web.
+ * Lend / Swap / Donation panels stay in the code but are hidden behind this
+ * flag so the full flow can be re-enabled in a later phase without rework.
+ */
+const ENABLE_NON_SALE_FLOWS: boolean = false;
 
 // ── Star rating display ────────────────────────────────────────────────────────
 
@@ -269,7 +277,9 @@ function ReviewsSection({
                   </button>
                 )}
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-gray-700">{rv.body}</p>
+              <p className="mt-2 text-sm leading-relaxed text-gray-700">
+                {rv.comment ?? rv.body}
+              </p>
               <p className="mt-1 text-[11px] text-gray-400">
                 {new Date(rv.createdAt).toLocaleDateString()}
               </p>
@@ -412,85 +422,71 @@ function LendingActionPanel({
 function SellingActionPanel({
   item,
   tt,
+  isOwner,
 }: {
   item: BookListing;
   tt: (k: string, f: string) => string;
+  isOwner: boolean;
 }) {
+  if (isOwner) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+        <p className="font-semibold text-gray-900">
+          {tt("bookDetail.yourListing", "This is your listing")}
+        </p>
+        <p className="mt-1 text-gray-600">
+          {tt(
+            "bookDetail.manageInDashboard",
+            "Buyers can purchase from this page. Manage the listing from My Books.",
+          )}
+        </p>
+        <Link
+          href={`/my-books/${item._id}/edit`}
+          className="mt-3 inline-flex text-sm font-semibold text-[#E30B12] hover:underline"
+        >
+          {tt("bookDetail.editListing", "Edit listing")}
+        </Link>
+      </div>
+    );
+  }
   const router = useRouter();
-  const [quantity, setQuantity] = useState(1);
-  const [cartMsg, setCartMsg] = useState<string | null>(null);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const stock = Math.max(0, item.quantity ?? 1);
-  const maxQty = stock > 0 ? stock : 1;
 
-  const addToCart = async () => {
-    const res = await addToCartAction({ contentId: item._id, type: "book", quantity });
-    if (res.success) {
-      emitCartUpdated();
-      setCartMsg(tt("bookDetail.addedToCart", "Added to cart."));
-      return true;
-    }
-    setCartMsg(
-      (res as { message?: string }).message ??
-        tt("bookDetail.couldNotAddToCart", "Could not add to cart."),
-    );
-    return false;
+  const onBuyNow = () => {
+    startTransition(async () => {
+      setActionMsg(null);
+      const res = await buyNowAction({ contentId: item._id, type: "book" });
+      if (res.success) {
+        emitCartUpdated();
+        router.push("/checkout");
+        return;
+      }
+      setActionMsg(
+        res.message ?? tt("bookDetail.couldNotCheckout", "Could not start checkout."),
+      );
+    });
   };
 
   return (
-    <div className="flex items-start gap-4">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-          className="rounded border border-gray-300 px-2.5 py-1 text-sm"
-        >
-          -
-        </button>
-        <span className="min-w-6 text-center text-sm font-semibold">{quantity}</span>
-        <button
-          type="button"
-          onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
-          className="rounded border border-gray-300 px-2.5 py-1 text-sm"
-        >
-          +
-        </button>
-      </div>
-      <div className="flex flex-1 flex-wrap gap-3 pt-0.5">
-        <Button
-          type="button"
-          variant="secondary"
-          uppercase={false}
-          className="gap-2"
-          onClick={() => startTransition(async () => { setCartMsg(null); await addToCart(); })}
-          disabled={isPending || stock < 1}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {isPending
-            ? tt("bookDetail.adding", "Adding…")
-            : stock < 1
-              ? tt("bookDetail.outOfStock", "Out of stock")
-              : tt("bookDetail.addToCart", "Add to cart")}
-        </Button>
-        <Button
-          type="button"
-          uppercase={false}
-          className="gap-2"
-          onClick={() =>
-            startTransition(async () => {
-              setCartMsg(null);
-              const ok = await addToCart();
-              if (ok) router.push("/cart");
-            })
-          }
-          disabled={isPending || stock < 1}
-        >
-          {isPending ? tt("bookDetail.processing", "Processing…") : tt("bookDetail.buyNow", "Buy now")}
-        </Button>
-      </div>
-      {cartMsg && (
-        <p className="w-full text-sm text-gray-600" role="status">
-          {cartMsg}
+    <div>
+      <Button
+        type="button"
+        uppercase={false}
+        className="gap-2"
+        onClick={onBuyNow}
+        disabled={isPending || stock < 1}
+      >
+        {isPending
+          ? tt("bookDetail.processing", "Processing…")
+          : stock < 1
+            ? tt("bookDetail.outOfStock", "Out of stock")
+            : tt("bookDetail.buyNow", "Buy now")}
+      </Button>
+      {actionMsg && (
+        <p className="mt-2 text-sm text-gray-600" role="status">
+          {actionMsg}
         </p>
       )}
     </div>
@@ -723,6 +719,29 @@ function AddToReadingListAction({
   );
 }
 
+/** MVP fallback for legacy lend/swap/donation listings reached via direct link. */
+function UnavailableForPurchasePanel({ tt }: { tt: (k: string, f: string) => string }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+      <div className="flex items-center gap-2">
+        <Archive className="h-4 w-4 text-gray-500" />
+        <p className="text-sm font-semibold text-gray-800">
+          {tt("bookDetail.notAvailable", "Not available for purchase right now")}
+        </p>
+      </div>
+      <p className="mt-2 text-sm text-gray-600">
+        {tt(
+          "bookDetail.notAvailableHint",
+          "This listing isn't open for transactions yet. Browse books for sale on campus instead.",
+        )}{" "}
+        <Link href="/books" className="font-semibold text-[#E30B12] hover:underline">
+          Browse books →
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 function LibraryOnlyPanel({ tt }: { tt: (k: string, f: string) => string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
@@ -852,12 +871,17 @@ export default function BookDetail() {
         ? item.department
         : "—";
 
-  const displayPrice =
-    item.type === "Donation" || item.type === "Library Only" || item.price === 0
-      ? null
-      : item.discountPrice != null && item.discountPrice < item.price
+  const basePrice = item.price ?? 0;
+  const displayPrice = (() => {
+    if (item.type === "Donation" || item.type === "Library Only") return null;
+    const effective =
+      item.discountPrice != null &&
+      item.discountPrice > 0 &&
+      (basePrice <= 0 || item.discountPrice < basePrice)
         ? item.discountPrice
-        : item.price;
+        : basePrice;
+    return effective > 0 ? effective : null;
+  })();
 
   return (
     <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md">
@@ -904,9 +928,11 @@ export default function BookDetail() {
                     <span className="text-3xl font-bold text-[#E30B12]">
                       ৳{displayPrice.toLocaleString()}
                     </span>
-                    {item.discountPrice != null && item.discountPrice < item.price && (
+                    {item.discountPrice != null &&
+                      basePrice > 0 &&
+                      item.discountPrice < basePrice && (
                       <span className="text-lg text-gray-400 line-through">
-                        ৳{item.price.toLocaleString()}
+                        ৳{basePrice.toLocaleString()}
                       </span>
                     )}
                   </>
@@ -990,8 +1016,20 @@ export default function BookDetail() {
               tt={tt}
             />
 
-            {/* Action panel based on type */}
-            {item.type === "Lending" && (
+            {/* Action panel based on type — MVP exposes Sell + Showcase only */}
+            {item.type === "Selling" && (
+              <SellingActionPanel
+                item={item}
+                tt={tt}
+                isOwner={isBookOwner(item, currentUserId)}
+              />
+            )}
+            {(item.type === "Library Only" || item.type === "Request Based") && (
+              <LibraryOnlyPanel tt={tt} />
+            )}
+
+            {/* Non-sale flows (Lend/Swap/Donation) — hidden for MVP pilot */}
+            {ENABLE_NON_SALE_FLOWS && item.type === "Lending" && (
               <LendingActionPanel
                 item={item}
                 isLoggedIn={isLoggedIn}
@@ -999,9 +1037,10 @@ export default function BookDetail() {
                 tt={tt}
               />
             )}
-            {item.type === "Selling" && <SellingActionPanel item={item} tt={tt} />}
-            {item.type === "Swap" && <SwapActionPanel item={item} tt={tt} />}
-            {item.type === "Donation" && (
+            {ENABLE_NON_SALE_FLOWS && item.type === "Swap" && (
+              <SwapActionPanel item={item} tt={tt} />
+            )}
+            {ENABLE_NON_SALE_FLOWS && item.type === "Donation" && (
               <DonationActionPanel
                 bookId={item._id}
                 isLoggedIn={isLoggedIn}
@@ -1011,9 +1050,10 @@ export default function BookDetail() {
                 tt={tt}
               />
             )}
-            {(item.type === "Library Only" || item.type === "Request Based") && (
-              <LibraryOnlyPanel tt={tt} />
-            )}
+            {!ENABLE_NON_SALE_FLOWS &&
+              (item.type === "Lending" ||
+                item.type === "Swap" ||
+                item.type === "Donation") && <UnavailableForPurchasePanel tt={tt} />}
           </div>
         </div>
       </SectionWrapper>
@@ -1076,7 +1116,7 @@ export default function BookDetail() {
           <div className="mt-4">
             <ResponsiveCardsGrid>
               {related.map((r) => (
-                <BookListingCard key={r._id} item={r} />
+                <BookListingCard key={r._id} item={r} currentUserId={currentUserId} />
               ))}
             </ResponsiveCardsGrid>
           </div>

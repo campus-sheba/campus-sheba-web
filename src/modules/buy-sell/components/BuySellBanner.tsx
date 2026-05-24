@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useAppState } from "@/contexts/AppStateContext";
-import { useHomeBanners } from "@/modules/home/hooks/useHomeBanners";
+import { useModuleBanners } from "@/modules/home/hooks/useModuleBanners";
 import Slider from "@/components/slider/Slider";
 
 export interface Banner {
@@ -62,7 +62,10 @@ function HeroSlider({ banners }: HeroSliderProps) {
 const BuySellBanner = () => {
   const { state } = useAppState();
   const selectedUniversityId = state.university.selected?._id;
-  const { banners, isLoading, error } = useHomeBanners(selectedUniversityId);
+  const { banners, isLoading, error } = useModuleBanners(
+    "buy_sell",
+    selectedUniversityId,
+  );
 
   const renderSkeleton = () => (
     <div className="relative h-[55vh] w-full animate-pulse bg-gray-100">
@@ -70,15 +73,11 @@ const BuySellBanner = () => {
     </div>
   );
 
-  if (error) {
-    return (
-      <div className="flex h-[55vh] items-center justify-center text-sm text-gray-400">
-        Unable to load banners.
-      </div>
-    );
-  }
-
-  if (isLoading || banners.length === 0) return renderSkeleton();
+  // No banner configured for this module/campus — hide the strip entirely
+  // rather than holding a skeleton or erroring out.
+  if (error) return null;
+  if (isLoading) return renderSkeleton();
+  if (banners.length === 0) return null;
 
   const sliderBanners: Banner[] = banners.map((b) => ({
     src: b.photo?.url || "/placeholder.jpg",

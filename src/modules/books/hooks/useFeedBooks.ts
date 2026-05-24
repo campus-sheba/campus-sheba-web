@@ -8,6 +8,17 @@ import type { BookListing } from "@/types/book";
 
 type FeedType = "senior-picks" | "semester" | "department";
 
+/**
+ * MVP pilot: discovery feeds (senior picks / semester / department) return
+ * mixed-type books. Hide Lend/Swap/Donation so the buyer feed stays sell +
+ * showcase only. Drop this filter when those flows are re-enabled.
+ */
+const HIDDEN_FEED_TYPES = new Set(["Lending", "Donation", "Swap"]);
+
+function sellableOnly(items: BookListing[]): BookListing[] {
+  return items.filter((b) => !HIDDEN_FEED_TYPES.has(String(b.type)));
+}
+
 type UseFeedBooksOptions = {
   feed: FeedType;
   deptId?: string;
@@ -50,7 +61,7 @@ export function useFeedBooks({
           res = { data: [] as BookListing[], total: 0, page: 1, limit: pageSize };
         }
         if (!cancelled) {
-          setItems(Array.isArray(res.data) ? res.data : []);
+          setItems(sellableOnly(Array.isArray(res.data) ? res.data : []));
         }
       } catch (err) {
         if (!cancelled) {

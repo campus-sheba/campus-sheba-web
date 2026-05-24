@@ -316,7 +316,7 @@ export default function EmergencyContactsHub() {
         ) : (
           <>
             <div className="mt-8">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="blood" />
             </div>
 
             <div className="mt-10">

@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { useAppState } from "@/contexts/AppStateContext";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import { fetchGlobalSearch } from "@/services/search.public";
+import { fetchGlobalSearchAction } from "@/services/search";
 import type { SearchCategoryKey } from "@/types/search";
 import {
   SEARCH_CATEGORY_ORDER,
@@ -40,7 +40,7 @@ export default function GlobalSearchPage() {
 
   const [loading, setLoading] = useState(false);
   const [data, setData] =
-    useState<Awaited<ReturnType<typeof fetchGlobalSearch>>>(null);
+    useState<Awaited<ReturnType<typeof fetchGlobalSearchAction>>>(null);
 
   useEffect(() => {
     if (q.length < 2 || !universityId) {
@@ -50,7 +50,7 @@ export default function GlobalSearchPage() {
     let cancelled = false;
     setLoading(true);
     void (async () => {
-      const res = await fetchGlobalSearch(q, {
+      const res = await fetchGlobalSearchAction(q, {
         universityId,
         category: "all",
         limit: 20,

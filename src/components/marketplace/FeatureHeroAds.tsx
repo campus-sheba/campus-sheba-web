@@ -1,14 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { useHomeBanners } from "@/modules/home/hooks/useHomeBanners";
+import { useModuleBanners } from "@/modules/home/hooks/useModuleBanners";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 
 /**
- * Home-style hero banner grid (1 large + 2 small) used on feature landings.
+ * Hero banner grid (1 large + 1 small) used on feature landings. Banners are
+ * scoped to a module surface via `placement` (e.g. "book", "buy_sell",
+ * "blood"); defaults to "home" so existing call sites keep working.
  */
-export default function FeatureHeroAds({ universityId }: { universityId?: string }) {
-  const { banners, isLoading, error } = useHomeBanners(universityId);
+export default function FeatureHeroAds({
+  universityId,
+  placement = "home",
+}: {
+  universityId?: string;
+  placement?: string;
+}) {
+  const { banners, isLoading, error } = useModuleBanners(
+    placement,
+    universityId,
+  );
+
+  console.log("banners", banners);
 
   if (!universityId) return null;
   if (error) return null;
@@ -34,9 +47,12 @@ export default function FeatureHeroAds({ universityId }: { universityId?: string
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        {ads.slice(1, 3).map((b) => (
-          <div key={b._id} className="relative h-[122px] overflow-hidden rounded border border-gray-200 bg-gray-50">
+      <div className="grid sm:grid-cols-1">
+        {ads.slice(1, 2).map((b) => (
+          <div
+            key={b._id}
+            className="relative h-[260px] overflow-hidden rounded border border-gray-200 bg-gray-50"
+          >
             <Image
               src={b.photo?.url || "/placeholder.jpg"}
               alt={b.title || "Banner"}

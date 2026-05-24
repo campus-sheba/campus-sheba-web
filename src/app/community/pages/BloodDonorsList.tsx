@@ -212,7 +212,7 @@ export default function BloodDonorsList() {
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="blood" />
             </div>
 
             {stats ? (

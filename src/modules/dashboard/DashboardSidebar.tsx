@@ -16,6 +16,7 @@ import {
   BookHeart,
   Tag,
   Receipt,
+  Store,
   Droplets,
   HeartPulse,
   ChevronDown,
@@ -75,9 +76,9 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "My Books", href: "/my-books", icon: BookOpen },
       { label: "My Library", href: "/my-library", icon: BookMarked },
-      { label: "Borrowed Books", href: "/my-book-borrowed", icon: BookCopy },
-      { label: "Lent Books", href: "/my-book-lent", icon: BookUp },
-      { label: "Book Donations", href: "/my-book-donations", icon: BookHeart },
+      // { label: "Borrowed Books", href: "/my-book-borrowed", icon: BookCopy },
+      // { label: "Lent Books", href: "/my-book-lent", icon: BookUp },
+      // { label: "Book Donations", href: "/my-book-donations", icon: BookHeart },
     ],
   },
   {
@@ -86,6 +87,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Buy & Sell", href: "/my-buy-sell", icon: Tag },
       { label: "My Orders", href: "/my-orders", icon: Receipt },
+      { label: "My Sales", href: "/my-sales", icon: Store },
     ],
   },
   {
