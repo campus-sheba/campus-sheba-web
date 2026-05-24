@@ -469,6 +469,7 @@
     "signIn": "Sign In",
     "createAccount": "Create Account",
     "signingIn": "Signing in...",
+    "continueSignIn": "Continue signing in...",
     "sending": "Sending...",
     "sendOtp": "Send OTP",
     "enterOtp": "Enter OTP",

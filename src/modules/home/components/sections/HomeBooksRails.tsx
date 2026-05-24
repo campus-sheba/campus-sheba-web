@@ -16,6 +16,7 @@ function BooksRow({
   subtitle,
   viewAllHref,
   universityId,
+  currentUserId,
   type,
   emptyHint,
 }: {
@@ -23,6 +24,7 @@ function BooksRow({
   subtitle: string;
   viewAllHref: string;
   universityId?: string;
+  currentUserId?: string;
   type?: "Selling" | "Lending" | "Donation";
   emptyHint: string;
 }) {
@@ -89,7 +91,7 @@ function BooksRow({
         <div className="mt-4">
           <ResponsiveCardsGrid>
             {items.slice(0, PAGE_SIZE).map((item) => (
-              <BookListingCard key={item._id} item={item} />
+              <BookListingCard key={item._id} item={item} currentUserId={currentUserId} />
             ))}
           </ResponsiveCardsGrid>
         </div>
@@ -104,6 +106,7 @@ export function HomeBooksRails() {
     t.has(key) ? t(key) : fallback;
   const { state } = useAppState();
   const universityId = state.university.selected?._id;
+  const currentUserId = state.user.profile?._id;
 
   if (!universityId) {
     return (
@@ -188,6 +191,7 @@ export function HomeBooksRails() {
               )}
               viewAllHref="/books/all?type=Selling"
               universityId={universityId}
+              currentUserId={currentUserId}
               type="Selling"
               emptyHint={tt(
                 "homeRails.booksEmptySell",
@@ -202,6 +206,7 @@ export function HomeBooksRails() {
               )}
               viewAllHref="/books/all?type=Lending"
               universityId={universityId}
+              currentUserId={currentUserId}
               type="Lending"
               emptyHint={tt(
                 "homeRails.booksEmptyLend",
@@ -216,6 +221,7 @@ export function HomeBooksRails() {
               )}
               viewAllHref="/books/all?type=Donation"
               universityId={universityId}
+              currentUserId={currentUserId}
               type="Donation"
               emptyHint={tt(
                 "homeRails.booksEmptyDonate",

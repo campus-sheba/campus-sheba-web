@@ -9,15 +9,39 @@ import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { Button } from "@/components/ui";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { useAppState } from "@/contexts/AppStateContext";
-import { fetchBooksByOwner } from "@/services/books";
 import {
-  fetchLibraryProfileByIdAction,
+  fetchLibraryHubAction,
   fetchMyLibraryProfileAction,
   followLibraryAction,
   unfollowLibraryAction,
 } from "@/services/user-library";
-import { resolveLibraryOwnerId, type BookListing, type UserLibraryProfile } from "@/types/book";
+import {
+  resolveLibraryOwnerId,
+  type BookListing,
+  type LibraryHubData,
+  type ReadingListEntry,
+} from "@/types/book";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+
+type ShelfTab = "showcase" | "promoted" | "soldOut";
+
+function booksForTab(hub: LibraryHubData | null, tab: ShelfTab): BookListing[] {
+  if (!hub) return [];
+  if (tab === "showcase") return hub.shelves.showcase ?? [];
+  if (tab === "promoted") return hub.shelves.promoted ?? [];
+  return hub.shelves.soldOut ?? [];
+}
+
+function allReadingEntries(hub: LibraryHubData | null): ReadingListEntry[] {
+  if (!hub) return [];
+  const grouped = hub.readingListByStatus;
+  if (!grouped) return hub.profile.readingList ?? [];
+  return [
+    ...(grouped.reading ?? []),
+    ...(grouped.completed ?? []),
+    ...(grouped.wishlist ?? []),
+  ];
+}
 
 export default function LibraryProfileView() {
   const params = useParams();
@@ -28,15 +52,14 @@ export default function LibraryProfileView() {
   const currentUserId = state.user.profile?._id;
   const isLoggedIn = state.auth.isAuthenticated;
 
-  const [profile, setProfile] = useState<UserLibraryProfile | null>(null);
+  const [hub, setHub] = useState<LibraryHubData | null>(null);
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [shelf, setShelf] = useState<BookListing[]>([]);
-  const [shelfLoading, setShelfLoading] = useState(false);
+  const [shelfTab, setShelfTab] = useState<ShelfTab>("showcase");
 
   const load = useCallback(async () => {
     if (!profileId) return;
@@ -54,20 +77,12 @@ export default function LibraryProfileView() {
           setIsFollowing(mine.data.following?.includes(profileId) ?? false);
         }
       }
-      const res = await fetchLibraryProfileByIdAction(profileId);
+      const res = await fetchLibraryHubAction(profileId);
       if (!res.success || !res.data) {
         setError(res.message ?? "Profile not found or private.");
-        setProfile(null);
+        setHub(null);
       } else {
-        setProfile(res.data);
-        const ownerId = resolveLibraryOwnerId(res.data.owner);
-        if (ownerId) {
-          setShelfLoading(true);
-          fetchBooksByOwner(ownerId, { type: "Library Only", limit: 20 })
-            .then((books) => setShelf(books.data))
-            .catch(() => setShelf([]))
-            .finally(() => setShelfLoading(false));
-        }
+        setHub(res.data);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load profile.");
@@ -79,6 +94,12 @@ export default function LibraryProfileView() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const profile = hub?.profile ?? null;
+  const shelfBooks = booksForTab(hub, shelfTab);
+  const readingList = allReadingEntries(hub);
+  const followerCount =
+    profile?.followersCount ?? profile?.followers?.length ?? 0;
 
   const toggleFollow = () => {
     if (!isLoggedIn) {
@@ -106,6 +127,12 @@ export default function LibraryProfileView() {
       }
     });
   };
+
+  const shelfTabs: { id: ShelfTab; label: string }[] = [
+    { id: "showcase", label: "Showcase" },
+    { id: "promoted", label: "Listed for sale" },
+    { id: "soldOut", label: "Sold out" },
+  ];
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
@@ -146,9 +173,21 @@ export default function LibraryProfileView() {
                   ) : null}
                   <p className="mt-2 text-xs text-gray-500">
                     Reputation {profile.reputationScore} ·{" "}
-                    {profile.totalBooksShared} books shared ·{" "}
-                    {profile.followers?.length ?? 0} followers
+                    {profile.totalBooksShared} books shared · {followerCount}{" "}
+                    followers
                   </p>
+                  {profile.badges?.length ? (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {profile.badges.map((badge) => (
+                        <span
+                          key={badge}
+                          className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800"
+                        >
+                          {badge.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
               {currentUserId &&
@@ -183,19 +222,35 @@ export default function LibraryProfileView() {
             ) : null}
 
             <section className="mt-10">
-              <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+              <div className="flex flex-wrap gap-2 border-b border-gray-100 pb-2">
+                {shelfTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setShelfTab(tab.id)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                      shelfTab === tab.id
+                        ? "bg-[#E30B12] text-white"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <h2 className="mt-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
                 <BookOpen className="h-4 w-4 text-[#E30B12]" />
                 Bookshelf
               </h2>
-              {shelfLoading ? (
-                <p className="mt-4 text-sm text-gray-500">Loading shelf…</p>
-              ) : !shelf.length ? (
+
+              {!shelfBooks.length ? (
                 <p className="mt-4 text-sm text-gray-500">
-                  No public books on this shelf yet.
+                  No books in this section yet.
                 </p>
               ) : (
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {shelf.map((book) => {
+                  {shelfBooks.map((book) => {
                     const photo = book.photos?.[0]?.url;
                     return (
                       <li
@@ -225,14 +280,12 @@ export default function LibraryProfileView() {
                             {book.title}
                           </Link>
                           {book.author ? (
-                            <p className="text-xs text-gray-500">
-                              {book.author}
-                            </p>
+                            <p className="text-xs text-gray-500">{book.author}</p>
                           ) : null}
-                          {book.quality ? (
-                            <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
-                              {String(book.quality)}
-                            </span>
+                          {book.price != null && book.price > 0 ? (
+                            <p className="mt-1 text-xs font-semibold text-[#E30B12]">
+                              ৳{book.price.toLocaleString()}
+                            </p>
                           ) : null}
                         </div>
                       </li>
@@ -246,13 +299,13 @@ export default function LibraryProfileView() {
               <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                 Reading list
               </h2>
-              {!profile.readingList?.length ? (
+              {!readingList.length ? (
                 <p className="mt-4 text-sm text-gray-500">
                   No books on this reading list yet.
                 </p>
               ) : (
                 <ul className="mt-4 space-y-3">
-                  {profile.readingList.map((entry) => {
+                  {readingList.map((entry) => {
                     const book = entry.book;
                     const photo = book?.photos?.[0]?.url;
                     return (
@@ -279,9 +332,7 @@ export default function LibraryProfileView() {
                             {book.title}
                           </Link>
                           {book.author ? (
-                            <p className="text-xs text-gray-500">
-                              {book.author}
-                            </p>
+                            <p className="text-xs text-gray-500">{book.author}</p>
                           ) : null}
                           <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-gray-700">
                             {entry.status}

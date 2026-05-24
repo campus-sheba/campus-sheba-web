@@ -1,8 +1,12 @@
 "use server";
 
 import type {
+  BluebookHomeFeed,
+  BookBrowsePaginatedResponse,
   BookListing,
   BookPaginatedResponse,
+  BookshelfDiscoverCard,
+  BrowseSegment,
   CreateBookPayload,
   CreateShelfBookPayload,
   PromoteBookPayload,
@@ -44,6 +48,11 @@ export type BookListParams = {
 export type CreatorBookListParams = Omit<BookListParams, "university"> & {
   university?: string;
   status?: string;
+  shelfStatus?: string;
+};
+
+export type BooksBrowseParams = BookListParams & {
+  segment: BrowseSegment;
 };
 
 // ── Response normalisation ─────────────────────────────────────────────────────
@@ -154,8 +163,52 @@ function buildCreatorOwnUrl(params: CreatorBookListParams): string {
   if (params.semester) q.set("semester", params.semester);
   if (params.courseCode) q.set("courseCode", params.courseCode);
   if (params.status) q.set("status", params.status);
+  if (params.shelfStatus) q.set("shelfStatus", params.shelfStatus);
   const query = q.toString();
   return query ? `${bookEndpoints.creatorOwn}?${query}` : bookEndpoints.creatorOwn;
+}
+
+function buildBrowseUrl(params: BooksBrowseParams): string {
+  const q = new URLSearchParams();
+  q.set("segment", params.segment);
+  if (params.page != null) q.set("page", String(params.page));
+  if (params.limit != null) q.set("limit", String(params.limit));
+  if (params.searchKey?.trim()) q.set("searchKey", params.searchKey.trim());
+  if (params.university) q.set("university", params.university);
+  if (params.category) q.set("category", params.category);
+  if (params.minPrice != null) q.set("minPrice", String(params.minPrice));
+  if (params.maxPrice != null) q.set("maxPrice", String(params.maxPrice));
+  if (params.type) q.set("type", params.type);
+  if (params.quality) q.set("quality", params.quality);
+  if (params.year) q.set("year", params.year);
+  if (params.department) q.set("department", params.department);
+  if (params.semester) q.set("semester", params.semester);
+  if (params.courseCode) q.set("courseCode", params.courseCode);
+  return `${bookEndpoints.userBrowse}?${q.toString()}`;
+}
+
+function unwrapBrowseResponse(response: unknown): BookBrowsePaginatedResponse {
+  const base = unwrapBookPaginatedResponse(response);
+  if (!response || typeof response !== "object") return base;
+  const r = response as Record<string, unknown>;
+  const segment =
+    typeof r.segment === "string" ? (r.segment as BrowseSegment) : undefined;
+  return { ...base, segment };
+}
+
+function unwrapBookshelfDiscover(response: unknown): BookshelfDiscoverCard[] {
+  if (!response || typeof response !== "object") return [];
+  const r = response as Record<string, unknown>;
+  if (Array.isArray(r.data)) return r.data as BookshelfDiscoverCard[];
+  return [];
+}
+
+function unwrapBluebookFeed(response: unknown): BluebookHomeFeed | null {
+  if (!response || typeof response !== "object") return null;
+  const r = response as Record<string, unknown>;
+  const data = r.data;
+  if (!data || typeof data !== "object") return null;
+  return data as BluebookHomeFeed;
 }
 
 function buildFeedUrl(base: string, page?: number, limit?: number): string {
@@ -167,6 +220,66 @@ function buildFeedUrl(base: string, page?: number, limit?: number): string {
 }
 
 // ── Public book listing ────────────────────────────────────────────────────────
+
+/** Bluebook home — GET /user/books/feed (optional JWT; guests need university query). */
+export async function fetchBluebookHomeFeed(
+  universityId?: string,
+): Promise<BluebookHomeFeed | null> {
+  const url = universityId
+    ? `${bookEndpoints.userFeed}?university=${encodeURIComponent(universityId)}`
+    : bookEndpoints.userFeed;
+  const res = await getPublic<unknown>(url, {
+    universityId,
+    includeUniversity: !universityId,
+  });
+  return unwrapBluebookFeed(res);
+}
+
+/** Paginated segment browse — GET /user/books/browse?segment=… */
+export async function fetchBooksBrowse(
+  params: BooksBrowseParams,
+): Promise<BookBrowsePaginatedResponse> {
+  const res = await getPublic<unknown>(buildBrowseUrl(params), {
+    universityId: params.university,
+    includeUniversity: false,
+  });
+  return unwrapBrowseResponse(res);
+}
+
+/** Discover campus bookshelves — GET /user/books/browse/bookshelves */
+export async function fetchBrowseBookshelves(params: {
+  university?: string;
+  sortBy?: "reputation" | "recent" | "followers";
+  searchKey?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{ page: number; limit: number; total: number; data: BookshelfDiscoverCard[] }> {
+  const q = new URLSearchParams();
+  if (params.page != null) q.set("page", String(params.page));
+  if (params.limit != null) q.set("limit", String(params.limit));
+  if (params.searchKey?.trim()) q.set("searchKey", params.searchKey.trim());
+  if (params.university) q.set("university", params.university);
+  if (params.sortBy) q.set("sortBy", params.sortBy);
+  const query = q.toString();
+  const url = query
+    ? `${bookEndpoints.userBrowseBookshelves}?${query}`
+    : bookEndpoints.userBrowseBookshelves;
+  const res = await getPublic<unknown>(url, {
+    universityId: params.university,
+    includeUniversity: false,
+  });
+  if (!res || typeof res !== "object") {
+    return { page: 1, limit: 10, total: 0, data: [] };
+  }
+  const r = res as Record<string, unknown>;
+  const rows = unwrapBookshelfDiscover(res);
+  return {
+    page: typeof r.page === "number" ? r.page : 1,
+    limit: typeof r.limit === "number" ? r.limit : 10,
+    total: typeof r.total === "number" ? r.total : rows.length,
+    data: rows,
+  };
+}
 
 export async function fetchUserBooksList(
   params: BookListParams = {},
@@ -388,6 +501,28 @@ export async function promoteBookAction(id: string, payload: PromoteBookPayload)
     return { success: true as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to promote book";
+    return { success: false as const, message };
+  }
+}
+
+/**
+ * Restore a promoted/for-sale book back to the bookshelf (showcase).
+ * Powers both "Restore to shelf" and "Cancel listing" — the book stays in the
+ * library, just no longer for sale. Server blocks this while an order is in flight.
+ */
+export async function restoreBookToShelfAction(id: string) {
+  const trimmed = id?.trim();
+  if (!trimmed) {
+    return { success: false as const, message: "Invalid book id" };
+  }
+  try {
+    await patchPrivate<unknown>(bookEndpoints.creatorRestore(trimmed), {}, {
+      includeUniversity: false,
+    });
+    return { success: true as const };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to restore book to shelf";
     return { success: false as const, message };
   }
 }

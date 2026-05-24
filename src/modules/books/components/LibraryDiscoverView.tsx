@@ -2,15 +2,104 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { BookMarked, Search, Users } from "lucide-react";
+import { BookMarked, Crown, Search, Trophy, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { useAppState } from "@/contexts/AppStateContext";
-import { listLibraryProfilesAction } from "@/services/user-library";
-import type { LibraryProfileCard, LibrarySortBy } from "@/types/book";
+import {
+  fetchLibraryLeaderboardAction,
+  listLibraryProfilesAction,
+} from "@/services/user-library";
+import type {
+  LibraryLeaderboardEntry,
+  LibraryProfileCard,
+  LibrarySortBy,
+} from "@/types/book";
 import { resolveProfilePhotoUrl } from "@/utils/media/profilePhoto";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
+
+const RANK_STYLES = [
+  "bg-amber-400 text-white", // 1
+  "bg-gray-300 text-gray-800", // 2
+  "bg-orange-300 text-white", // 3
+];
+
+function LeaderboardSection({ universityId }: { universityId?: string }) {
+  const [entries, setEntries] = useState<LibraryLeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      if (!universityId) {
+        if (!cancelled) {
+          setEntries([]);
+          setLoading(false);
+        }
+        return;
+      }
+      if (!cancelled) setLoading(true);
+      const res = await fetchLibraryLeaderboardAction({
+        university: universityId,
+        limit: 5,
+      });
+      if (cancelled) return;
+      setEntries(res.success ? res.data : []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [universityId]);
+
+  if (loading) {
+    return (
+      <div className="mt-6 rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
+        <p className="text-sm text-gray-500">Loading top bookshelves…</p>
+      </div>
+    );
+  }
+  if (!entries.length) return null;
+
+  return (
+    <div className="mt-6 rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/70 to-white p-4 sm:p-5">
+      <div className="flex items-center gap-2">
+        <Trophy className="h-5 w-5 text-amber-500" />
+        <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+          Top bookshelves
+        </h2>
+      </div>
+      <ol className="mt-3 space-y-2">
+        {entries.map((entry, i) => (
+          <li key={entry._id}>
+            <Link
+              href={`/books/library/${entry._id}`}
+              className="flex items-center gap-3 rounded-xl bg-white/80 px-3 py-2 transition hover:bg-white hover:shadow-sm"
+            >
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  RANK_STYLES[i] ?? "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {i === 0 ? <Crown className="h-4 w-4" /> : i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-gray-900">
+                  {entry.displayName}
+                </p>
+                <p className="text-[11px] font-medium text-gray-500">
+                  Rep {entry.reputationScore} · {entry.totalBooksShared ?? 0}{" "}
+                  shared · {entry.followersCount} followers
+                </p>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
 
 const SORT_OPTIONS: { value: LibrarySortBy; label: string }[] = [
   { value: "reputation", label: "Reputation" },
@@ -111,10 +200,13 @@ export default function LibraryDiscoverView() {
 
         {!universityId ? (
           <p className="mt-8 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-600">
-            Choose a university in the top bar to browse libraries on your campus.
+            Choose a university in the top bar to browse libraries on your
+            campus.
           </p>
         ) : (
           <>
+            <LeaderboardSection universityId={universityId} />
+
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -152,7 +244,10 @@ export default function LibraryDiscoverView() {
             ) : !cards.length ? (
               <p className="mt-8 text-sm text-gray-500">
                 No public libraries found. Be the first —{" "}
-                <Link href="/my-library" className="font-semibold text-[#E30B12] hover:underline">
+                <Link
+                  href="/my-library"
+                  className="font-semibold text-[#E30B12] hover:underline"
+                >
                   create yours
                 </Link>
                 .
@@ -177,14 +272,18 @@ export default function LibraryDiscoverView() {
                                   alt=""
                                   fill
                                   className="object-cover"
-                                  unoptimized={shouldUnoptimizeRemoteImage(photo)}
+                                  unoptimized={shouldUnoptimizeRemoteImage(
+                                    photo,
+                                  )}
                                 />
                               ) : (
                                 <BookMarked className="h-5 w-5" />
                               )}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="font-bold text-gray-900">{card.displayName}</p>
+                              <p className="font-bold text-gray-900">
+                                {card.displayName}
+                              </p>
                               {name ? (
                                 <p className="text-xs text-gray-500">{name}</p>
                               ) : null}

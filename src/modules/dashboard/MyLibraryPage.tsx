@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui";
+import ReadingListAdd from "@/modules/dashboard/ReadingListAdd";
 import { getAddressesAction } from "@/services/addresses";
 import {
   deleteBookAction,
@@ -30,13 +31,15 @@ import {
   promoteBookAction,
 } from "@/services/books";
 import {
-  addToReadingListAction,
   createLibraryProfileAction,
+  fetchLibraryFollowersAction,
+  fetchLibraryFollowingAction,
   fetchMyLibraryProfileAction,
   removeFromReadingListAction,
   updateLibraryProfileAction,
   updateReadingListStatusAction,
 } from "@/services/user-library";
+import type { LibraryFollowEntry } from "@/types/book";
 import type { UserAddress } from "@/types/address";
 import type {
   BookListing,
@@ -95,10 +98,6 @@ export default function MyLibraryPage() {
   const [visibility, setVisibility] = useState<LibraryVisibility>("public");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  // Reading list add form
-  const [addBookId, setAddBookId] = useState("");
-  const [addStatus, setAddStatus] = useState<ReadingStatus>("reading");
-
   // Shelf (Library Only books)
   const [shelf, setShelf] = useState<BookListing[]>([]);
   const [shelfLoading, setShelfLoading] = useState(false);
@@ -134,6 +133,10 @@ export default function MyLibraryPage() {
     "shelf" | "reading" | "recommendations" | "followers" | "following"
   >("shelf");
 
+  const [followers, setFollowers] = useState<LibraryFollowEntry[]>([]);
+  const [following, setFollowing] = useState<LibraryFollowEntry[]>([]);
+  const [socialLoading, setSocialLoading] = useState(false);
+
   const loadProfile = useCallback(async () => {
     setLoading(true);
     const res = await fetchMyLibraryProfileAction();
@@ -156,6 +159,7 @@ export default function MyLibraryPage() {
     try {
       const res = await fetchCreatorOwnBooks({
         type: "Library Only",
+        shelfStatus: "on_shelf",
         page: 1,
         limit: 50,
       });
@@ -175,6 +179,29 @@ export default function MyLibraryPage() {
     void loadProfile();
     void loadShelf();
   }, [loadProfile, loadShelf]);
+
+  useEffect(() => {
+    if (!profile?._id) return;
+    if (activeTab !== "followers" && activeTab !== "following") return;
+    let cancelled = false;
+    setSocialLoading(true);
+    void (async () => {
+      const res =
+        activeTab === "followers"
+          ? await fetchLibraryFollowersAction(profile._id, { page: 1, limit: 50 })
+          : await fetchLibraryFollowingAction(profile._id, { page: 1, limit: 50 });
+      if (cancelled) return;
+      if (activeTab === "followers") {
+        setFollowers(res.success ? res.data : []);
+      } else {
+        setFollowing(res.success ? res.data : []);
+      }
+      setSocialLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, profile?._id]);
 
   const createProfile = () => {
     if (!displayName.trim()) {
@@ -226,27 +253,6 @@ export default function MyLibraryPage() {
       setVisibility(profile.visibility);
     }
     setIsEditingProfile(false);
-  };
-
-  const addBook = () => {
-    const id = addBookId.trim();
-    if (!id) {
-      setMsg({ ok: false, text: "Enter a book ID from a campus listing." });
-      return;
-    }
-    startTransition(async () => {
-      const res = await addToReadingListAction({
-        bookId: id,
-        status: addStatus,
-      });
-      if (res.success) {
-        setAddBookId("");
-        setMsg({ ok: true, text: "Added to reading list." });
-        void loadProfile();
-      } else {
-        setMsg({ ok: false, text: res.message ?? "Failed to add book." });
-      }
-    });
   };
 
   const changeStatus = (bookId: string, status: ReadingStatus) => {
@@ -784,39 +790,18 @@ export default function MyLibraryPage() {
                   Add to reading list
                 </h2>
                 <p className="mt-1 text-xs text-gray-500">
-                  Paste a book ID from any campus listing (URL: /books/[id]).
+                  Search any campus book by title or author and pick it to track
+                  your reading.
                 </p>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    value={addBookId}
-                    onChange={(e) => setAddBookId(e.target.value)}
-                    placeholder="Book ID"
-                    className={inputClass}
-                  />
-                  <select
-                    value={addStatus}
-                    onChange={(e) =>
-                      setAddStatus(e.target.value as ReadingStatus)
-                    }
-                    className={`${inputClass} sm:w-44`}
-                  >
-                    {READING_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {readingStatusLabel(s)}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    type="button"
-                    uppercase={false}
-                    className="gap-1 shrink-0"
-                    disabled={isPending}
-                    onClick={addBook}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add
-                  </Button>
-                </div>
+                <ReadingListAdd
+                  existingIds={
+                    new Set(
+                      (profile.readingList ?? []).map((entry) => entry.book._id),
+                    )
+                  }
+                  onAdded={() => void loadProfile()}
+                  onMessage={setMsg}
+                />
               </section>
 
               <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
@@ -834,7 +819,8 @@ export default function MyLibraryPage() {
                       No books tracked yet
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
-                      Add the ID of any campus book to track your reading.
+                      Search any campus book above to start tracking your
+                      reading.
                     </p>
                   </div>
                 ) : (
@@ -1003,7 +989,9 @@ export default function MyLibraryPage() {
                 Students who follow your library.
               </p>
 
-              {!profile.followers?.length ? (
+              {socialLoading ? (
+                <p className="mt-6 text-sm text-gray-500">Loading followers…</p>
+              ) : !followers.length ? (
                 <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-8 text-center">
                   <Users className="mx-auto h-8 w-8 text-gray-300" />
                   <p className="mt-2 text-sm font-medium text-gray-700">
@@ -1015,9 +1003,9 @@ export default function MyLibraryPage() {
                 </div>
               ) : (
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {profile.followers.map((followerId) => (
+                  {followers.map((entry) => (
                     <li
-                      key={followerId}
+                      key={entry._id}
                       className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2.5"
                     >
                       <div className="flex min-w-0 items-center gap-2.5">
@@ -1026,15 +1014,17 @@ export default function MyLibraryPage() {
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-gray-900">
-                            Library profile
+                            {entry.displayName}
                           </p>
-                          <p className="truncate font-mono text-[11px] text-gray-500">
-                            {followerId}
-                          </p>
+                          {entry.bio ? (
+                            <p className="truncate text-[11px] text-gray-500">
+                              {entry.bio}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                       <Link
-                        href={`/books/library/${followerId}`}
+                        href={`/books/library/${entry._id}`}
                         className="inline-flex shrink-0 items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
                       >
                         <Eye className="h-3 w-3" />
@@ -1061,7 +1051,9 @@ export default function MyLibraryPage() {
                 Libraries you follow.
               </p>
 
-              {!profile.following?.length ? (
+              {socialLoading ? (
+                <p className="mt-6 text-sm text-gray-500">Loading following…</p>
+              ) : !following.length ? (
                 <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-8 text-center">
                   <UserPlus className="mx-auto h-8 w-8 text-gray-300" />
                   <p className="mt-2 text-sm font-medium text-gray-700">
@@ -1071,18 +1063,18 @@ export default function MyLibraryPage() {
                     Visit other students&apos; library profiles to follow them.
                   </p>
                   <Link
-                    href="/books"
+                    href="/books/libraries"
                     className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
                   >
                     <BookOpen className="h-3.5 w-3.5" />
-                    Browse books
+                    Discover libraries
                   </Link>
                 </div>
               ) : (
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {profile.following.map((followingId) => (
+                  {following.map((entry) => (
                     <li
-                      key={followingId}
+                      key={entry._id}
                       className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2.5"
                     >
                       <div className="flex min-w-0 items-center gap-2.5">
@@ -1091,15 +1083,17 @@ export default function MyLibraryPage() {
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-gray-900">
-                            Library profile
+                            {entry.displayName}
                           </p>
-                          <p className="truncate font-mono text-[11px] text-gray-500">
-                            {followingId}
-                          </p>
+                          {entry.bio ? (
+                            <p className="truncate text-[11px] text-gray-500">
+                              {entry.bio}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                       <Link
-                        href={`/books/library/${followingId}`}
+                        href={`/books/library/${entry._id}`}
                         className="inline-flex shrink-0 items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
                       >
                         <Eye className="h-3 w-3" />

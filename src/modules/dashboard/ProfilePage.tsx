@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
+import StudentVerificationCard from "@/modules/dashboard/StudentVerificationCard";
 import { uploadMediaFiles } from "@/lib/media/client";
 import { MediaFeatureName } from "@/types/media";
 import { resolveProfilePhotoUrl } from "@/utils/media/profilePhoto";
@@ -986,6 +987,13 @@ export default function ProfilePage({
               />
             </div>
           </Card>
+
+          <StudentVerificationCard
+            isVerified={profile.isStudentVerified}
+            studentEmail={profile.studentEmail}
+            allowedDomains={university?.studentEmailDomains ?? []}
+            hasUniversity={Boolean(profile.university)}
+          />
         </>
       )}
     </div>

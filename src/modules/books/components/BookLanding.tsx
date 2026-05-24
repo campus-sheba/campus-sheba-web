@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Package, Plus } from "lucide-react";
+import Image from "next/image";
+import { BookMarked, Package, Plus } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { useTranslations } from "next-intl";
@@ -14,10 +15,20 @@ import { useInView } from "@/components/marketplace/useInView";
 import { fetchBookCategoriesPublic } from "@/services/books.public";
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
 import { useBorrowableBooksList } from "@/modules/books/hooks/useBorrowableBooksList";
+import { useBluebookHomeFeed } from "@/modules/books/hooks/useBluebookHomeFeed";
 import { useFeedBooks } from "@/modules/books/hooks/useFeedBooks";
+import type { BookListing, BookshelfDiscoverCard } from "@/types/book";
 import type { BuySellCategory } from "@/types/buy-sell";
+import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 import BookListingCard from "./BookListingCard";
 import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
+
+/**
+ * MVP pilot scope: only Sell + Showcase + bookshelves are surfaced in the
+ * buyer feed. Borrow / Swap / Donation sections are kept in the code but
+ * hidden behind this flag for a later phase.
+ */
+const ENABLE_NON_SALE_FLOWS: boolean = false;
 
 // ── Skeleton row ──────────────────────────────────────────────────────────────
 
@@ -141,6 +152,215 @@ function BorrowableListingsSection({
         </div>
       )}
     </SectionWrapper>
+  );
+}
+
+// ── Static book row from Bluebook home feed ───────────────────────────────────
+
+function FeedBooksRow({
+  title,
+  subtitle,
+  viewAllHref,
+  items,
+  isLoading,
+  error,
+}: {
+  title: string;
+  subtitle?: string;
+  viewAllHref: string;
+  items: BookListing[];
+  isLoading?: boolean;
+  error?: string | null;
+}) {
+  if (!isLoading && !error && items.length === 0) return null;
+
+  return (
+    <SectionWrapper spacing="sm" background="transparent" className="my-0">
+      <SectionHeader title={title} subtitle={subtitle} viewAllHref={viewAllHref} />
+      {error ? (
+        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : isLoading && items.length === 0 ? (
+        <div className="mt-4">
+          <SkeletonGrid />
+        </div>
+      ) : (
+        <div className="mt-4">
+          <ResponsiveCardsGrid>
+            {items.slice(0, 8).map((item) => (
+              <BookListingCard key={item._id} item={item} />
+            ))}
+          </ResponsiveCardsGrid>
+        </div>
+      )}
+    </SectionWrapper>
+  );
+}
+
+function CampusBookshelvesSection({
+  shelves,
+  isLoading,
+  error,
+  tt,
+}: {
+  shelves: BookshelfDiscoverCard[];
+  isLoading?: boolean;
+  error?: string | null;
+  tt: (key: string, fallback: string) => string;
+}) {
+
+  if (!isLoading && !error && shelves.length === 0) return null;
+
+  return (
+    <SectionWrapper spacing="sm" background="transparent" className="my-0">
+      <SectionHeader
+        title={tt("bookLanding.campusBookshelves", "Campus bookshelves")}
+        subtitle={tt(
+          "bookLanding.campusBookshelvesSub",
+          "Student libraries sharing what they read.",
+        )}
+        viewAllHref="/books/libraries"
+      />
+      {error ? (
+        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : isLoading ? (
+        <p className="mt-4 text-sm text-gray-500">Loading libraries…</p>
+      ) : (
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {shelves.slice(0, 6).map((card) => {
+            const photo = card.owner?.profileImage;
+            return (
+              <li key={card._id}>
+                <Link
+                  href={`/books/library/${card._id}`}
+                  className="flex h-full items-start gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#E30B12]/30"
+                >
+                  <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E30B12]/10 text-[#E30B12]">
+                    {photo ? (
+                      <Image
+                        src={photo}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized={shouldUnoptimizeRemoteImage(photo)}
+                      />
+                    ) : (
+                      <BookMarked className="h-5 w-5" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900">{card.displayName}</p>
+                    {card.bio ? (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">
+                        {card.bio}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-[11px] font-semibold text-gray-600">
+                      Rep {card.reputationScore} · {card.followersCount} followers
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </SectionWrapper>
+  );
+}
+
+function BluebookHomeSections({
+  universityId,
+  isLoggedIn,
+  tt,
+}: {
+  universityId: string;
+  isLoggedIn: boolean;
+  tt: (key: string, fallback: string) => string;
+}) {
+  const { feed, isLoading, error } = useBluebookHomeFeed(universityId);
+
+  const marketplaceItems = [
+    ...(feed?.marketplace?.featured ?? []),
+    ...(feed?.marketplace?.recent ?? []),
+    ...(feed?.marketplace?.topRated ?? []),
+  ].filter(
+    (book, index, arr) => arr.findIndex((b) => b._id === book._id) === index,
+  );
+
+  return (
+    <>
+      <FeedBooksRow
+        title={tt("bookLanding.marketplaceFeatured", "Marketplace highlights")}
+        subtitle={tt(
+          "bookLanding.marketplaceFeaturedSub",
+          "Featured and recent books for sale on campus.",
+        )}
+        viewAllHref="/books/all?segment=marketplace"
+        items={marketplaceItems}
+        isLoading={isLoading}
+        error={error}
+      />
+      <FeedBooksRow
+        title={tt("bookLanding.showcaseRecent", "Campus showcases")}
+        subtitle={tt(
+          "bookLanding.showcaseRecentSub",
+          "Books students display on their shelves.",
+        )}
+        viewAllHref="/books/all?segment=showcase"
+        items={feed?.showcase?.recent ?? []}
+        isLoading={isLoading}
+        error={error}
+      />
+      {ENABLE_NON_SALE_FLOWS && (
+        <FeedBooksRow
+          title={tt("bookLanding.borrowRecent", "Recently listed to borrow")}
+          subtitle={tt(
+            "bookLanding.borrowRecentSub",
+            "Lending listings from the home feed.",
+          )}
+          viewAllHref="/books/all?type=Lending"
+          items={feed?.borrow?.recent ?? []}
+          isLoading={isLoading}
+          error={error}
+        />
+      )}
+      {ENABLE_NON_SALE_FLOWS && (
+        <FeedBooksRow
+          title={tt("bookLanding.swapRecent", "Swap listings")}
+          subtitle={tt(
+            "bookLanding.swapRecentSub",
+            "Recent books open for exchange.",
+          )}
+          viewAllHref="/books/all?segment=swap"
+          items={feed?.swap?.recent ?? []}
+          isLoading={isLoading}
+          error={error}
+        />
+      )}
+      <CampusBookshelvesSection
+        shelves={feed?.bookshelves ?? []}
+        isLoading={isLoading}
+        error={error}
+        tt={tt}
+      />
+      {isLoggedIn && (feed?.following?.length ?? 0) > 0 ? (
+        <FeedBooksRow
+          title={tt("bookLanding.followingStrip", "From shelves you follow")}
+          subtitle={tt(
+            "bookLanding.followingStripSub",
+            "Recent books from libraries you follow.",
+          )}
+          viewAllHref="/my-library"
+          items={feed?.following ?? []}
+          isLoading={isLoading}
+          error={error}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -332,7 +552,7 @@ export default function BookLanding() {
             <p className="mt-1 text-sm text-gray-500">
               {tt(
                 "bookLanding.subtitle",
-                "Sell, lend, donate or swap textbooks on your campus.",
+                "Buy and sell textbooks, and build your campus library shelf.",
               )}
             </p>
           </div>
@@ -382,7 +602,7 @@ export default function BookLanding() {
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="book" />
             </div>
 
             {/* Categories pill row */}
@@ -432,6 +652,12 @@ export default function BookLanding() {
             </SectionWrapper>
 
             <div className="mt-10 space-y-10">
+              <BluebookHomeSections
+                universityId={universityId}
+                isLoggedIn={isLoggedIn}
+                tt={tt}
+              />
+
               {/* Senior picks — auth-gated feed (featured + top-rated) */}
               {isLoggedIn && (
                 <FeedSection
@@ -483,66 +709,75 @@ export default function BookLanding() {
                 type="Selling"
               />
 
-              <BorrowableListingsSection
-                title={tt("bookLanding.sectionLend", "Books to borrow")}
-                subtitle={tt(
-                  "bookLanding.sectionLendSub",
-                  "Borrow for a period — great for short-term needs.",
-                )}
-                universityId={universityId}
-                viewAllHref="/books/all?type=Lending&availabilityStatus=Available"
-                pageSize={8}
-              />
-
-              <SectionWrapper
-                spacing="sm"
-                background="transparent"
-                className="my-0"
-              >
-                <SectionHeader
-                  title={tt("bookLanding.sectionDonate", "Free books")}
+              {/* Borrow / Donation / Swap sections — hidden for MVP pilot */}
+              {ENABLE_NON_SALE_FLOWS && (
+                <BorrowableListingsSection
+                  title={tt("bookLanding.sectionLend", "Books to borrow")}
                   subtitle={tt(
-                    "bookLanding.sectionDonateSub",
-                    "Donations from the community — grab what you need.",
+                    "bookLanding.sectionLendSub",
+                    "Borrow for a period — great for short-term needs.",
                   )}
-                  viewAllHref="/books/donations"
+                  universityId={universityId}
+                  viewAllHref="/books/all?type=Lending&availabilityStatus=Available"
+                  pageSize={8}
                 />
-                <p className="mt-2 text-sm text-gray-600">
-                  <Link
-                    href="/books/donations"
-                    className="font-semibold text-[#E30B12] hover:underline"
-                  >
-                    Browse the donation queue →
-                  </Link>
-                </p>
-              </SectionWrapper>
+              )}
 
-              <ListingsSection
-                title={tt(
-                  "bookLanding.sectionDonateListings",
-                  "Donation listings",
-                )}
-                subtitle={tt(
-                  "bookLanding.sectionDonateListingsSub",
-                  "Approved donation-type books on campus.",
-                )}
-                universityId={universityId}
-                viewAllHref="/books/all?type=Donation"
-                pageSize={8}
-                type="Donation"
-              />
+              {ENABLE_NON_SALE_FLOWS && (
+                <SectionWrapper
+                  spacing="sm"
+                  background="transparent"
+                  className="my-0"
+                >
+                  <SectionHeader
+                    title={tt("bookLanding.sectionDonate", "Free books")}
+                    subtitle={tt(
+                      "bookLanding.sectionDonateSub",
+                      "Donations from the community — grab what you need.",
+                    )}
+                    viewAllHref="/books/donations"
+                  />
+                  <p className="mt-2 text-sm text-gray-600">
+                    <Link
+                      href="/books/donations"
+                      className="font-semibold text-[#E30B12] hover:underline"
+                    >
+                      Browse the donation queue →
+                    </Link>
+                  </p>
+                </SectionWrapper>
+              )}
 
-              <ListingsSection
-                title={tt("bookLanding.sectionSwap", "Books to swap")}
-                subtitle={tt(
-                  "bookLanding.sectionSwapSub",
-                  "Exchange your books — find mutual swap partners.",
-                )}
-                universityId={universityId}
-                viewAllHref="/books/all?type=Swap"
-                pageSize={8}
-                type="Swap"
-              />
+              {ENABLE_NON_SALE_FLOWS && (
+                <ListingsSection
+                  title={tt(
+                    "bookLanding.sectionDonateListings",
+                    "Donation listings",
+                  )}
+                  subtitle={tt(
+                    "bookLanding.sectionDonateListingsSub",
+                    "Approved donation-type books on campus.",
+                  )}
+                  universityId={universityId}
+                  viewAllHref="/books/all?type=Donation"
+                  pageSize={8}
+                  type="Donation"
+                />
+              )}
+
+              {ENABLE_NON_SALE_FLOWS && (
+                <ListingsSection
+                  title={tt("bookLanding.sectionSwap", "Books to swap")}
+                  subtitle={tt(
+                    "bookLanding.sectionSwapSub",
+                    "Exchange your books — find mutual swap partners.",
+                  )}
+                  universityId={universityId}
+                  viewAllHref="/books/all?type=Swap"
+                  pageSize={8}
+                  type="Swap"
+                />
+              )}
 
               <ListingsSection
                 title={tt("bookLanding.sectionLibrary", "Personal collections")}

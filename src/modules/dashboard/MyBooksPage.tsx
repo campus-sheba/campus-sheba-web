@@ -5,16 +5,27 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useAppState } from "@/contexts/AppStateContext";
-import { fetchBookCategories, fetchCreatorOwnBooks } from "@/services/books";
-import { registerDonationAction } from "@/services/book-donations";
+import {
+  deleteBookAction,
+  fetchBookCategories,
+  fetchCreatorOwnBooks,
+  restoreBookToShelfAction,
+} from "@/services/books";
 import type { BookListing } from "@/types/book";
 import type { BuySellCategory } from "@/types/buy-sell";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 import { Pagination } from "@/components/ui";
 
-const BOOK_TYPES = ["", "Selling", "Lending", "Donation", "Swap", "Library Only"] as const;
+// MVP pilot: only Sell + Showcase listings are managed here.
+const BOOK_TYPES = ["", "Selling", "Library Only"] as const;
 const QUALITIES = ["", "New", "Like New", "Good", "Acceptable"] as const;
 const STATUSES = ["", "Pending", "Approved", "Rejected", "Suspended", "Flagged"] as const;
+const SHELF_TABS = [
+  { value: "", label: "All" },
+  { value: "on_shelf", label: "Showcase" },
+  { value: "promoted", label: "Listed for sale" },
+  { value: "sold_out", label: "Sold out" },
+] as const;
 function formatMoney(n: number) {
   return `৳${n.toLocaleString()}`;
 }
@@ -49,12 +60,13 @@ export default function MyBooksPage() {
   const [bookType, setBookType] = useState("");
   const [quality, setQuality] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [shelfStatusFilter, setShelfStatusFilter] = useState("");
   const [actionMsg, setActionMsg] = useState<string | null>(null);
-  const [registeringId, setRegisteringId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const limit = 15;
 
-  const buildApiParams = (nextPage: number) => ({
+  const buildApiParams = (nextPage: number, shelf: string) => ({
     page: nextPage,
     limit,
     searchKey: searchKey.trim() || undefined,
@@ -62,6 +74,7 @@ export default function MyBooksPage() {
     type: bookType || undefined,
     quality: quality || undefined,
     status: statusFilter || undefined,
+    shelfStatus: shelf || undefined,
     university: universityId,
   });
 
@@ -76,11 +89,12 @@ export default function MyBooksPage() {
     })();
   }, []);
 
-  const fetchPage = async (nextPage: number) => {
+  const fetchPage = async (nextPage: number, shelfArg?: string) => {
+    const shelf = shelfArg ?? shelfStatusFilter;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchCreatorOwnBooks(buildApiParams(nextPage));
+      const res = await fetchCreatorOwnBooks(buildApiParams(nextPage, shelf));
       const rows = Array.isArray(res.data) ? res.data : [];
       setTotal(typeof res.total === "number" ? res.total : rows.length);
       setItems(rows);
@@ -103,16 +117,43 @@ export default function MyBooksPage() {
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  const registerDonation = async (bookId: string) => {
-    setRegisteringId(bookId);
+  const selectShelfTab = (value: string) => {
+    setShelfStatusFilter(value);
+    void fetchPage(1, value);
+  };
+
+  // Restore a promoted/for-sale listing back to the bookshelf (un-sell / cancel).
+  const restoreToShelf = async (book: BookListing) => {
+    setBusyId(book._id);
     setActionMsg(null);
-    const res = await registerDonationAction(bookId);
-    setRegisteringId(null);
-    setActionMsg(
-      res.success
-        ? "Registered in donation queue. Manage requests under Book donations."
-        : res.message,
-    );
+    const res = await restoreBookToShelfAction(book._id);
+    setBusyId(null);
+    if (res.success) {
+      setActionMsg(`"${book.title}" moved back to your bookshelf.`);
+      void fetchPage(page);
+    } else {
+      setActionMsg(res.message ?? "Could not restore this book.");
+    }
+  };
+
+  const removeListing = async (book: BookListing) => {
+    if (
+      !window.confirm(
+        `Remove "${book.title}"? This hides the listing from the marketplace.`,
+      )
+    ) {
+      return;
+    }
+    setBusyId(book._id);
+    setActionMsg(null);
+    const res = await deleteBookAction(book._id);
+    setBusyId(null);
+    if (res.success) {
+      setActionMsg(`"${book.title}" removed.`);
+      void fetchPage(page);
+    } else {
+      setActionMsg(res.message ?? "Could not remove this book.");
+    }
   };
 
   return (
@@ -256,6 +297,27 @@ export default function MyBooksPage() {
         </div>
       </div>
 
+      {/* Shelf-status tabs */}
+      <div className="flex flex-wrap gap-2">
+        {SHELF_TABS.map((tab) => {
+          const isActive = shelfStatusFilter === tab.value;
+          return (
+            <button
+              key={tab.value || "all"}
+              type="button"
+              onClick={() => selectShelfTab(tab.value)}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-[#E30B12] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       {error ? (
         <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
@@ -309,8 +371,16 @@ export default function MyBooksPage() {
                     : item.createdAt
                       ? new Date(item.createdAt).toLocaleDateString()
                       : "—";
+                  const basePrice = item.price ?? 0;
                   const showPrice =
-                    item.type === "Donation" || item.price === 0;
+                    item.type === "Donation" ||
+                    item.type === "Library Only" ||
+                    basePrice <= 0;
+                  const isShowcase = item.type === "Library Only";
+                  const isSold = item.shelfStatus === "sold_out";
+                  // Any live transactional listing can be reverted to the shelf.
+                  const canRestore = !isShowcase && !isSold;
+                  const isBusy = busyId === item._id;
                   return (
                     <tr key={item._id} className="bg-white hover:bg-gray-50/60">
                       <td className="px-4 py-2.5">
@@ -348,17 +418,18 @@ export default function MyBooksPage() {
                         ) : (
                           <>
                             {item.discountPrice != null &&
-                            item.discountPrice < item.price ? (
+                            basePrice > 0 &&
+                            item.discountPrice < basePrice ? (
                               <>
                                 <span>
                                   ৳{item.discountPrice.toLocaleString()}
                                 </span>
                                 <span className="ml-1 text-xs font-normal text-gray-400 line-through">
-                                  ৳{item.price.toLocaleString()}
+                                  ৳{basePrice.toLocaleString()}
                                 </span>
                               </>
                             ) : (
-                              formatMoney(item.price)
+                              formatMoney(basePrice)
                             )}
                           </>
                         )}
@@ -373,36 +444,56 @@ export default function MyBooksPage() {
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
-                        {item.type === "Donation" && item.status === "Approved" ? (
-                          <>
+                        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                          {isShowcase ? (
+                            <Link
+                              href="/my-library"
+                              className="font-semibold text-[#E30B12] hover:underline"
+                            >
+                              {tt("myBooks.promote", "Promote")}
+                            </Link>
+                          ) : null}
+                          {canRestore ? (
                             <button
                               type="button"
-                              disabled={registeringId === item._id}
-                              onClick={() => void registerDonation(item._id)}
-                              className="font-semibold text-violet-700 hover:underline disabled:opacity-50"
+                              disabled={isBusy}
+                              onClick={() => void restoreToShelf(item)}
+                              title={tt(
+                                "myBooks.restoreHint",
+                                "Stop selling and keep this book on your bookshelf.",
+                              )}
+                              className="font-semibold text-amber-700 hover:underline disabled:opacity-50"
                             >
-                              {registeringId === item._id ? "…" : "Queue"}
+                              {isBusy
+                                ? "…"
+                                : tt("myBooks.restore", "Restore to shelf")}
                             </button>
-                            <span className="mx-2 text-gray-300" aria-hidden>
-                              ·
-                            </span>
-                          </>
-                        ) : null}
-                        <Link
-                          href={`/my-books/${item._id}/edit`}
-                          className="font-semibold text-gray-800 hover:underline"
-                        >
-                          {tt("myBooks.edit", "Edit")}
-                        </Link>
-                        <span className="mx-2 text-gray-300" aria-hidden>
-                          ·
-                        </span>
-                        <Link
-                          href={`/books/${item._id}`}
-                          className="font-semibold text-[#E30B12] hover:underline"
-                        >
-                          {tt("myBooks.view", "View")}
-                        </Link>
+                          ) : null}
+                          {!isSold ? (
+                            <Link
+                              href={`/my-books/${item._id}/edit`}
+                              className="font-semibold text-gray-800 hover:underline"
+                            >
+                              {tt("myBooks.edit", "Edit")}
+                            </Link>
+                          ) : null}
+                          <Link
+                            href={`/books/${item._id}`}
+                            className="font-semibold text-[#E30B12] hover:underline"
+                          >
+                            {tt("myBooks.view", "View")}
+                          </Link>
+                          {!isSold ? (
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => void removeListing(item)}
+                              className="font-semibold text-red-600 hover:underline disabled:opacity-50"
+                            >
+                              {tt("myBooks.delete", "Delete")}
+                            </button>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   );

@@ -92,7 +92,7 @@ export default async function CampusFoodHomeTemplate({
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="food" />
             </div>
 
             {/* Food outlets */}

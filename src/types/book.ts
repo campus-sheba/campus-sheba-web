@@ -9,6 +9,25 @@ export type BookType =
   | "Request Based";
 
 export type BookStatus = "Pending" | "Approved" | "Rejected" | "Suspended" | "Flagged";
+export type BookShelfStatus = "on_shelf" | "promoted" | "sold_out";
+export type BrowseSegment =
+  | "marketplace"
+  | "showcase"
+  | "selling"
+  | "lending"
+  | "donation"
+  | "swap";
+export type BookSwapStatus =
+  | "pending"
+  | "accepted"
+  | "rejected"
+  | "completed"
+  | "cancelled";
+export type LibraryBadge =
+  | "first_shelf_book"
+  | "ten_books_shared"
+  | "top_reviewer"
+  | "popular_library";
 export type BookQuality = "New" | "Like New" | "Good" | "Acceptable";
 export type BookAvailability = "Available" | "Borrowed" | "Reserved";
 export type BookBorrowingStatus =
@@ -89,6 +108,7 @@ export type BookListing = {
   description?: string;
   type: BookType;
   status?: BookStatus | string;
+  shelfStatus?: BookShelfStatus | string;
   sellerType?: string;
   department?: BookDeptRef | string;
   owner?: BookOwnerRef | string;
@@ -97,7 +117,7 @@ export type BookListing = {
   contactPhone?: string;
   contactEmail?: string;
   quality?: BookQuality | string;
-  price: number;
+  price?: number;
   discountPrice?: number;
   originalPrice?: number;
   quantity?: number;
@@ -122,8 +142,10 @@ export type BookReview = {
   book: string;
   reviewer: BookOwnerRef;
   rating: number;
-  body: string;
-  isVerifiedBorrower: boolean;
+  /** API field name */
+  comment?: string;
+  body?: string;
+  isVerifiedBorrower?: boolean;
   createdAt: string;
 };
 
@@ -220,6 +242,12 @@ export function resolveLibraryOwnerId(
   return owner._id;
 }
 
+export type ReadingListByStatus = {
+  reading: ReadingListEntry[];
+  completed: ReadingListEntry[];
+  wishlist: ReadingListEntry[];
+};
+
 export type UserLibraryProfile = {
   _id: string;
   owner: LibraryProfileOwnerRef;
@@ -228,12 +256,143 @@ export type UserLibraryProfile = {
   bio?: string;
   visibility: LibraryVisibility;
   readingList: ReadingListEntry[];
+  readingListByStatus?: ReadingListByStatus;
   recommendations?: BookListing[];
   following: string[];
   followers: string[];
+  followersCount?: number;
+  followingCount?: number;
+  badges?: LibraryBadge[];
   reputationScore: number;
   totalBooksShared: number;
   createdAt: string;
+};
+
+export type LibraryHubShelves = {
+  showcase: BookListing[];
+  promoted: BookListing[];
+  soldOut: BookListing[];
+};
+
+export type LibraryHubData = {
+  profile: UserLibraryProfile;
+  shelves: LibraryHubShelves;
+  readingListByStatus: ReadingListByStatus;
+};
+
+export type BookshelfDiscoverCard = {
+  _id: string;
+  displayName: string;
+  bio?: string;
+  reputationScore: number;
+  followersCount: number;
+  owner: BookOwnerRef & { profileImage?: string };
+};
+
+export type BluebookFeedSection = {
+  featured?: BookListing[];
+  recent?: BookListing[];
+  topRated?: BookListing[];
+};
+
+export type BluebookHomeFeed = {
+  marketplace: BluebookFeedSection;
+  showcase: Pick<BluebookFeedSection, "recent">;
+  borrow: Pick<BluebookFeedSection, "recent">;
+  swap: Pick<BluebookFeedSection, "recent">;
+  bookshelves: BookshelfDiscoverCard[];
+  following: BookListing[];
+};
+
+export type BookBrowsePaginatedResponse = BookPaginatedResponse & {
+  segment?: BrowseSegment;
+};
+
+export type LibraryFollowEntry = {
+  _id: string;
+  displayName: string;
+  bio?: string;
+  owner?: LibraryProfileOwnerRef;
+  reputationScore?: number;
+};
+
+export type LibraryFollowListResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: LibraryFollowEntry[];
+};
+
+export type LibraryLeaderboardEntry = {
+  _id: string;
+  displayName: string;
+  bio?: string;
+  reputationScore: number;
+  followersCount: number;
+  totalBooksShared?: number;
+  owner?: LibraryProfileOwnerRef;
+};
+
+export type LibraryLeaderboardResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: LibraryLeaderboardEntry[];
+};
+
+export type BookSwapRecord = {
+  _id: string;
+  proposer: string | BookOwnerRef;
+  owner: string | BookOwnerRef;
+  targetBook: BookListing | string;
+  offeredBook: BookListing | string;
+  status: BookSwapStatus;
+  message?: string;
+  createdAt: string;
+};
+
+export type BookSwapPaginatedResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: BookSwapRecord[];
+};
+
+export type CreateBookSwapPayload = {
+  targetBookId: string;
+  offeredBookId: string;
+  message?: string;
+};
+
+export type LibraryProfileReview = {
+  _id: string;
+  libraryProfileId: string;
+  reviewer: BookOwnerRef;
+  rating: number;
+  body: string;
+  createdAt: string;
+};
+
+export type LibraryProfileReviewsResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: LibraryProfileReview[];
+};
+
+export type SubmitLibraryProfileReviewPayload = {
+  libraryProfileId: string;
+  rating: number;
+  body: string;
+};
+
+export type ReportLibraryProfilePayload = {
+  libraryProfileId: string;
+  reason: string;
+};
+
+export type ReorderRecommendationsPayload = {
+  bookIds: string[];
 };
 
 // ── Paginated responses ───────────────────────────────────────────────────────
@@ -330,6 +489,7 @@ export type ExtendRespondPayload = {
 export type SubmitBookReviewPayload = {
   bookId: string;
   rating: number;
+  /** Sent to API as `comment` */
   body: string;
 };
 
