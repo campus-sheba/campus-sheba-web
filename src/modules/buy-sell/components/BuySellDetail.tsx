@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { ArrowLeft, ChevronDown, ChevronUp, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { Button } from "@/components/ui";
@@ -10,7 +10,7 @@ import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { ResponsiveCardsGrid } from "@/components/marketplace/ResponsiveCardsGrid";
 import { ImageGallery } from "@/components/marketplace/ImageGallery";
 import { SectionHeader } from "@/components/marketplace/SectionHeader";
-import { addToCartAction } from "@/services/cart";
+import { buyNowAction } from "@/services/cart";
 import { emitCartUpdated } from "@/lib/cartEvents";
 import { fetchUserBuySellById } from "@/services/buy-sell";
 import type { BuySellListing } from "@/types/buy-sell";
@@ -28,8 +28,7 @@ export default function BuySellDetail() {
   const [item, setItem] = useState<BuySellListing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [cartMsg, setCartMsg] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -75,39 +74,23 @@ export default function BuySellDetail() {
   const tt = (key: string, fallback: string) =>
     t.has(key) ? t(key) : fallback;
 
-  const addCurrentToCart = async () => {
-    if (!item) return;
-    const res = await addToCartAction({
-      contentId: item._id,
-      type: "buy_sell",
-      quantity,
-    });
-    if (res.success) {
-      emitCartUpdated();
-      setCartMsg(tt("buySellDetail.addedToCart", "Added to cart."));
-      return true;
-    }
-    setCartMsg(
-      res.message ??
-        tt("buySellDetail.couldNotAddToCart", "Could not add to cart."),
-    );
-    return false;
-  };
-
-  const onAddToCart = () => {
-    if (!item) return;
-    setCartMsg(null);
-    startTransition(async () => {
-      await addCurrentToCart();
-    });
-  };
-
   const onBuyNow = () => {
     if (!item) return;
-    setCartMsg(null);
+    setActionMsg(null);
     startTransition(async () => {
-      const ok = await addCurrentToCart();
-      if (ok) router.push("/cart");
+      const res = await buyNowAction({
+        contentId: item._id,
+        type: "buy_sell",
+      });
+      if (res.success) {
+        emitCartUpdated();
+        router.push("/checkout");
+        return;
+      }
+      setActionMsg(
+        res.message ??
+          tt("buySellDetail.couldNotCheckout", "Could not start checkout."),
+      );
     });
   };
 
@@ -256,69 +239,26 @@ export default function BuySellDetail() {
               <p>{sellerEmail}</p>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div>
-                {/* <p className="mb-1 text-xs font-semibold text-gray-500">
-                  Quantity
-                </p> */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="rounded border border-gray-300 px-2.5 py-1 text-sm"
-                  >
-                    -
-                  </button>
-                  <span className="min-w-6 text-center text-sm font-semibold">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setQuantity((q) => Math.min(stock || 1, q + 1))
-                    }
-                    className="rounded border border-gray-300 px-2.5 py-1 text-sm"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-wrap gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  uppercase={false}
-                  className="gap-2"
-                  onClick={onAddToCart}
-                  disabled={isPending || stock < 1}
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  {isPending
-                    ? tt("buySellDetail.adding", "Adding…")
-                    : stock < 1
-                      ? tt("buySellDetail.outOfStock", "Out of stock")
-                      : tt("buySellDetail.addToCart", "Add to cart")}
-                </Button>
-                <Button
-                  type="button"
-                  uppercase={false}
-                  className="gap-2"
-                  onClick={onBuyNow}
-                  disabled={isPending || stock < 1}
-                >
-                  {isPending
-                    ? tt("buySellDetail.processing", "Processing…")
-                    : stock < 1
-                      ? tt("buySellDetail.outOfStock", "Out of stock")
-                      : tt("buySellDetail.buyNow", "Buy now")}
-                </Button>
-              </div>
+            <div>
+              <Button
+                type="button"
+                uppercase={false}
+                className="gap-2"
+                onClick={onBuyNow}
+                disabled={isPending || stock < 1}
+              >
+                {isPending
+                  ? tt("buySellDetail.processing", "Processing…")
+                  : stock < 1
+                    ? tt("buySellDetail.outOfStock", "Out of stock")
+                    : tt("buySellDetail.buyNow", "Buy now")}
+              </Button>
+              {actionMsg && (
+                <p className="mt-2 text-sm text-gray-600" role="status">
+                  {actionMsg}
+                </p>
+              )}
             </div>
-            {cartMsg && (
-              <p className="text-sm text-gray-600" role="status">
-                {cartMsg}
-              </p>
-            )}
           </div>
         </div>
       </SectionWrapper>

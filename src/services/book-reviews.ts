@@ -50,9 +50,17 @@ export async function fetchBookReviews(
 
 export async function submitBookReviewAction(payload: SubmitBookReviewPayload) {
   try {
-    const res = await postPrivate<unknown>(bookReviewEndpoints.base, payload, {
-      includeUniversity: false,
-    });
+    const res = await postPrivate<unknown>(
+      bookReviewEndpoints.base,
+      {
+        bookId: payload.bookId,
+        rating: payload.rating,
+        comment: payload.body.trim(),
+      },
+      {
+        includeUniversity: false,
+      },
+    );
     const r = res as Record<string, unknown>;
     const review = r?.data
       ? (typeof r.data === "object" && "review" in (r.data as object)

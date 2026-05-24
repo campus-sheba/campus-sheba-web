@@ -186,7 +186,8 @@ export async function proxy(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = `/${locale}/login`;
     loginUrl.search = "";
-    loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
+    // Locale-free path: LoginPage uses next-intl router, which re-adds the locale.
+    loginUrl.searchParams.set("callbackUrl", `${cleanPathname}${search}`);
 
     const redirect = NextResponse.redirect(loginUrl);
     clearAuthCookies(redirect);

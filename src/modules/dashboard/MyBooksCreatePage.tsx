@@ -61,11 +61,9 @@ function isFuturePhaseMode(mode: ListingMode): mode is FuturePhaseMode {
 function resolveInitialMode(value: string | null): ListingMode {
   if (!value) return "sell";
   const normalized = value.toLowerCase();
-  const allowed: ListingMode[] = [
-    "sell",
-    "library-only",
-    ...FUTURE_PHASE_MODES,
-  ];
+  // MVP pilot: only Sell + Showcase are selectable. Lend/Donate/Swap stay
+  // out of the create form (machinery kept for a later phase).
+  const allowed: ListingMode[] = ["sell", "library-only"];
   return allowed.includes(normalized as ListingMode)
     ? (normalized as ListingMode)
     : "sell";
@@ -330,7 +328,8 @@ export default function MyBooksCreatePage() {
 
       <div className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm sm:p-6">
         <div className="mb-6 flex flex-wrap gap-2">
-          {MODE_TABS.map(({ mode, label, future }) => (
+          {/* MVP pilot: hide future-phase modes (Lend/Donate/Swap). */}
+          {MODE_TABS.filter(({ future }) => !future).map(({ mode, label, future }) => (
             <button
               key={mode}
               type="button"

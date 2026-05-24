@@ -9,23 +9,27 @@ import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import { Pagination } from "@/components/ui";
 import { fetchBookCategoriesPublic } from "@/services/books.public";
 import { getUniversityMetadataAction } from "@/services/user";
+import { useBooksBrowse } from "@/modules/books/hooks/useBooksBrowse";
 import { useBooksList } from "@/modules/books/hooks/useBooksList";
+import type { BrowseSegment } from "@/types/book";
 import BookListingCard from "./BookListingCard";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import type { BuySellCategory } from "@/types/buy-sell";
 
-const BOOK_TYPES = [
-  "",
-  "Selling",
-  "Lending",
-  "Donation",
-  "Swap",
-  "Library Only",
-  "Request Based",
-] as const;
+// MVP pilot: only Sell + Showcase are browsable. Lend/Donate/Swap kept in
+// TYPE_LABELS for back-compat but not offered as filter options.
+const BOOK_TYPES = ["", "Selling", "Library Only"] as const;
 
 const QUALITIES = ["", "New", "Like New", "Good", "Acceptable"] as const;
 const AVAILABILITIES = ["", "Available", "Borrowed", "Reserved"] as const;
+const BROWSE_SEGMENTS = [
+  "marketplace",
+  "showcase",
+  "selling",
+  "lending",
+  "donation",
+  "swap",
+] as const satisfies readonly BrowseSegment[];
 
 const TYPE_LABELS: Record<string, string> = {
   "": "Any type",
@@ -43,6 +47,7 @@ export default function BookFeed() {
   const { state } = useAppState();
   const tt = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
   const universityId = state.university.selected?._id;
+  const currentUserId = state.user.profile?._id;
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -54,7 +59,11 @@ export default function BookFeed() {
   const [categoryId, setCategoryId] = useState(
     () => searchParams.get("category") || "",
   );
-  const [bookType, setBookType] = useState(() => searchParams.get("type") || "");
+  const [bookType, setBookType] = useState(() => {
+    // MVP pilot: clamp any incoming ?type to the browsable set.
+    const raw = searchParams.get("type") || "";
+    return (BOOK_TYPES as readonly string[]).includes(raw) ? raw : "";
+  });
   const [quality, setQuality] = useState(() => searchParams.get("quality") || "");
   const [semester, setSemester] = useState(() => searchParams.get("semester") || "");
   const [courseCode, setCourseCode] = useState(() => searchParams.get("courseCode") || "");
@@ -125,7 +134,16 @@ export default function BookFeed() {
       : undefined;
 
   const PAGE_SIZE = 12;
-  const { items, total, page, totalPages, isLoading, error, goToPage } = useBooksList({
+  const rawSegment = searchParams.get("segment") ?? "";
+  // MVP pilot: only sell-side segments are browsable (lending/donation/swap hidden).
+  const MVP_SEGMENTS: readonly BrowseSegment[] = ["marketplace", "showcase", "selling"];
+  const browseSegment =
+    BROWSE_SEGMENTS.includes(rawSegment as BrowseSegment) &&
+    MVP_SEGMENTS.includes(rawSegment as BrowseSegment)
+      ? (rawSegment as BrowseSegment)
+      : null;
+
+  const listQuery = useBooksList({
     pageSize: PAGE_SIZE,
     universityId,
     debouncedSearch,
@@ -144,7 +162,29 @@ export default function BookFeed() {
     minBorrowDuration: parsedMinBorrow,
     maxBorrowDuration: parsedMaxBorrow,
     useBorrowableEndpoint: bookType === "Lending",
+    enabled: !browseSegment,
   });
+
+  const browseQuery = useBooksBrowse({
+    segment: browseSegment ?? "marketplace",
+    pageSize: PAGE_SIZE,
+    universityId,
+    debouncedSearch,
+    category: categoryId || undefined,
+    type: bookType || undefined,
+    quality: quality || undefined,
+    semester: semester.trim() || undefined,
+    courseCode: courseCode.trim() || undefined,
+    department: departmentId || undefined,
+    year: year.trim() || undefined,
+    minPrice: parsedMinPrice,
+    maxPrice: parsedMaxPrice,
+    enabled: Boolean(browseSegment),
+  });
+
+  const { items, total, page, totalPages, isLoading, error, goToPage } = browseSegment
+    ? browseQuery
+    : listQuery;
 
   const activeFilterCount = [
     categoryId,
@@ -287,21 +327,23 @@ export default function BookFeed() {
                 ))}
               </select>
 
-              {/* Availability — only relevant for Lending */}
-              <select
-                value={availability}
-                onChange={(e) => setAvailability(e.target.value)}
-                disabled={!universityId}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
-              >
-                {AVAILABILITIES.map((v) => (
-                  <option key={v || "anyav"} value={v}>
-                    {v === ""
-                      ? tt("bookFeed.anyAvailability", "Any availability")
-                      : v}
-                  </option>
-                ))}
-              </select>
+              {/* Availability — only relevant for Lending (hidden for MVP) */}
+              {bookType === "Lending" ? (
+                <select
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  disabled={!universityId}
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E30B12] disabled:bg-gray-50"
+                >
+                  {AVAILABILITIES.map((v) => (
+                    <option key={v || "anyav"} value={v}>
+                      {v === ""
+                        ? tt("bookFeed.anyAvailability", "Any availability")
+                        : v}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
 
               {/* Semester */}
               <input
@@ -473,7 +515,7 @@ export default function BookFeed() {
             ) : (
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {items.map((item) => (
-                  <BookListingCard key={item._id} item={item} />
+                  <BookListingCard key={item._id} item={item} currentUserId={currentUserId} />
                 ))}
               </div>
             )}

@@ -4,10 +4,12 @@ import { getOrderByIdAction } from "@/services/orders";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ placed?: string }>;
 };
 
-export default async function MyOrderDetailPage({ params }: Props) {
+export default async function MyOrderDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { placed } = await searchParams;
   const res = await getOrderByIdAction(id);
 
   if (!res.success || !res.data) {
@@ -21,5 +23,5 @@ export default async function MyOrderDetailPage({ params }: Props) {
     );
   }
 
-  return <OrderDetailView order={res.data} />;
+  return <OrderDetailView order={res.data} showPlacedSuccess={placed === "1"} />;
 }

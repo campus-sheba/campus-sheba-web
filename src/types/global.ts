@@ -17,6 +17,8 @@ export type University = {
   address: string;
   isPublic: boolean;
   isActive: boolean;
+  /** Institutional email domains accepted for student-account verification (no leading '@'). */
+  studentEmailDomains?: string[];
   createdAt: string;
   updatedAt: string;
 };

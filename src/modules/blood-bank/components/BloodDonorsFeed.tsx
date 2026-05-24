@@ -127,7 +127,7 @@ export default function BloodDonorsFeed() {
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="blood" />
             </div>
 
             <div className="mt-8 grid gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">

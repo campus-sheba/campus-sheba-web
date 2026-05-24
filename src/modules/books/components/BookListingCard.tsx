@@ -1,10 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+import { useAppState } from "@/contexts/AppStateContext";
 import type { BookListing, BookType } from "@/types/book";
+import { isBookOwner } from "@/modules/orders/orderFulfillment";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 
 type Props = {
   item: BookListing;
+  currentUserId?: string;
 };
 
 type BadgeConfig = {
@@ -105,20 +110,33 @@ function AvailabilityBadge({ status }: { status?: string }) {
   );
 }
 
-export default function BookListingCard({ item }: Props) {
+export default function BookListingCard({ item, currentUserId: currentUserIdProp }: Props) {
+  const { state } = useAppState();
+  const currentUserId = currentUserIdProp ?? state.user.profile?._id;
   const photo = item.photos?.[0]?.url || "/placeholder.jpg";
   const categoryLabel =
     typeof item.category === "object" && item.category !== null && "title" in item.category
       ? (item.category as { title: string }).title
       : undefined;
 
-  const badge = typeBadge(item.type);
+  const bookType = item.type ?? "Selling";
+  const badge = typeBadge(bookType);
   const outOfStock = (item.quantity ?? 1) < 1;
+  const isOwner = isBookOwner(item, currentUserId);
 
-  const priceLabel =
-    item.type === "Donation" || item.type === "Library Only" || item.price === 0
-      ? "Free"
-      : `৳${(item.discountPrice != null && item.discountPrice < item.price ? item.discountPrice : item.price).toLocaleString()}`;
+  const priceLabel = (() => {
+    if (bookType === "Donation" || bookType === "Library Only") return "Free";
+    const basePrice = item.price ?? 0;
+    if (basePrice <= 0 && item.discountPrice == null) return "Free";
+    const display =
+      item.discountPrice != null &&
+      item.discountPrice > 0 &&
+      (basePrice <= 0 || item.discountPrice < basePrice)
+        ? item.discountPrice
+        : basePrice;
+    if (display <= 0) return "Free";
+    return `৳${display.toLocaleString()}`;
+  })();
 
   const ownerName =
     typeof item.owner === "object" && item.owner !== null
@@ -179,7 +197,7 @@ export default function BookListingCard({ item }: Props) {
           )}
         </div>
 
-        {item.type === "Lending" && (
+        {bookType === "Lending" && (
           <div className="flex items-center gap-1.5">
             {item.availabilityStatus && (
               <AvailabilityBadge status={item.availabilityStatus} />
@@ -214,10 +232,14 @@ export default function BookListingCard({ item }: Props) {
         </div>
 
         <Link
-          href={`/books/${item._id}`}
-          className={`mt-1 inline-flex items-center justify-center rounded-md px-3 py-2 text-[11px] font-semibold text-white transition md:mt-2 md:rounded-lg md:text-sm ${ctaColor(item.type)} ${outOfStock && item.type === "Selling" ? "opacity-60 pointer-events-none" : ""}`}
+          href={isOwner ? `/my-books/${item._id}/edit` : `/books/${item._id}`}
+          className={`mt-1 inline-flex items-center justify-center rounded-md px-3 py-2 text-[11px] font-semibold text-white transition md:mt-2 md:rounded-lg md:text-sm ${
+            isOwner ? "bg-gray-600 hover:brightness-105" : ctaColor(bookType)
+          } ${!isOwner && outOfStock && bookType === "Selling" ? "opacity-60 pointer-events-none" : ""}`}
         >
-          {ctaLabel(item.type, outOfStock)}
+          {isOwner
+            ? "Your listing"
+            : ctaLabel(bookType, outOfStock)}
         </Link>
       </div>
     </div>

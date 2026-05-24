@@ -27,22 +27,44 @@ export async function getCartAction() {
 
 export async function addToCartAction(input: {
   contentId: string;
-  /** Module the item belongs to: "book", "buy-sell", "food", etc. Sent as
-   * `moduleType` per the v1 Cart API; `type` is kept for backward-compat. */
+  /** Module the item belongs to: "book", "buy_sell", "food", etc. */
   type: string;
   quantity?: number;
 }) {
   try {
     const response = await postPrivate<{ data: Cart }>(cartEndpoints.cart, {
       contentId: input.contentId,
-      moduleType: input.type,
-      // Backwards-compat with any older backend deployments still expecting `type`.
       type: input.type,
       quantity: input.quantity ?? 1,
     }, cartOpts);
     return { success: true as const, data: response?.data };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to add item to cart";
+    return { success: false as const, message, data: null };
+  }
+}
+
+/** Replace cart with a single item for direct checkout (one seller per order). */
+export async function buyNowAction(input: {
+  contentId: string;
+  type: string;
+}) {
+  try {
+    const existing = await getPrivate<{ data: Cart }>(cartEndpoints.cart, cartOpts).catch(
+      () => null,
+    );
+    if (existing?.data?.items?.length) {
+      await deletePrivate(cartEndpoints.clear, undefined, cartOpts).catch(() => undefined);
+    }
+
+    const response = await postPrivate<{ data: Cart }>(cartEndpoints.cart, {
+      contentId: input.contentId,
+      type: input.type,
+      quantity: 1,
+    }, cartOpts);
+    return { success: true as const, data: response?.data };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to start checkout";
     return { success: false as const, message, data: null };
   }
 }

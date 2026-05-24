@@ -7,7 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { fetchSearchSuggestions } from "@/services/search.public";
+import { fetchSearchSuggestionsAction } from "@/services/search";
 import type { SearchCategoryKey, SearchHit } from "@/types/search";
 import {
   SEARCH_CATEGORY_ORDER,
@@ -128,7 +128,7 @@ export default function GlobalSearch({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] =
-    useState<Awaited<ReturnType<typeof fetchSearchSuggestions>>>(null);
+    useState<Awaited<ReturnType<typeof fetchSearchSuggestionsAction>>>(null);
 
   const hintPhrases = SEARCH_HINT_KEYS.map((key) => t(key));
   const prefix = t("searchPlaceholderPrefix");
@@ -152,9 +152,11 @@ export default function GlobalSearch({
       setLoading(true);
       setError(null);
       try {
-        const res = await fetchSearchSuggestions(q, universityId);
+        const res = await fetchSearchSuggestionsAction(q, universityId);
         setData(res);
-        if (!res) setError(t("searchFailed"));
+        if (!res) {
+          setError(t("searchFailed"));
+        }
       } catch {
         setData(null);
         setError(t("searchFailed"));
