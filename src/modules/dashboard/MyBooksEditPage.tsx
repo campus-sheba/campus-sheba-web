@@ -6,7 +6,12 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { uploadMediaFiles, type UploadedMediaMeta } from "@/lib/media/client";
 import { pickDefaultBookAddressId } from "@/modules/cart/deliveryAddress";
-import { deleteBookAction, fetchBookCategories, updateBookAction } from "@/services/books";
+import {
+  deleteBookAction,
+  fetchBookCategories,
+  getCreatorBookByIdAction,
+  updateBookAction,
+} from "@/services/books";
 import { getAddressesAction } from "@/services/addresses";
 import { getUniversityMetadataAction } from "@/services/user";
 import type { BookListing, BookQuality, UpdateBookPayload } from "@/types/book";
@@ -19,7 +24,7 @@ const QUALITIES: BookQuality[] = ["New", "Like New", "Good", "Acceptable"];
 const MAX_PHOTOS = 5;
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#E30B12]";
 const labelClass = "text-xs font-medium text-gray-500";
 
 function normalizePhoneDigits(value: string): string {
@@ -64,59 +69,165 @@ function photosToMeta(book: BookListing): UploadedMediaMeta[] {
   }));
 }
 
+function applyBookToForm(
+  book: BookListing,
+  setters: {
+    setTitle: (v: string) => void;
+    setAuthor: (v: string) => void;
+    setEdition: (v: string) => void;
+    setCategoryId: (v: string) => void;
+    setDepartmentId: (v: string) => void;
+    setSubject: (v: string) => void;
+    setBuyingYear: (v: string) => void;
+    setPublisher: (v: string) => void;
+    setLanguage: (v: string) => void;
+    setCourseCode: (v: string) => void;
+    setSemester: (v: string) => void;
+    setQuality: (v: BookQuality) => void;
+    setDescription: (v: string) => void;
+    setPrice: (v: string) => void;
+    setDiscountPrice: (v: string) => void;
+    setQuantity: (v: string) => void;
+    setSafekeepingCharge: (v: string) => void;
+    setBorrowDuration: (v: string) => void;
+    setMaxExtensionDuration: (v: string) => void;
+    setAllowsExtension: (v: boolean) => void;
+    setContactName: (v: string) => void;
+    setContactPhone: (v: string) => void;
+    setContactEmail: (v: string) => void;
+    setAddressId: (v: string) => void;
+    setPhotos: (v: UploadedMediaMeta[]) => void;
+  },
+) {
+  setters.setTitle(book.title);
+  setters.setAuthor(book.author ?? "");
+  setters.setEdition(book.edition ?? "");
+  setters.setCategoryId(categoryIdFromBook(book));
+  setters.setDepartmentId(departmentIdFromBook(book));
+  setters.setSubject(book.subject ?? "");
+  setters.setBuyingYear(book.buyingYear ?? "");
+  setters.setPublisher(book.publisher ?? "");
+  setters.setLanguage(book.language ?? "English");
+  setters.setCourseCode(book.courseCode ?? "");
+  setters.setSemester(book.semester ?? "");
+  setters.setQuality((book.quality as BookQuality) ?? "Good");
+  setters.setDescription(book.description ?? "");
+  setters.setPrice(String(book.price ?? ""));
+  setters.setDiscountPrice(book.discountPrice != null ? String(book.discountPrice) : "");
+  setters.setQuantity(String(book.quantity ?? 1));
+  setters.setSafekeepingCharge(
+    book.safekeepingCharge != null ? String(book.safekeepingCharge) : "",
+  );
+  setters.setBorrowDuration(String(book.borrowDuration ?? 14));
+  setters.setMaxExtensionDuration(String(book.maxExtensionDuration ?? 7));
+  setters.setAllowsExtension(book.allowsExtension ?? false);
+  setters.setContactName(book.contactName ?? "");
+  setters.setContactPhone(book.contactPhone ?? "");
+  setters.setContactEmail(book.contactEmail ?? "");
+  setters.setAddressId(addressIdFromBook(book));
+  setters.setPhotos(photosToMeta(book));
+}
+
 type Props = {
-  book: BookListing;
+  bookId: string;
 };
 
-export default function MyBooksEditPage({ book }: Props) {
+export default function MyBooksEditPage({ bookId }: Props) {
   const router = useRouter();
-  const bookId = book._id;
   const { state } = useAppState();
   const universityId = state.university.selected?._id ?? state.user.profile?.university?._id;
 
+  const [book, setBook] = useState<BookListing | null>(null);
+  const [loadBook, setLoadBook] = useState(true);
+  const [bookError, setBookError] = useState<string | null>(null);
   const [categories, setCategories] = useState<BuySellCategory[]>([]);
   const [departments, setDepartments] = useState<{ _id: string; name: string; code?: string }[]>([]);
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loadMeta, setLoadMeta] = useState(true);
 
-  const [title, setTitle] = useState(book.title);
-  const [author, setAuthor] = useState(book.author ?? "");
-  const [edition, setEdition] = useState(book.edition ?? "");
-  const [categoryId, setCategoryId] = useState(() => categoryIdFromBook(book));
-  const [departmentId, setDepartmentId] = useState(() => departmentIdFromBook(book));
-  const [subject, setSubject] = useState(book.subject ?? "");
-  const [buyingYear, setBuyingYear] = useState(book.buyingYear ?? "");
-  const [publisher, setPublisher] = useState(book.publisher ?? "");
-  const [quality, setQuality] = useState<BookQuality>(() => (book.quality as BookQuality) ?? "Good");
-  const [description, setDescription] = useState(book.description ?? "");
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [edition, setEdition] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
+  const [subject, setSubject] = useState("");
+  const [buyingYear, setBuyingYear] = useState("");
+  const [publisher, setPublisher] = useState("");
+  const [language, setLanguage] = useState("English");
+  const [courseCode, setCourseCode] = useState("");
+  const [semester, setSemester] = useState("");
+  const [quality, setQuality] = useState<BookQuality>("Good");
+  const [description, setDescription] = useState("");
 
-  const [price, setPrice] = useState(String(book.price ?? ""));
-  const [discountPrice, setDiscountPrice] = useState(
-    book.discountPrice != null ? String(book.discountPrice) : "",
-  );
-  const [quantity, setQuantity] = useState(String(book.quantity ?? 1));
-  const [safekeepingCharge, setSafekeepingCharge] = useState(
-    book.safekeepingCharge != null ? String(book.safekeepingCharge) : "",
-  );
-  const [borrowDuration, setBorrowDuration] = useState(String(book.borrowDuration ?? 14));
-  const [maxExtensionDuration, setMaxExtensionDuration] = useState(
-    String(book.maxExtensionDuration ?? 7),
-  );
-  const [allowsExtension, setAllowsExtension] = useState(book.allowsExtension ?? false);
+  const [price, setPrice] = useState("");
+  const [discountPrice, setDiscountPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [safekeepingCharge, setSafekeepingCharge] = useState("");
+  const [borrowDuration, setBorrowDuration] = useState("14");
+  const [maxExtensionDuration, setMaxExtensionDuration] = useState("7");
+  const [allowsExtension, setAllowsExtension] = useState(false);
 
-  const [contactName, setContactName] = useState(book.contactName ?? "");
-  const [contactPhone, setContactPhone] = useState(book.contactPhone ?? "");
-  const [contactEmail, setContactEmail] = useState(book.contactEmail ?? "");
-  const [addressId, setAddressId] = useState(() => addressIdFromBook(book));
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [addressId, setAddressId] = useState("");
 
-  const [photos, setPhotos] = useState<UploadedMediaMeta[]>(() => photosToMeta(book));
+  const [photos, setPhotos] = useState<UploadedMediaMeta[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const listingType = book.type;
+  const listingType = book?.type;
+  const isShowcase = listingType === "Library Only";
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      setLoadBook(true);
+      setBookError(null);
+      const res = await getCreatorBookByIdAction(bookId);
+      if (cancelled) return;
+      setLoadBook(false);
+      if (!res.success || !res.data) {
+        setBookError(res.message ?? "Book not found.");
+        setBook(null);
+        return;
+      }
+      setBook(res.data);
+      applyBookToForm(res.data, {
+        setTitle,
+        setAuthor,
+        setEdition,
+        setCategoryId,
+        setDepartmentId,
+        setSubject,
+        setBuyingYear,
+        setPublisher,
+        setLanguage,
+        setCourseCode,
+        setSemester,
+        setQuality,
+        setDescription,
+        setPrice,
+        setDiscountPrice,
+        setQuantity,
+        setSafekeepingCharge,
+        setBorrowDuration,
+        setMaxExtensionDuration,
+        setAllowsExtension,
+        setContactName,
+        setContactPhone,
+        setContactEmail,
+        setAddressId,
+        setPhotos,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [bookId]);
 
   useEffect(() => {
     void (async () => {
@@ -180,7 +291,7 @@ export default function MyBooksEditPage({ book }: Props) {
       setError("Choose a department.");
       return;
     }
-    if (!addressId) {
+    if (!isShowcase && !addressId) {
       setError("Choose a pickup address.");
       return;
     }
@@ -192,16 +303,19 @@ export default function MyBooksEditPage({ book }: Props) {
       setError("Description is required.");
       return;
     }
-    if (!contactName.trim() || !contactPhone.trim()) {
-      setError("Contact name and phone are required.");
-      return;
+    let apiPhone = "";
+    if (!isShowcase) {
+      if (!contactName.trim() || !contactPhone.trim()) {
+        setError("Contact name and phone are required.");
+        return;
+      }
+      const digits = normalizePhoneDigits(contactPhone);
+      if (digits.length !== 11 || !digits.startsWith("01")) {
+        setError("Enter a valid Bangladesh mobile number (11 digits, e.g. 017XXXXXXXX).");
+        return;
+      }
+      apiPhone = buildApiPhone(digits);
     }
-    const digits = normalizePhoneDigits(contactPhone);
-    if (digits.length !== 11 || !digits.startsWith("01")) {
-      setError("Enter a valid Bangladesh mobile number (11 digits, e.g. 017XXXXXXXX).");
-      return;
-    }
-    const apiPhone = buildApiPhone(digits);
 
     const qty = Math.max(1, Math.floor(Number(quantity) || 1));
     if (photos.length === 0) {
@@ -216,7 +330,6 @@ export default function MyBooksEditPage({ book }: Props) {
     }));
 
     const payload: UpdateBookPayload = {
-      addressId,
       title: title.trim(),
       photos: photoPayload,
       category: categoryId,
@@ -224,18 +337,26 @@ export default function MyBooksEditPage({ book }: Props) {
       description: description.trim(),
       type: listingType,
       department: departmentId,
-      contactName: contactName.trim(),
-      contactPhone: apiPhone,
-      contactEmail: contactEmail.trim() || undefined,
       quality,
       quantity: qty,
+      ...(!isShowcase
+        ? {
+            addressId,
+            contactName: contactName.trim(),
+            contactPhone: apiPhone,
+            contactEmail: contactEmail.trim() || undefined,
+          }
+        : {}),
       ...(author.trim() ? { author: author.trim() } : {}),
       ...(edition.trim() ? { edition: edition.trim() } : {}),
       ...(subject.trim() ? { subject: subject.trim() } : {}),
       ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
+      ...(language.trim() ? { language: language.trim() } : {}),
+      ...(courseCode.trim() ? { courseCode: courseCode.trim() } : {}),
+      ...(semester.trim() ? { semester: semester.trim() } : {}),
     };
 
-    if (listingType === "Donation") {
+    if (listingType === "Donation" || listingType === "Library Only") {
       payload.price = 0;
     } else {
       const priceNum = Number(price);
@@ -286,6 +407,24 @@ export default function MyBooksEditPage({ book }: Props) {
     router.push("/my-books");
   }
 
+  if (loadBook) {
+    return <p className="text-sm text-gray-500">Loading book…</p>;
+  }
+
+  if (bookError || !book) {
+    return (
+      <div className="space-y-4 rounded-xl border border-gray-200/80 bg-white p-6 shadow-sm">
+        <p className="text-sm text-red-600">{bookError ?? "Book not found."}</p>
+        <Link
+          href="/my-books"
+          className="inline-block text-sm font-semibold text-[#E30B12] hover:underline"
+        >
+          ← Back to my books
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <div>
@@ -297,6 +436,7 @@ export default function MyBooksEditPage({ book }: Props) {
           {listingType === "Selling" && "Selling"}
           {listingType === "Lending" && "Lending"}
           {listingType === "Donation" && "Donation"}
+          {listingType === "Library Only" && "Showcase"}
           {listingType ? " · " : ""}
           {title}
         </p>
@@ -424,6 +564,41 @@ export default function MyBooksEditPage({ book }: Props) {
                   onChange={(e) => setPublisher(e.target.value)}
                   className={`${inputClass} mt-1`}
                 />
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="ebk-lang">
+                  Language
+                </label>
+                <input
+                  id="ebk-lang"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className={`${inputClass} mt-1`}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClass} htmlFor="ebk-course">
+                    Course code
+                  </label>
+                  <input
+                    id="ebk-course"
+                    value={courseCode}
+                    onChange={(e) => setCourseCode(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="ebk-semester">
+                    Semester
+                  </label>
+                  <input
+                    id="ebk-semester"
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  />
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -559,7 +734,7 @@ export default function MyBooksEditPage({ book }: Props) {
                       type="checkbox"
                       checked={allowsExtension}
                       onChange={(e) => setAllowsExtension(e.target.checked)}
-                      className="rounded border-gray-300 text-[#00A651] focus:ring-[#00A651]"
+                      className="rounded border-gray-300 text-[#E30B12] focus:ring-[#E30B12]"
                     />
                     Borrower may request an extension
                   </label>
@@ -634,7 +809,7 @@ export default function MyBooksEditPage({ book }: Props) {
                     </div>
                   ))}
                 </div>
-                <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-[#00A651] hover:text-[#00A651]">
+                <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-[#E30B12] hover:text-[#E30B12]">
                   <input
                     type="file"
                     accept="image/*"
@@ -699,7 +874,7 @@ export default function MyBooksEditPage({ book }: Props) {
             <button
               type="submit"
               disabled={submitting || loadMeta}
-              className="rounded-lg bg-[#00A651] px-5 py-2.5 text-sm font-semibold text-white active:brightness-95 disabled:opacity-50"
+              className="rounded-lg bg-[#E30B12] px-5 py-2.5 text-sm font-semibold text-white active:brightness-95 disabled:opacity-50"
             >
               {submitting ? "Saving…" : "Save changes"}
             </button>

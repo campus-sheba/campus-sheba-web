@@ -68,7 +68,7 @@ export default function ReferAndEarnPage() {
   if (loading && !codeData) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-9 w-9 animate-spin text-[#00A651]" />
+        <Loader2 className="h-9 w-9 animate-spin text-[#E30B12]" />
       </div>
     );
   }
@@ -78,8 +78,8 @@ export default function ReferAndEarnPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00A651]/10">
-            <Users className="h-6 w-6 text-[#00A651]" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E30B12]/10">
+            <Users className="h-6 w-6 text-[#E30B12]" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Refer &amp; Earn</h1>
@@ -103,8 +103,8 @@ export default function ReferAndEarnPage() {
 
       {/* Referral code card */}
       {codeData ? (
-        <div className="rounded-2xl border border-[#00A651]/20 bg-gradient-to-br from-[#00A651]/5 to-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#00A651]">Your Referral Code</p>
+        <div className="rounded-2xl border border-[#E30B12]/20 bg-gradient-to-br from-[#E30B12]/5 to-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#E30B12]">Your Referral Code</p>
           <div className="mt-2 flex items-center gap-3">
             <span className="text-3xl font-bold tracking-widest text-gray-900">{codeData.referralCode}</span>
             <button
@@ -122,7 +122,7 @@ export default function ReferAndEarnPage() {
               <p className="text-xs text-gray-500">Total</p>
             </div>
             <div className="rounded-xl bg-white border border-gray-100 px-3 py-2.5 text-center shadow-sm">
-              <p className="text-xl font-bold text-[#00A651]">{codeData.rewardedReferrals}</p>
+              <p className="text-xl font-bold text-[#E30B12]">{codeData.rewardedReferrals}</p>
               <p className="text-xs text-gray-500">Rewarded</p>
             </div>
             <div className="rounded-xl bg-white border border-gray-100 px-3 py-2.5 text-center shadow-sm">
@@ -162,7 +162,7 @@ export default function ReferAndEarnPage() {
                 onClick={() => setStatusFilter(s)}
                 className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
                   statusFilter === s
-                    ? "bg-[#00A651] text-white"
+                    ? "bg-[#E30B12] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -207,7 +207,7 @@ export default function ReferAndEarnPage() {
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-[#00A651]/10 flex items-center justify-center text-xs font-bold text-[#00A651]">
+                    <div className="h-8 w-8 rounded-full bg-[#E30B12]/10 flex items-center justify-center text-xs font-bold text-[#E30B12]">
                       {entry.referrer.name[0]?.toUpperCase()}
                     </div>
                   )}
@@ -215,7 +215,7 @@ export default function ReferAndEarnPage() {
                     <p className="text-sm font-semibold text-gray-900 truncate">{entry.referrer.name}</p>
                     <p className="text-xs text-gray-500">{entry.totalReferrals} total · {entry.rewardedReferrals} rewarded</p>
                   </div>
-                  <span className="text-sm font-bold text-[#00A651]">{entry.rewardedReferrals}</span>
+                  <span className="text-sm font-bold text-[#E30B12]">{entry.rewardedReferrals}</span>
                 </li>
               ))}
             </ul>
@@ -260,7 +260,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
           <span>Signup bonus: <strong>{entry.refereeSignupCoins}</strong> coins</span>
           {!isPending ? (
             <>
-              <span>Your reward: <strong className="text-[#00A651]">{entry.referrerRewardCoins}</strong> coins</span>
+              <span>Your reward: <strong className="text-[#E30B12]">{entry.referrerRewardCoins}</strong> coins</span>
               <span>Their bonus: <strong>{entry.refereeFirstOrderCoins}</strong> coins</span>
             </>
           ) : null}

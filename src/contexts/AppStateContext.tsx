@@ -3,6 +3,12 @@
 import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useRef, useState } from "react";
 import { AppState, AppStateAction, AppStateContextValue, UserProfile, University, UniversityAddress } from "@/types/global";
 import { CookieHelper, StorageHelper } from "@/lib/appStateHelper";
+import {
+  CLIENT_LOGOUT_EVENT,
+  SESSION_EXPIRED_EVENT,
+  emitClientLogout,
+} from "@/lib/sessionSync";
+import { checkSessionAction } from "@/services/auth";
 
 const INITIAL_STATE: AppState = {
   auth: {
@@ -297,19 +303,28 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
     StorageHelper.clearAll();
   }, []);
 
+  const clearAuthState = useCallback(() => {
+    CookieHelper.clearAuth();
+    dispatch({ type: "CLEAR_AUTH" });
+    dispatch({ type: "SET_AUTH_LOADING", payload: false });
+  }, []);
+
   useEffect(() => {
     const handleLogoutEvent = () => logout();
-    window.addEventListener("client-logout", handleLogoutEvent);
+    const handleSessionExpired = () => clearAuthState();
+
+    window.addEventListener(CLIENT_LOGOUT_EVENT, handleLogoutEvent);
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
     return () => {
-      window.removeEventListener("client-logout", handleLogoutEvent);
+      window.removeEventListener(CLIENT_LOGOUT_EVENT, handleLogoutEvent);
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
     };
-  }, [logout]);
+  }, [logout, clearAuthState]);
 
   /**
    * Cookie-polling sync: httpOnly auth cookies can be set or cleared by server actions
    * (login, logout, refresh, auto-login via token). Mirror the non-httpOnly `user`
-   * cookie into reducer state within ~1s so UI responds to server-driven auth changes
-   * without a full page reload.
+   * cookie into reducer state so UI responds without a full page reload.
    */
   const lastUserCookieRef = useRef<string | null>(null);
   useEffect(() => {
@@ -323,7 +338,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
       lastUserCookieRef.current = raw;
 
       if (!raw) {
-        dispatch({ type: "CLEAR_AUTH" });
+        clearAuthState();
         return;
       }
 
@@ -335,9 +350,51 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
     };
 
     syncFromCookie();
-    const id = window.setInterval(syncFromCookie, 1000);
-    return () => window.clearInterval(id);
-  }, []);
+    const id = window.setInterval(syncFromCookie, 400);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") syncFromCookie();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", syncFromCookie);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", syncFromCookie);
+    };
+  }, [clearAuthState]);
+
+  /** Server session probe so navbar updates as soon as tokens expire (not only on protected routes). */
+  const sessionProbeRunning = useRef(false);
+  useEffect(() => {
+    if (!state.auth.isAuthenticated) return;
+
+    const probe = async () => {
+      if (sessionProbeRunning.current) return;
+      sessionProbeRunning.current = true;
+      try {
+        const { authenticated } = await checkSessionAction();
+        if (!authenticated) {
+          emitClientLogout();
+        }
+      } finally {
+        sessionProbeRunning.current = false;
+      }
+    };
+
+    void probe();
+    const interval = window.setInterval(() => void probe(), 45_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void probe();
+    };
+    const onFocus = () => void probe();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [state.auth.isAuthenticated]);
 
   const selectUniversity = useCallback((university: University) => {
     dispatch({

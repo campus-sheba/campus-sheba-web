@@ -157,7 +157,7 @@ export default function LostFoundLanding() {
           <div className="mt-10 space-y-10">
             {universityId ? (
               <div className="mb-2">
-                <FeatureHeroAds universityId={universityId} />
+                <FeatureHeroAds universityId={universityId} placement="lost_found" />
               </div>
             ) : null}
             <SectionBlock

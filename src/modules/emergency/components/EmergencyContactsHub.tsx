@@ -2,8 +2,12 @@
 
 import {
   Ambulance,
+  AlertTriangle,
+  BadgeCheck,
+  Clock,
   Flame,
   Hospital,
+  Loader2,
   MapPin,
   MapPinned,
   Phone,
@@ -13,6 +17,7 @@ import {
   Building2,
   MessageCircle,
   ChevronRight,
+  Tag,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/i18n/navigation";
@@ -21,8 +26,13 @@ import { useTranslations } from "next-intl";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import { fetchEmergencyContactsByCategoryAction } from "@/services/emergency-contacts";
-import type { EmergencyContact, EmergencyContactsByCategory } from "@/types/emergency-contact";
+import {
+  fetchEmergencyContactsByCategoryAction,
+  fetchEmergencyContactsQuickDialAction,
+  fetchEmergencyContactsListAction,
+} from "@/services/emergency-contacts";
+import ReportIssueModal from "./ReportIssueModal";
+import type { EmergencyContact, EmergencyContactsByCategory, ContactVerificationStatus } from "@/types/emergency-contact";
 import type { AppState } from "@/types/global";
 
 function resolveUniversityId(state: AppState): string | undefined {
@@ -53,8 +63,7 @@ function categoryStyle(category: string): { Icon: typeof Shield; bar: string } {
 }
 
 function sortCategoryKeys(data: EmergencyContactsByCategory): string[] {
-  const keys = Object.keys(data);
-  return keys.sort((a, b) => {
+  return Object.keys(data).sort((a, b) => {
     const ia = CATEGORY_ORDER.indexOf(a);
     const ib = CATEGORY_ORDER.indexOf(b);
     if (ia === -1 && ib === -1) return a.localeCompare(b);
@@ -64,28 +73,75 @@ function sortCategoryKeys(data: EmergencyContactsByCategory): string[] {
   });
 }
 
-function ContactCard({ contact }: { contact: EmergencyContact }) {
-  const primary = contact.phoneNumbers?.[0];
-  const smsHref =
-    contact.hasSMS && primary
-      ? `sms:${primary.replace(/\s/g, "")}?body=${encodeURIComponent("Emergency inquiry from Campus Sheba.")}`
-      : null;
+function VerificationBadge({ status }: { status: ContactVerificationStatus }) {
+  if (status === "pending-reverification") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200">
+        <AlertTriangle className="h-3 w-3" />
+        Info may be outdated
+      </span>
+    );
+  }
+  if (status === "verify-before-calling") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 ring-1 ring-red-200">
+        <AlertTriangle className="h-3 w-3" />
+        Verify before calling
+      </span>
+    );
+  }
+  return null;
+}
 
+type ContactCardProps = {
+  contact: EmergencyContact;
+  onReport: (contact: EmergencyContact) => void;
+};
+
+function ContactCard({ contact, onReport }: ContactCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/95 p-4 shadow-lg shadow-black/5 ring-1 ring-black/[0.04] backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-xl">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="font-bold text-gray-900">{contact.name}</h3>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-bold text-gray-900">{contact.name}</h3>
+            {contact.isSponsored ? (
+              <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
+                Sponsored
+              </span>
+            ) : null}
+          </div>
+
+          {contact.verificationStatus && contact.verificationStatus !== "active" ? (
+            <div className="mt-1.5">
+              <VerificationBadge status={contact.verificationStatus} />
+            </div>
+          ) : null}
+
           {contact.description ? (
             <p className="mt-1 text-sm leading-relaxed text-gray-600">{contact.description}</p>
           ) : null}
+
           {contact.location ? (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-gray-500">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-400" />
               {contact.location}
             </p>
           ) : null}
+
+          {!contact.is24h && contact.availabilityNote ? (
+            <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-700">
+              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {contact.availabilityNote}
+            </p>
+          ) : contact.is24h ? (
+            <span className="mt-2 inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+              <BadgeCheck className="h-3 w-3" />
+              24h
+            </span>
+          ) : null}
         </div>
+
         <Link
           href={`/emergency-contacts/${contact._id}`}
           className="shrink-0 rounded-full bg-gray-100 p-2 text-gray-500 transition group-hover:bg-[#00A651]/10 group-hover:text-[#00A651]"
@@ -94,33 +150,46 @@ function ContactCard({ contact }: { contact: EmergencyContact }) {
           <ChevronRight className="h-4 w-4" />
         </Link>
       </div>
+
       <div className="mt-4 flex flex-wrap gap-2">
-        {(contact.phoneNumbers ?? []).map((num) => (
-          <a
-            key={num}
-            href={`tel:${num.replace(/\s/g, "")}`}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#00A651] px-3 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105"
-          >
-            <Phone className="h-3.5 w-3.5" />
-            {num}
-          </a>
+        {(contact.phones ?? []).map((ph) => (
+          <div key={ph.number} className="flex items-center gap-1">
+            <a
+              href={`tel:${ph.number.replace(/\s/g, "")}`}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#00A651] px-3 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              {ph.label ? <span className="hidden sm:inline">{ph.label} · </span> : null}
+              {ph.number}
+            </a>
+            {ph.smsCapable ? (
+              <a
+                href={`sms:${ph.number.replace(/\s/g, "")}?body=${encodeURIComponent("Emergency inquiry from Campus Sheba.")}`}
+                className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+                aria-label="SMS"
+              >
+                <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
+              </a>
+            ) : null}
+          </div>
         ))}
-        {smsHref ? (
-          <a
-            href={smsHref}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50"
-          >
-            <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
-            SMS
-          </a>
-        ) : null}
       </div>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {(contact.tags ?? []).slice(0, 5).map((tag) => (
-          <span key={tag} className="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
-            #{tag}
-          </span>
-        ))}
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {(contact.tags ?? []).slice(0, 4).map((tag) => (
+            <span key={tag} className="inline-flex items-center gap-0.5 rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+              <Tag className="h-2.5 w-2.5" />
+              {tag}
+            </span>
+          ))}
+        </div>
+        <button
+          onClick={() => onReport(contact)}
+          className="text-[10px] font-medium text-gray-400 hover:text-amber-600 transition"
+        >
+          Report issue
+        </button>
       </div>
     </div>
   );
@@ -133,57 +202,62 @@ export default function EmergencyContactsHub() {
   const universityId = resolveUniversityId(state);
 
   const [data, setData] = useState<EmergencyContactsByCategory>({});
+  const [quickDialContacts, setQuickDialContacts] = useState<EmergencyContact[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
+  const [searchResults, setSearchResults] = useState<EmergencyContact[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [reportTarget, setReportTarget] = useState<EmergencyContact | null>(null);
 
   useEffect(() => {
-    const tmr = window.setTimeout(() => setDebounced(search), 280);
+    const tmr = window.setTimeout(() => setDebounced(search), 320);
     return () => window.clearTimeout(tmr);
   }, [search]);
 
   useEffect(() => {
-    if (!universityId) {
-      setData({});
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
-    setLoading(true);
     void (async () => {
-      const res = await fetchEmergencyContactsByCategoryAction(universityId);
+      if (!universityId) {
+        if (!cancelled) {
+          setData({});
+          setQuickDialContacts([]);
+          setLoading(false);
+        }
+        return;
+      }
+      if (!cancelled) setLoading(true);
+      const [catRes, qdRes] = await Promise.all([
+        fetchEmergencyContactsByCategoryAction(universityId),
+        fetchEmergencyContactsQuickDialAction(universityId),
+      ]);
       if (cancelled) return;
-      if (res.success) setData(res.data);
-      else setData({});
+      setData(catRes.success ? catRes.data : {});
+      setQuickDialContacts(qdRes.success ? qdRes.data : []);
       setLoading(false);
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [universityId]);
 
-  const flatSorted = useMemo(() => {
-    const rows: EmergencyContact[] = [];
-    for (const list of Object.values(data)) {
-      rows.push(...list);
-    }
-    return rows.sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99));
-  }, [data]);
-
-  const quickDial = useMemo(() => flatSorted.slice(0, 4), [flatSorted]);
-
-  const searchQ = debounced.trim().toLowerCase();
-  const searchHits = useMemo(() => {
-    if (!searchQ) return null;
-    return flatSorted.filter((c) => {
-      const blob = [c.name, c.description, c.location, ...(c.phoneNumbers ?? []), ...(c.tags ?? []), c.category]
-        .join(" ")
-        .toLowerCase();
-      return blob.includes(searchQ);
-    });
-  }, [flatSorted, searchQ]);
+  useEffect(() => {
+    const q = debounced.trim();
+    let cancelled = false;
+    void (async () => {
+      if (!q || !universityId) {
+        if (!cancelled) setSearchResults(null);
+        return;
+      }
+      if (!cancelled) setSearchLoading(true);
+      const res = await fetchEmergencyContactsListAction({ university: universityId, search: q, limit: 50 });
+      if (cancelled) return;
+      setSearchResults(res.success ? res.data.data : []);
+      setSearchLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [debounced, universityId]);
 
   const categoryKeys = useMemo(() => sortCategoryKeys(data), [data]);
+  const totalContacts = useMemo(() => Object.values(data).reduce((s, arr) => s + arr.length, 0), [data]);
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
@@ -242,7 +316,7 @@ export default function EmergencyContactsHub() {
         ) : (
           <>
             <div className="mt-8">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="blood" />
             </div>
 
             <div className="mt-10">
@@ -254,6 +328,9 @@ export default function EmergencyContactsHub() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
+                {searchLoading ? (
+                  <Loader2 className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+                ) : null}
               </div>
             </div>
 
@@ -263,33 +340,50 @@ export default function EmergencyContactsHub() {
                   <div key={i} className="h-40 animate-pulse rounded-2xl bg-gray-100" />
                 ))}
               </div>
-            ) : flatSorted.length === 0 ? (
+            ) : totalContacts === 0 ? (
               <p className="mt-10 rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center text-sm text-gray-500">
                 {tt("emergency.empty", "No emergency contacts are published for this campus yet.")}
               </p>
+            ) : searchResults !== null ? (
+              <div className="mt-10">
+                {searchLoading ? null : searchResults.length === 0 ? (
+                  <p className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center text-sm text-gray-500">
+                    No contacts match your search.
+                  </p>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {searchResults.map((c) => (
+                      <ContactCard key={c._id} contact={c} onReport={setReportTarget} />
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <>
-                {!searchHits && quickDial.length > 0 ? (
+                {quickDialContacts.length > 0 ? (
                   <div className="mt-10">
                     <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">
                       {tt("emergency.quickDial", "Quick dial")}
                     </h2>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      {quickDial.map((c) => {
-                        const phone = c.phoneNumbers?.[0];
+                      {quickDialContacts.map((c) => {
+                        const ph = c.phones?.[0];
                         return (
                           <a
                             key={c._id}
-                            href={phone ? `tel:${phone.replace(/\s/g, "")}` : undefined}
+                            href={ph ? `tel:${ph.number.replace(/\s/g, "")}` : undefined}
                             className="flex flex-col rounded-2xl border border-gray-100 bg-gradient-to-b from-white to-gray-50 p-4 shadow-sm ring-1 ring-black/[0.03] transition hover:border-[#00A651]/40 hover:shadow-md"
                           >
                             <span className="text-xs font-semibold text-[#00A651]">{c.category}</span>
                             <span className="mt-1 line-clamp-2 font-bold text-gray-900">{c.name}</span>
-                            {phone ? (
+                            {ph ? (
                               <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-gray-700">
                                 <Phone className="h-4 w-4 text-[#00A651]" />
-                                {phone}
+                                {ph.number}
                               </span>
+                            ) : null}
+                            {c.is24h ? (
+                              <span className="mt-1.5 text-[10px] font-semibold text-emerald-600">24h</span>
                             ) : null}
                           </a>
                         );
@@ -298,43 +392,35 @@ export default function EmergencyContactsHub() {
                   </div>
                 ) : null}
 
-                {searchHits ? (
-                  <div className="mt-10 grid gap-4 md:grid-cols-2">
-                    {searchHits.map((c) => (
-                      <ContactCard key={c._id} contact={c} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-10 space-y-12">
-                    {categoryKeys.map((cat) => {
-                      const items = data[cat];
-                      if (!items?.length) return null;
-                      const { Icon, bar } = categoryStyle(cat);
-                      return (
-                        <section key={cat}>
-                          <div
-                            className={`flex items-center gap-3 rounded-2xl bg-gradient-to-r ${bar} px-4 py-3 text-white shadow-md`}
-                          >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <h2 className="text-lg font-bold">{cat}</h2>
-                              <p className="text-xs text-white/80">
-                                {items.length} {tt("emergency.contacts", "contacts")}
-                              </p>
-                            </div>
+                <div className="mt-10 space-y-12">
+                  {categoryKeys.map((cat) => {
+                    const items = data[cat];
+                    if (!items?.length) return null;
+                    const { Icon, bar } = categoryStyle(cat);
+                    return (
+                      <section key={cat}>
+                        <div
+                          className={`flex items-center gap-3 rounded-2xl bg-gradient-to-r ${bar} px-4 py-3 text-white shadow-md`}
+                        >
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
+                            <Icon className="h-5 w-5" />
                           </div>
-                          <div className="mt-4 grid gap-4 md:grid-cols-2">
-                            {items.map((c) => (
-                              <ContactCard key={c._id} contact={c} />
-                            ))}
+                          <div>
+                            <h2 className="text-lg font-bold">{cat}</h2>
+                            <p className="text-xs text-white/80">
+                              {items.length} {tt("emergency.contacts", "contacts")}
+                            </p>
                           </div>
-                        </section>
-                      );
-                    })}
-                  </div>
-                )}
+                        </div>
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                          {items.map((c) => (
+                            <ContactCard key={c._id} contact={c} onReport={setReportTarget} />
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  })}
+                </div>
 
                 <div className="mt-14 flex flex-col gap-4 overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 shadow-sm md:flex-row md:items-center md:justify-between md:p-8">
                   <div className="flex items-start gap-4">
@@ -365,6 +451,14 @@ export default function EmergencyContactsHub() {
           </>
         )}
       </ContentWrapper>
+
+      {reportTarget ? (
+        <ReportIssueModal
+          contactId={reportTarget._id}
+          contactName={reportTarget.name}
+          onClose={() => setReportTarget(null)}
+        />
+      ) : null}
     </SectionWrapper>
   );
 }

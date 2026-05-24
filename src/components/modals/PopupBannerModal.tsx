@@ -71,7 +71,7 @@ export default function PopupBannerModal() {
               src={banner.photo.url}
               alt={banner.title}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
               priority
             />

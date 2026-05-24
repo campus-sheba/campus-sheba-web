@@ -1,22 +1,21 @@
 "use server";
 
 import type {
+  ContactIssueReport,
+  ContactIssueType,
   EmergencyContact,
   EmergencyContactsByCategory,
   EmergencyContactsListResponse,
 } from "@/types/emergency-contact";
 import { getPublic } from "@/utils/api/get";
+import { postPrivate } from "@/utils/api/post";
 import { emergencyEndpoints } from "@/utils/endpoints/endpoints";
 
-function buildContactsQuery(params: {
-  page?: number;
-  limit?: number;
-  university?: string;
-}): string {
+function buildQuery(params: Record<string, string | number | boolean | undefined | null>): string {
   const q = new URLSearchParams();
-  if (params.page != null) q.set("page", String(params.page));
-  if (params.limit != null) q.set("limit", String(params.limit));
-  if (params.university) q.set("university", params.university);
+  for (const [key, val] of Object.entries(params)) {
+    if (val != null && val !== "") q.set(key, String(val));
+  }
   const s = q.toString();
   return s ? `?${s}` : "";
 }
@@ -47,11 +46,15 @@ function unwrapByCategory(response: unknown): EmergencyContactsByCategory {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
   const out: EmergencyContactsByCategory = {};
   for (const [key, val] of Object.entries(raw)) {
-    if (Array.isArray(val)) {
-      out[key] = sortByPriority(val as EmergencyContact[]);
-    }
+    if (Array.isArray(val)) out[key] = sortByPriority(val as EmergencyContact[]);
   }
   return out;
+}
+
+function unwrapArray(response: unknown): EmergencyContact[] {
+  if (!response || typeof response !== "object") return [];
+  const r = response as Record<string, unknown>;
+  return Array.isArray(r.data) ? (r.data as EmergencyContact[]) : [];
 }
 
 export async function fetchEmergencyContactsByCategoryAction(universityId: string) {
@@ -72,10 +75,31 @@ export async function fetchEmergencyContactsByCategoryAction(universityId: strin
   }
 }
 
-export async function fetchEmergencyContactsPageAction(params: {
+export async function fetchEmergencyContactsQuickDialAction(universityId: string) {
+  const trimmed = universityId?.trim();
+  if (!trimmed) {
+    return { success: false as const, message: "University required", data: [] as EmergencyContact[] };
+  }
+  try {
+    const url = `${emergencyEndpoints.contactsQuickDial}?university=${encodeURIComponent(trimmed)}`;
+    const res = await getPublic<unknown>(url, { includeUniversity: false });
+    return { success: true as const, data: unwrapArray(res) };
+  } catch (e) {
+    return {
+      success: false as const,
+      message: e instanceof Error ? e.message : "Failed to load",
+      data: [] as EmergencyContact[],
+    };
+  }
+}
+
+export async function fetchEmergencyContactsListAction(params: {
+  university: string;
   page?: number;
   limit?: number;
-  university: string;
+  search?: string;
+  category?: string;
+  location?: string;
 }) {
   const trimmed = params.university?.trim();
   if (!trimmed) {
@@ -86,18 +110,23 @@ export async function fetchEmergencyContactsPageAction(params: {
     };
   }
   try {
-    const url = `${emergencyEndpoints.contacts}${buildContactsQuery({
-      page: params.page,
-      limit: params.limit,
-      university: trimmed,
-    })}`;
+    const url =
+      emergencyEndpoints.contacts +
+      buildQuery({
+        university: trimmed,
+        page: params.page,
+        limit: params.limit,
+        search: params.search,
+        category: params.category,
+        location: params.location,
+      });
     const res = await getPublic<unknown>(url, { includeUniversity: false });
     return { success: true as const, data: unwrapPaginated(res) };
   } catch (e) {
     return {
       success: false as const,
       message: e instanceof Error ? e.message : "Failed to load",
-      data: { page: 1, limit: 10, total: 0, data: [] },
+      data: { page: 1, limit: 10, total: 0, data: [] } as EmergencyContactsListResponse,
     };
   }
 }
@@ -111,9 +140,7 @@ export async function fetchEmergencyContactByIdAction(id: string, universityId: 
   try {
     const url = `${emergencyEndpoints.contactById(idTrim)}?university=${encodeURIComponent(uTrim)}`;
     const res = await getPublic<unknown>(url, { includeUniversity: false });
-    if (!res || typeof res !== "object") {
-      return { success: false as const, message: "Not found", data: null };
-    }
+    if (!res || typeof res !== "object") return { success: false as const, message: "Not found", data: null };
     const r = res as Record<string, unknown>;
     const data =
       r.data && typeof r.data === "object" && r.data !== null && "_id" in r.data
@@ -127,6 +154,33 @@ export async function fetchEmergencyContactByIdAction(id: string, universityId: 
     return {
       success: false as const,
       message: e instanceof Error ? e.message : "Failed to load",
+      data: null,
+    };
+  }
+}
+
+export async function reportEmergencyContactIssueAction(
+  contactId: string,
+  payload: { issueType: ContactIssueType; notes?: string },
+) {
+  const idTrim = contactId?.trim();
+  if (!idTrim) {
+    return { success: false as const, message: "Contact ID required", data: null };
+  }
+  try {
+    const url = emergencyEndpoints.contactReportIssue(idTrim);
+    const res = await postPrivate<unknown>(url, payload);
+    if (!res || typeof res !== "object") return { success: false as const, message: "Unexpected response", data: null };
+    const r = res as Record<string, unknown>;
+    return {
+      success: true as const,
+      data: (r.data as ContactIssueReport) ?? null,
+      message: typeof r.message === "string" ? r.message : "Issue reported successfully.",
+    };
+  } catch (e) {
+    return {
+      success: false as const,
+      message: e instanceof Error ? e.message : "Failed to submit report",
       data: null,
     };
   }

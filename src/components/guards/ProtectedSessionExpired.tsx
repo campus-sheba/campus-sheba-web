@@ -2,30 +2,42 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
+
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { clearAuthCookies } from "@/services/auth";
-import { CookieHelper } from "@/lib/appStateHelper";
+import { emitClientLogout } from "@/lib/sessionSync";
 
+/**
+ * Rendered by `AuthGuard` when a session dies mid-visit (the server `getMe()`
+ * re-check failed even after a silent refresh). It clears the dead session,
+ * notifies AppState so the navbar flips to logged-out, then sends the user to
+ * the dedicated login page with a `callbackUrl` so they return where they were.
+ */
 export default function ProtectedSessionExpired() {
   const t = useTranslations("common.protected");
   const { dispatch } = useAppState();
+  const router = useRouter();
+  const pathname = usePathname();
   const ran = useRef(false);
 
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
+
     void (async () => {
       try {
         await clearAuthCookies();
-      } catch (e) {
-        console.error(e);
+      } catch (error) {
+        console.error(error);
       }
-      CookieHelper.clearAuth();
-      dispatch({ type: "CLEAR_AUTH" });
+      emitClientLogout();
       dispatch({ type: "SET_AUTH_LOADING", payload: false });
-      dispatch({ type: "OPEN_AUTH_MODAL", payload: { defaultTab: "login" } });
+
+      const callbackUrl = pathname || "/";
+      router.replace(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
     })();
-  }, [dispatch]);
+  }, [dispatch, router, pathname]);
 
   return (
     <div

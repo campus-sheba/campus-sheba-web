@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAppState } from "@/contexts/AppStateContext";
 import { uploadMediaFiles, type UploadedMediaMeta } from "@/lib/media/client";
 import { pickDefaultBookAddressId } from "@/modules/cart/deliveryAddress";
-import { createBookListingAction, fetchBookCategories, type BookCreateMode } from "@/services/books";
+import {
+  addShelfBookAction,
+  createBookListingAction,
+  fetchBookCategories,
+  type BookCreateMode,
+} from "@/services/books";
 import { getAddressesAction } from "@/services/addresses";
 import { getUniversityMetadataAction } from "@/services/user";
-import type { BookQuality, CreateBookPayload } from "@/types/book";
+import type { BookQuality, CreateBookPayload, CreateShelfBookPayload } from "@/types/book";
 import type { BuySellCategory } from "@/types/buy-sell";
 import type { UserAddress } from "@/types/address";
 import { MediaFeatureName } from "@/types/media";
@@ -19,7 +25,7 @@ const QUALITIES: BookQuality[] = ["New", "Like New", "Good", "Acceptable"];
 const MAX_PHOTOS = 5;
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#E30B12]";
 const labelClass = "text-xs font-medium text-gray-500";
 
 function normalizePhoneDigits(value: string): string {
@@ -37,8 +43,41 @@ function buildApiPhone(digits: string): string {
 
 type ListingMode = BookCreateMode;
 
+const FUTURE_PHASE_MODES = ["lend", "donate", "swap"] as const;
+type FuturePhaseMode = (typeof FUTURE_PHASE_MODES)[number];
+
+const MODE_TABS: { mode: ListingMode; label: string; future?: boolean }[] = [
+  { mode: "sell", label: "Sell" },
+  { mode: "lend", label: "Lend", future: true },
+  { mode: "donate", label: "Donate", future: true },
+  { mode: "swap", label: "Swap", future: true },
+  { mode: "library-only", label: "Showcase" },
+];
+
+function isFuturePhaseMode(mode: ListingMode): mode is FuturePhaseMode {
+  return (FUTURE_PHASE_MODES as readonly string[]).includes(mode);
+}
+
+function resolveInitialMode(value: string | null): ListingMode {
+  if (!value) return "sell";
+  const normalized = value.toLowerCase();
+  // MVP pilot: only Sell + Showcase are selectable. Lend/Donate/Swap stay
+  // out of the create form (machinery kept for a later phase).
+  const allowed: ListingMode[] = ["sell", "library-only"];
+  return allowed.includes(normalized as ListingMode)
+    ? (normalized as ListingMode)
+    : "sell";
+}
+
+const FUTURE_PHASE_LABELS: Record<FuturePhaseMode, string> = {
+  lend: "Lending",
+  donate: "Donating",
+  swap: "Swapping",
+};
+
 export default function MyBooksCreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { state } = useAppState();
 
   const universityId = state.university.selected?._id ?? state.user.profile?.university?._id;
@@ -48,7 +87,9 @@ export default function MyBooksCreatePage() {
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loadMeta, setLoadMeta] = useState(true);
 
-  const [listingMode, setListingMode] = useState<ListingMode>("sell");
+  const [listingMode, setListingMode] = useState<ListingMode>(() =>
+    resolveInitialMode(searchParams?.get("mode") ?? null),
+  );
 
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -64,10 +105,9 @@ export default function MyBooksCreatePage() {
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [quantity, setQuantity] = useState("1");
-  const [safekeepingCharge, setSafekeepingCharge] = useState("");
-  const [borrowDuration, setBorrowDuration] = useState("14");
-  const [maxExtensionDuration, setMaxExtensionDuration] = useState("7");
-  const [allowsExtension, setAllowsExtension] = useState(true);
+  const [courseCode, setCourseCode] = useState("");
+  const [semester, setSemester] = useState("");
+  const [language, setLanguage] = useState("English");
 
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -134,6 +174,8 @@ export default function MyBooksCreatePage() {
     e.preventDefault();
     setError(null);
 
+    if (isFuturePhaseMode(listingMode)) return;
+
     if (!title.trim()) {
       setError("Title is required.");
       return;
@@ -146,7 +188,9 @@ export default function MyBooksCreatePage() {
       setError("Choose a department.");
       return;
     }
-    if (!addressId) {
+    const isShowcase = listingMode === "library-only";
+
+    if (!isShowcase && !addressId) {
       setError("Choose a pickup address or add one under Addresses.");
       return;
     }
@@ -158,16 +202,19 @@ export default function MyBooksCreatePage() {
       setError("Description is required.");
       return;
     }
-    if (!contactName.trim() || !contactPhone.trim()) {
-      setError("Contact name and phone are required.");
-      return;
+    let apiPhone = "";
+    if (!isShowcase) {
+      if (!contactName.trim() || !contactPhone.trim()) {
+        setError("Contact name and phone are required.");
+        return;
+      }
+      const digits = normalizePhoneDigits(contactPhone);
+      if (digits.length !== 11 || !digits.startsWith("01")) {
+        setError("Enter a valid Bangladesh mobile number (11 digits, e.g. 017XXXXXXXX).");
+        return;
+      }
+      apiPhone = buildApiPhone(digits);
     }
-    const digits = normalizePhoneDigits(contactPhone);
-    if (digits.length !== 11 || !digits.startsWith("01")) {
-      setError("Enter a valid Bangladesh mobile number (11 digits, e.g. 017XXXXXXXX).");
-      return;
-    }
-    const apiPhone = buildApiPhone(digits);
 
     const qty = Math.max(1, Math.floor(Number(quantity) || 1));
     if (photos.length === 0) {
@@ -181,80 +228,79 @@ export default function MyBooksCreatePage() {
       size: Math.max(1, p.size || 1),
     }));
 
-    let payload: CreateBookPayload;
-
-    if (listingMode === "donate") {
-      payload = {
+    if (isShowcase) {
+      const shelfPayload: CreateShelfBookPayload = {
         title: title.trim(),
-        addressId,
         photos: photoPayload,
         category: categoryId,
+        department: departmentId,
         buyingYear: buyingYear.trim(),
         description: description.trim(),
-        type: "Donation",
-        sellerType: "individual",
-        department: departmentId,
-        contactName: contactName.trim(),
-        contactPhone: apiPhone,
-        contactEmail: contactEmail.trim() || undefined,
         quality,
-        price: 0,
-        quantity: qty,
         ...(author.trim() ? { author: author.trim() } : {}),
         ...(edition.trim() ? { edition: edition.trim() } : {}),
         ...(subject.trim() ? { subject: subject.trim() } : {}),
         ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
+        ...(courseCode.trim() ? { courseCode: courseCode.trim() } : {}),
+        ...(semester.trim() ? { semester: semester.trim() } : {}),
+        ...(language.trim() ? { language: language.trim() } : {}),
       };
-    } else {
-      const priceNum = Number(price);
-      if (!Number.isFinite(priceNum) || priceNum < 0) {
-        setError("Enter a valid price.");
+      setSubmitting(true);
+      const shelfRes = await addShelfBookAction(shelfPayload);
+      setSubmitting(false);
+      if (!shelfRes.success) {
+        setError(shelfRes.message ?? "Failed to add to shelf.");
         return;
       }
-      payload = {
-        title: title.trim(),
-        addressId,
-        photos: photoPayload,
-        category: categoryId,
-        buyingYear: buyingYear.trim(),
-        description: description.trim(),
-        type: listingMode === "sell" ? "Selling" : "Lending",
-        sellerType: "individual",
-        department: departmentId,
-        contactName: contactName.trim(),
-        contactPhone: apiPhone,
-        contactEmail: contactEmail.trim() || undefined,
-        quality,
-        price: priceNum,
-        quantity: qty,
-        ...(author.trim() ? { author: author.trim() } : {}),
-        ...(edition.trim() ? { edition: edition.trim() } : {}),
-        ...(subject.trim() ? { subject: subject.trim() } : {}),
-        ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
-      };
+      router.push(shelfRes.bookId ? `/books/${shelfRes.bookId}` : "/my-library");
+      return;
+    }
 
-      if (listingMode === "sell" && discountPrice.trim()) {
-        const d = Number(discountPrice);
-        if (Number.isFinite(d) && d >= 0 && d < priceNum) {
-          payload.discountPrice = d;
-        }
-      }
+    let payload: CreateBookPayload;
 
-      if (listingMode === "lend") {
-        const bd = Math.max(1, Math.floor(Number(borrowDuration) || 14));
-        const mx = Math.max(0, Math.floor(Number(maxExtensionDuration) || 0));
-        payload.borrowDuration = bd;
-        payload.maxExtensionDuration = mx;
-        payload.allowsExtension = allowsExtension;
-        if (safekeepingCharge.trim()) {
-          const sk = Number(safekeepingCharge);
-          if (Number.isFinite(sk) && sk >= 0) payload.safekeepingCharge = sk;
-        }
+    const sharedFields = {
+      title: title.trim(),
+      addressId: addressId!,
+      photos: photoPayload,
+      category: categoryId,
+      buyingYear: buyingYear.trim(),
+      description: description.trim(),
+      sellerType: "individual",
+      department: departmentId,
+      contactName: contactName.trim(),
+      contactPhone: apiPhone,
+      contactEmail: contactEmail.trim() || undefined,
+      quality,
+      quantity: qty,
+      ...(author.trim() ? { author: author.trim() } : {}),
+      ...(edition.trim() ? { edition: edition.trim() } : {}),
+      ...(subject.trim() ? { subject: subject.trim() } : {}),
+      ...(publisher.trim() ? { publisher: publisher.trim() } : {}),
+      ...(courseCode.trim() ? { courseCode: courseCode.trim() } : {}),
+      ...(semester.trim() ? { semester: semester.trim() } : {}),
+      ...(language.trim() ? { language: language.trim() } : {}),
+    };
+
+    const priceNum = Number(price);
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setError("Enter a valid price.");
+      return;
+    }
+    payload = {
+      ...sharedFields,
+      type: "Selling",
+      price: priceNum,
+    };
+
+    if (discountPrice.trim()) {
+      const d = Number(discountPrice);
+      if (Number.isFinite(d) && d >= 0 && d < priceNum) {
+        payload.discountPrice = d;
       }
     }
 
     setSubmitting(true);
-    const res = await createBookListingAction(payload, listingMode);
+    const res = await createBookListingAction(payload, "sell");
     setSubmitting(false);
 
     if (!res.success) {
@@ -275,44 +321,81 @@ export default function MyBooksCreatePage() {
           ← My books
         </Link>
         <h1 className="mt-2 text-xl font-bold tracking-tight text-gray-900">List a book</h1>
-        <p className="mt-1 text-sm text-gray-500">Sell, lend, or donate textbooks to students on your campus.</p>
+        <p className="mt-1 text-sm text-gray-500">
+          Sell books on campus or add showcase titles to your library shelf.
+        </p>
       </div>
 
-      {loadMeta ? (
-        <p className="text-sm text-gray-500">Loading form…</p>
-      ) : (
-        <form
-          onSubmit={(ev) => void onSubmit(ev)}
-          className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm sm:p-6"
-        >
-          {error ? (
-            <p className="mb-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-          ) : null}
+      <div className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm sm:p-6">
+        <div className="mb-6 flex flex-wrap gap-2">
+          {/* MVP pilot: hide future-phase modes (Lend/Donate/Swap). */}
+          {MODE_TABS.filter(({ future }) => !future).map(({ mode, label, future }) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => {
+                setListingMode(mode);
+                setError(null);
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+                listingMode === mode
+                  ? future
+                    ? "bg-gray-700 text-white"
+                    : "bg-[#E30B12] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {label}
+              {future ? (
+                <span className="rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                  Soon
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
 
-          <div className="mb-6 flex flex-wrap gap-2">
-            {(
-              [
-                ["sell", "Sell"],
-                ["lend", "Lend"],
-                ["donate", "Donate"],
-              ] as const
-            ).map(([mode, label]) => (
+        {isFuturePhaseMode(listingMode) ? (
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+            <p className="text-sm font-semibold text-gray-900">
+              {FUTURE_PHASE_LABELS[listingMode]} — coming in a future phase
+            </p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-gray-600">
+              {listingMode === "lend" &&
+                "Book lending (borrow & return on campus) is not available yet. You can sell books or add showcase titles to your library shelf today."}
+              {listingMode === "donate" &&
+                "Giving books away through Campus Sheba will open in a later release. For now, list books for sale or showcase them on your library profile."}
+              {listingMode === "swap" &&
+                "Peer-to-peer book swaps are planned for a future update. Use Sell or Showcase until then."}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
               <button
-                key={mode}
                 type="button"
-                onClick={() => setListingMode(mode)}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
-                  listingMode === mode
-                    ? "bg-[#00A651] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                onClick={() => setListingMode("sell")}
+                className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white"
               >
-                {label}
+                List for sale
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setListingMode("library-only")}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Add to library shelf
+              </button>
+            </div>
           </div>
+        ) : loadMeta ? (
+          <p className="text-sm text-gray-500">Loading form…</p>
+        ) : (
+          <form onSubmit={(ev) => void onSubmit(ev)}>
+            {error ? (
+              <p className="mb-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </p>
+            ) : null}
 
-          <div className="grid gap-5 lg:grid-cols-2">
+            <div className="grid gap-5 lg:grid-cols-2">
             <div className="space-y-4">
               <div>
                 <label className={labelClass} htmlFor="bk-title">
@@ -424,6 +507,52 @@ export default function MyBooksCreatePage() {
                 </div>
               </div>
               <div>
+                <label className={labelClass} htmlFor="bk-lang">
+                  Language
+                </label>
+                <input
+                  id="bk-lang"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className={`${inputClass} mt-1`}
+                  placeholder="e.g. English, Bangla"
+                />
+              </div>
+              {listingMode === "sell" && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass} htmlFor="bk-course">
+                      Course code
+                    </label>
+                    <input
+                      id="bk-course"
+                      value={courseCode}
+                      onChange={(e) => setCourseCode(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                      placeholder="e.g. CSE-311"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="bk-semester">
+                      Semester
+                    </label>
+                    <input
+                      id="bk-semester"
+                      value={semester}
+                      onChange={(e) => setSemester(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                      placeholder="e.g. 3rd"
+                    />
+                  </div>
+                </div>
+              )}
+              {listingMode === "library-only" ? (
+                <p className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs text-sky-800">
+                  Showcase books go on your library shelf only — no pickup address or contact
+                  needed. Pending admin approval before they appear publicly.
+                </p>
+              ) : null}
+              <div>
                 <label className={labelClass} htmlFor="bk-publisher">
                   Publisher
                 </label>
@@ -453,20 +582,22 @@ export default function MyBooksCreatePage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className={labelClass} htmlFor="bk-qty">
-                    Quantity
-                  </label>
-                  <input
-                    id="bk-qty"
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    className={`${inputClass} mt-1`}
-                  />
-                </div>
+                {listingMode !== "library-only" ? (
+                  <div>
+                    <label className={labelClass} htmlFor="bk-qty">
+                      Quantity
+                    </label>
+                    <input
+                      id="bk-qty"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                    />
+                  </div>
+                ) : null}
               </div>
 
               {listingMode === "sell" ? (
@@ -504,109 +635,39 @@ export default function MyBooksCreatePage() {
                 </>
               ) : null}
 
-              {listingMode === "lend" ? (
-                <>
-                  <div>
-                    <label className={labelClass} htmlFor="bk-lend-price">
-                      Fee / deposit (৳)
-                    </label>
-                    <input
-                      id="bk-lend-price"
-                      type="number"
-                      min={0}
-                      step={1}
-                      required
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                    />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className={labelClass} htmlFor="bk-borrow">
-                        Borrow duration (days)
-                      </label>
-                      <input
-                        id="bk-borrow"
-                        type="number"
-                        min={1}
-                        step={1}
-                        value={borrowDuration}
-                        onChange={(e) => setBorrowDuration(e.target.value)}
-                        className={`${inputClass} mt-1`}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass} htmlFor="bk-max-ext">
-                        Max extension (days)
-                      </label>
-                      <input
-                        id="bk-max-ext"
-                        type="number"
-                        min={0}
-                        step={1}
-                        value={maxExtensionDuration}
-                        onChange={(e) => setMaxExtensionDuration(e.target.value)}
-                        className={`${inputClass} mt-1`}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelClass} htmlFor="bk-safe">
-                      Safekeeping charge (৳, optional)
-                    </label>
-                    <input
-                      id="bk-safe"
-                      type="number"
-                      min={0}
-                      step={1}
-                      value={safekeepingCharge}
-                      onChange={(e) => setSafekeepingCharge(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                    />
-                  </div>
-                  <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={allowsExtension}
-                      onChange={(e) => setAllowsExtension(e.target.checked)}
-                      className="rounded border-gray-300 text-[#00A651] focus:ring-[#00A651]"
-                    />
-                    Borrower may request an extension
-                  </label>
-                </>
-              ) : null}
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className={labelClass} htmlFor="bk-address">
-                  Pickup address
-                </label>
-                <select
-                  id="bk-address"
-                  required
-                  value={addressId}
-                  onChange={(e) => setAddressId(e.target.value)}
-                  className={`${inputClass} mt-1`}
-                >
-                  <option value="">Select address</option>
-                  {addresses.map((a) => (
-                    <option key={a._id} value={a._id}>
-                      {a.address} ({a.type})
-                      {a.isDefault ? " — default" : ""}
-                    </option>
-                  ))}
-                </select>
-                {addresses.length === 0 ? (
-                  <p className="mt-2 text-xs text-amber-800">
-                    No addresses yet.{" "}
-                    <Link href="/my-addresses" className="font-semibold text-[#00A651] underline">
-                      Add one
-                    </Link>
-                  </p>
-                ) : null}
-              </div>
+              {listingMode !== "library-only" ? (
+                <div>
+                  <label className={labelClass} htmlFor="bk-address">
+                    Pickup address
+                  </label>
+                  <select
+                    id="bk-address"
+                    required
+                    value={addressId}
+                    onChange={(e) => setAddressId(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  >
+                    <option value="">Select address</option>
+                    {addresses.map((a) => (
+                      <option key={a._id} value={a._id}>
+                        {a.address} ({a.type})
+                        {a.isDefault ? " — default" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  {addresses.length === 0 ? (
+                    <p className="mt-2 text-xs text-amber-800">
+                      No addresses yet.{" "}
+                      <Link href="/my-addresses" className="font-semibold text-[#E30B12] underline">
+                        Add one
+                      </Link>
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               <div>
                 <label className={labelClass} htmlFor="bk-desc">
                   Description
@@ -650,7 +711,7 @@ export default function MyBooksCreatePage() {
                     </div>
                   ))}
                 </div>
-                <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-[#00A651] hover:text-[#00A651]">
+                <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-[#E30B12] hover:text-[#E30B12]">
                   <input
                     type="file"
                     accept="image/*"
@@ -666,49 +727,53 @@ export default function MyBooksCreatePage() {
                       : "Add photos"}
                 </label>
               </div>
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact</p>
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <label className={labelClass} htmlFor="bk-cname">
-                      Name
-                    </label>
-                    <input
-                      id="bk-cname"
-                      required
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass} htmlFor="bk-cphone">
-                      Phone
-                    </label>
-                    <input
-                      id="bk-cphone"
-                      required
-                      type="tel"
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                      placeholder="01XXXXXXXXX"
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass} htmlFor="bk-cemail">
-                      Email (optional)
-                    </label>
-                    <input
-                      id="bk-cemail"
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                    />
+              {listingMode !== "library-only" ? (
+                <div className="border-t border-gray-100 pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    Contact
+                  </p>
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <label className={labelClass} htmlFor="bk-cname">
+                        Name
+                      </label>
+                      <input
+                        id="bk-cname"
+                        required
+                        value={contactName}
+                        onChange={(e) => setContactName(e.target.value)}
+                        className={`${inputClass} mt-1`}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass} htmlFor="bk-cphone">
+                        Phone
+                      </label>
+                      <input
+                        id="bk-cphone"
+                        required
+                        type="tel"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        className={`${inputClass} mt-1`}
+                        placeholder="01XXXXXXXXX"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass} htmlFor="bk-cemail">
+                        Email (optional)
+                      </label>
+                      <input
+                        id="bk-cemail"
+                        type="email"
+                        value={contactEmail}
+                        onChange={(e) => setContactEmail(e.target.value)}
+                        className={`${inputClass} mt-1`}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
 
@@ -716,9 +781,13 @@ export default function MyBooksCreatePage() {
             <button
               type="submit"
               disabled={submitting || loadMeta}
-              className="rounded-lg bg-[#00A651] px-5 py-2.5 text-sm font-semibold text-white active:brightness-95 disabled:opacity-50"
+              className="rounded-lg bg-[#E30B12] px-5 py-2.5 text-sm font-semibold text-white active:brightness-95 disabled:opacity-50"
             >
-              {submitting ? "Publishing…" : "Publish"}
+              {submitting
+                ? "Publishing…"
+                : listingMode === "library-only"
+                  ? "Add to shelf"
+                  : "Publish"}
             </button>
             <Link
               href="/my-books"
@@ -726,9 +795,10 @@ export default function MyBooksCreatePage() {
             >
               Cancel
             </Link>
-          </div>
-        </form>
-      )}
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

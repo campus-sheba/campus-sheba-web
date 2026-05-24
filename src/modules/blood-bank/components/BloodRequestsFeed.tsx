@@ -93,7 +93,7 @@ export default function BloodRequestsFeed() {
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="blood" />
             </div>
 
             <p className="mt-6 text-xs text-gray-500">

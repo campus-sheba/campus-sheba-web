@@ -418,9 +418,9 @@ export function HomePageContent() {
             )}
           </header>
 
-          <HeroCoreCtas tt={tt} />
+          {/* <HeroCoreCtas tt={tt} /> */}
 
-          <HomeJumpNav tt={tt} />
+          {/* <HomeJumpNav tt={tt} /> */}
         </ContentWrapper>
       </SectionWrapper>
 
@@ -432,7 +432,7 @@ export function HomePageContent() {
       <HomeBloodRails />
       <HomeParcelCampusCtas /> */}
 
-      <SectionWrapper
+      {/* <SectionWrapper
         spacing="none"
         background="transparent"
         className="my-0 border-y border-gray-100 bg-gray-50/80 py-12 md:py-16"
@@ -468,9 +468,9 @@ export function HomePageContent() {
             ))}
           </div>
         </ContentWrapper>
-      </SectionWrapper>
+      </SectionWrapper> */}
 
-      <SectionWrapper
+      {/* <SectionWrapper
         spacing="none"
         background="transparent"
         className="my-0 bg-white py-14 md:py-20 px-4 md:px-8 lg:px-0"
@@ -537,9 +537,9 @@ export function HomePageContent() {
             </ul>
           </div>
         </ContentWrapper>
-      </SectionWrapper>
+      </SectionWrapper> */}
 
-      <SectionWrapper
+      {/* <SectionWrapper
         spacing="none"
         background="transparent"
         className="my-0 bg-gradient-to-b from-gray-900 to-gray-950 py-14 text-white md:py-20 px-4 md:px-8 lg:px-0"
@@ -548,7 +548,10 @@ export function HomePageContent() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-bold md:text-3xl">
-                {tt("landing.comingSoonToYourCampus", "Coming soon to your campus")}
+                {tt(
+                  "landing.comingSoonToYourCampus",
+                  "Coming soon to your campus",
+                )}
               </h2>
               <p className="mt-2 max-w-xl text-sm text-gray-300 md:text-base">
                 {tt(
@@ -585,9 +588,9 @@ export function HomePageContent() {
             })}
           </ul>
         </ContentWrapper>
-      </SectionWrapper>
+      </SectionWrapper> */}
 
-      <SectionWrapper
+      {/* <SectionWrapper
         spacing="none"
         background="transparent"
         className="my-0 border-t border-gray-100 bg-white py-12 md:py-16 px-4 md:px-8 lg:px-0"
@@ -648,7 +651,7 @@ export function HomePageContent() {
             </p>
           </nav>
         </ContentWrapper>
-      </SectionWrapper>
+      </SectionWrapper> */}
     </>
   );
 }

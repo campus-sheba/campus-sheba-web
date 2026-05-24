@@ -68,10 +68,10 @@ export default function MyParcelsPage() {
           <p className="text-sm text-gray-500">{tt("myParcels.subtitle", "Deliveries you have booked.")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/my-parcels/new" className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white active:brightness-95">
+          <Link href="/my-parcels/new" className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white active:brightness-95">
             {tt("myParcels.new", "Book parcel")}
           </Link>
-          <Link href="/parcel" className="text-sm font-semibold text-[#00A651] hover:underline">
+          <Link href="/parcel" className="text-sm font-semibold text-[#E30B12] hover:underline">
             {tt("myParcels.about", "About parcel delivery")} →
           </Link>
         </div>
@@ -84,7 +84,7 @@ export default function MyParcelsPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="rounded-lg border border-gray-200 px-2.5 py-2 text-sm outline-none focus:border-[#E30B12]"
             >
               {STATUSES.map((s) => (
                 <option key={s || "all"} value={s}>
@@ -96,7 +96,7 @@ export default function MyParcelsPage() {
           <button
             type="button"
             onClick={() => void fetchPage(1, false)}
-            className="rounded-lg bg-[#00A651] px-4 py-2 text-sm font-semibold text-white"
+            className="rounded-lg bg-[#E30B12] px-4 py-2 text-sm font-semibold text-white"
           >
             {tt("myParcels.apply", "Apply")}
           </button>
@@ -136,11 +136,11 @@ export default function MyParcelsPage() {
                     <td className="whitespace-nowrap px-4 py-2.5">
                       <span className="inline-block rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium">{p.status ?? "—"}</span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#00A651]">
+                    <td className="whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums text-[#E30B12]">
                       {p.deliveryFee != null ? `৳${p.deliveryFee.toLocaleString()}` : "—"}
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <Link href={`/my-parcels/${p._id}`} className="font-semibold text-[#00A651] hover:underline">
+                      <Link href={`/my-parcels/${p._id}`} className="font-semibold text-[#E30B12] hover:underline">
                         {tt("myParcels.view", "View")}
                       </Link>
                     </td>

@@ -292,7 +292,7 @@ export default function AddressesPage({ initialAddresses }: AddressesPageProps) 
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <MapPin className="h-4 w-4 shrink-0 text-[#00A651]" />
+                      <MapPin className="h-4 w-4 shrink-0 text-[#E30B12]" />
                       <span className="font-semibold text-gray-900">{a.address}</span>
                       <span
                         className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
