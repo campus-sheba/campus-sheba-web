@@ -17,7 +17,7 @@ const MAX_ITEMS = 3;
 const MAX_PHOTOS_PER_ITEM = 4;
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#E30B12]";
 const labelClass = "text-xs font-medium text-gray-500";
 
 function normalizePhoneDigits(value: string): string {
@@ -218,7 +218,7 @@ export default function MyLostFoundCreatePage() {
                 type="button"
                 onClick={() => setPostType(t)}
                 className={`rounded-full px-4 py-1.5 text-sm font-semibold ${
-                  postType === t ? "bg-[#00A651] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  postType === t ? "bg-[#E30B12] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {t}
@@ -300,7 +300,7 @@ export default function MyLostFoundCreatePage() {
                         </div>
                       ))}
                     </div>
-                    <label className="mt-2 inline-flex cursor-pointer rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-[#00A651]">
+                    <label className="mt-2 inline-flex cursor-pointer rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-[#E30B12]">
                       <input
                         type="file"
                         accept="image/*"
@@ -316,7 +316,7 @@ export default function MyLostFoundCreatePage() {
               </div>
             ))}
             {items.length < MAX_ITEMS ? (
-              <button type="button" onClick={addItem} className="text-sm font-semibold text-[#00A651] hover:underline">
+              <button type="button" onClick={addItem} className="text-sm font-semibold text-[#E30B12] hover:underline">
                 + Add another item
               </button>
             ) : null}
@@ -335,7 +335,7 @@ export default function MyLostFoundCreatePage() {
                       type="checkbox"
                       checked={locationIds.includes(loc._id)}
                       onChange={() => toggleLocation(loc._id)}
-                      className="rounded border-gray-300 text-[#00A651] focus:ring-[#00A651]"
+                      className="rounded border-gray-300 text-[#E30B12] focus:ring-[#E30B12]"
                     />
                     {loc.name ?? loc._id}
                   </label>
@@ -397,7 +397,7 @@ export default function MyLostFoundCreatePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-[#00A651] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-lg bg-[#E30B12] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
               {submitting ? "Publishing…" : "Publish"}
             </button>

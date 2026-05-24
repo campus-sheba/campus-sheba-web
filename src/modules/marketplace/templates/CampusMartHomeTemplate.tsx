@@ -86,7 +86,7 @@ export default async function CampusMartHomeTemplate({
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="marketplace" />
             </div>
 
             <SectionWrapper

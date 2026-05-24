@@ -1,5 +1,5 @@
 import ProfilePage from "@/modules/dashboard/ProfilePage";
-import { getProfileAction, getUniversityMetadataAction } from "@/services/user";
+import { getProfileAction } from "@/services/user";
 import { getTranslations } from "next-intl/server";
 
 export default async function DashboardProfilePage() {
@@ -7,13 +7,6 @@ export default async function DashboardProfilePage() {
   const profileResult = await getProfileAction();
   const profile =
     profileResult.success && profileResult.data ? profileResult.data : null;
-
-  const universityId =
-    profile && typeof profile.university === "object" && profile.university?._id
-      ? profile.university._id
-      : undefined;
-
-  const metadataResult = await getUniversityMetadataAction(universityId);
 
   if (!profile) {
     return (
@@ -23,11 +16,8 @@ export default async function DashboardProfilePage() {
     );
   }
 
-  return (
-    <ProfilePage
-      profile={profile}
-      halls={metadataResult.halls}
-      departments={metadataResult.departments}
-    />
-  );
+  // Halls/departments are only needed for the edit-form dropdowns, so they're
+  // loaded lazily on the client (see ProfilePage) instead of blocking this
+  // navigation on a second sequential API round-trip.
+  return <ProfilePage profile={profile} />;
 }

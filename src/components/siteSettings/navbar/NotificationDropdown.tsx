@@ -13,6 +13,7 @@ import type { NotificationItem } from "@/types/notification";
 
 type NotificationDropdownProps = {
   isAuthenticated: boolean;
+  variant?: "navbar" | "topbar";
 };
 
 type ForegroundBarContent = {
@@ -59,7 +60,11 @@ function formatTime(value?: string) {
   }).format(date);
 }
 
-export default function NotificationDropdown({ isAuthenticated }: NotificationDropdownProps) {
+export default function NotificationDropdown({
+  isAuthenticated,
+  variant = "navbar",
+}: NotificationDropdownProps) {
+  const isTopbar = variant === "topbar";
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -216,11 +221,13 @@ export default function NotificationDropdown({ isAuthenticated }: NotificationDr
         type="button"
         id="nav-notification-btn"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-colors hover:bg-neutral-50"
+        className={`relative inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-50 ${
+          isTopbar ? "h-8 w-8" : "h-10 w-10 rounded-full"
+        }`}
         title="Notifications"
         aria-label="Notifications"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className={isTopbar ? "h-4 w-4" : "h-5 w-5"} />
         {unreadCount > 0 && (
           <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -229,7 +236,11 @@ export default function NotificationDropdown({ isAuthenticated }: NotificationDr
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-[24rem] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
+        <div
+          className={`absolute right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl ${
+            isTopbar ? "z-[55]" : ""
+          }`}
+        >
           <div className="flex items-center justify-between border-b border-neutral-100 bg-gradient-to-r from-emerald-50 to-cyan-50 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-neutral-900">Notifications</p>

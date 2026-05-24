@@ -15,6 +15,7 @@ import { useAppState } from "@/contexts/AppStateContext";
 import type { AppState } from "@/types/global";
 import { useTranslations } from "next-intl";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
+import FeatureHeroAds from "@/components/marketplace/FeatureHeroAds";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import {
   fetchCampusMapFeaturedAction,
@@ -396,6 +397,11 @@ export default function CampusMapExplorer() {
           </div>
         ) : (
           <>
+            {/* Promotional campus-map banners (admin-managed, placement="campus_map") */}
+            <div className="mt-6">
+              <FeatureHeroAds universityId={universityId} placement="campus_map" />
+            </div>
+
             <div className="mt-6">
               <div className={`relative w-full bg-gray-50 ${BANNER_FRAME} ${BANNER_H}`}>
                 {bannerSlides.length === 0 ? (

@@ -163,3 +163,21 @@ export async function isAuthenticated() {
   const cookieStore = await cookies();
   return Boolean(cookieStore.get("accessToken")?.value);
 }
+
+/** Lightweight session probe for client navbar sync (clears cookies when dead). */
+export async function checkSessionAction(): Promise<{ authenticated: boolean }> {
+  try {
+    await getMe({ persistUserCookie: false });
+    return { authenticated: true };
+  } catch (error) {
+    if (error instanceof Error && error.message === "SESSION_EXPIRED") {
+      try {
+        await clearAuthCookies();
+      } catch {
+        /* ignore */
+      }
+      return { authenticated: false };
+    }
+    return { authenticated: true };
+  }
+}

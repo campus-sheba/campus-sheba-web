@@ -4,9 +4,11 @@ const baseURL = process.env.BASE_URL || process.env.NEXT_PUBLIC_API_URL;
 export const landingPageEndpoints = {
     heroBanner: `${baseURL}/banners`,
     heroBannerByUniversity: (universityId: string) =>
-        `${baseURL}/banners?page=1&limit=10&isActive=true&type=home&university=${universityId}`,
+        `${baseURL}/banners?page=1&limit=10&isActive=true&type=home&placement=home&university=${universityId}`,
     heroBannerByUniversityAndType: (universityId: string, bannerType: string) =>
         `${baseURL}/banners?page=1&limit=10&isActive=true&type=${encodeURIComponent(bannerType)}&university=${universityId}`,
+    heroBannerByUniversityAndPlacement: (universityId: string, placement: string) =>
+        `${baseURL}/banners?page=1&limit=10&isActive=true&placement=${encodeURIComponent(placement)}&university=${universityId}`,
     universityFeatures: (universityId: string) =>
         `${baseURL}/user/features/university/${universityId}`,
     bannersResolve: (params: string) => `${baseURL}/banners/resolve?${params}`,
@@ -19,6 +21,11 @@ export const careersEndpoints = {
     universityLocationById: (id: string) =>
         `${baseURL}/university-locations/${encodeURIComponent(id)}`,
     sendApplication: `${baseURL}/career/send-cv`,
+};
+
+export const searchEndpoints = {
+    search: `${baseURL}/search`,
+    suggestions: `${baseURL}/search/suggestions`,
 };
 
 export const campusMapEndpoints = {
@@ -36,7 +43,9 @@ export const campusMapEndpoints = {
 export const emergencyEndpoints = {
     contacts: `${baseURL}/emergency/contacts`,
     contactsByCategory: `${baseURL}/emergency/contacts/by-category`,
+    contactsQuickDial: `${baseURL}/emergency/contacts/quick-dial`,
     contactById: (id: string) => `${baseURL}/emergency/contacts/${encodeURIComponent(id)}`,
+    contactReportIssue: (id: string) => `${baseURL}/emergency/contacts/${encodeURIComponent(id)}/report-issue`,
 };
 
 export const authenticationEndpoints = {
@@ -94,13 +103,23 @@ export const parcelEndpoints = {
 export const bloodDonorEndpoints = {
     register: `${baseURL}/blood-donor/register`,
     profile: `${baseURL}/blood-donor/profile`,
+    availability: `${baseURL}/blood-donor/availability`,
+    eligibility: `${baseURL}/blood-donor/eligibility`,
     find: `${baseURL}/blood-donor/find`,
+    stats: `${baseURL}/blood-donor/stats`,
     request: `${baseURL}/blood-donor/request`,
     requests: `${baseURL}/blood-donor/requests`,
     myRequests: `${baseURL}/blood-donor/my-requests`,
     requestStatus: (id: string) =>
         `${baseURL}/blood-donor/request/${encodeURIComponent(id)}/status`,
-    stats: `${baseURL}/blood-donor/stats`,
+    requestRespond: (id: string) =>
+        `${baseURL}/blood-donor/request/${encodeURIComponent(id)}/respond`,
+    donationLog: `${baseURL}/blood-donor/donation/log`,
+    donationConfirm: `${baseURL}/blood-donor/donation/confirm-received`,
+    donationHistory: `${baseURL}/blood-donor/donation/history`,
+    clubs: `${baseURL}/blood-donor/clubs`,
+    clubFollow: (id: string) =>
+        `${baseURL}/blood-donor/clubs/${encodeURIComponent(id)}/follow`,
 };
 
 export const addressEndpoints = {
@@ -111,6 +130,8 @@ export const addressEndpoints = {
 export const userProfileEndpoints = {
     updateEmailSendCode: `${baseURL}/user/profile/update-email/send-code`,
     updateEmailVerify: `${baseURL}/user/profile/update-email`,
+    studentVerificationSendCode: `${baseURL}/user/student-verification/send-code`,
+    studentVerificationVerify: `${baseURL}/user/student-verification/verify`,
 };
 
 export const universityMetadataEndpoints = {
@@ -155,6 +176,18 @@ export const orderEndpoints = {
         `${baseURL}/user/orders/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}/cancel`,
 };
 
+/** Seller (item-owner) order fulfilment — confirm, pickup OTP, cancel. */
+export const ownerOrderEndpoints = {
+    base: `${baseURL}/owner/orders`,
+    byId: (id: string) => `${baseURL}/owner/orders/${encodeURIComponent(id)}`,
+    confirmItem: (id: string, itemId: string) =>
+        `${baseURL}/owner/orders/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}/confirm`,
+    cancelItem: (id: string, itemId: string) =>
+        `${baseURL}/owner/orders/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}/cancel`,
+    generatePickupOtp: (id: string) =>
+        `${baseURL}/owner/orders/${encodeURIComponent(id)}/pickup-otp/generate`,
+};
+
 export const checkoutEndpoints = {
     paymentGateways: `${baseURL}/user/payment-gateways/available`,
     deliveryOptions: `${baseURL}/user/delivery-options/available`,
@@ -173,17 +206,38 @@ export const reviewEndpoints = {
 };
 
 export const bookEndpoints = {
+    // Creator endpoints
     creatorBase: `${baseURL}/creator/books`,
     creatorSell: `${baseURL}/creator/books/sell`,
     creatorLend: `${baseURL}/creator/books/lend`,
     creatorDonate: `${baseURL}/creator/books/donate`,
+    creatorSwap: `${baseURL}/creator/books/swap`,
+    /** @deprecated Use creatorShelf (slim payload) for showcase books. */
+    creatorLibraryOnly: `${baseURL}/creator/books/library-only`,
+    creatorShelf: `${baseURL}/creator/books/shelf`,
+    creatorPromote: (bookId: string) =>
+        `${baseURL}/creator/books/${encodeURIComponent(bookId)}/promote`,
+    /** Restore a promoted listing back to the bookshelf (un-sell / cancel listing). */
+    creatorRestore: (bookId: string) =>
+        `${baseURL}/creator/books/${encodeURIComponent(bookId)}/restore`,
     creatorOwn: `${baseURL}/creator/books/own`,
     creatorById: (bookId: string) => `${baseURL}/creator/books/${encodeURIComponent(bookId)}`,
+    // User browse endpoints
     userBase: `${baseURL}/user/books`,
     userBorrowable: `${baseURL}/user/books/borrowable`,
     userMyListed: `${baseURL}/user/books/my-listed`,
     userBorrowed: `${baseURL}/user/books/borrowed`,
+    userByOwner: (ownerId: string) =>
+        `${baseURL}/user/books/by-owner/${encodeURIComponent(ownerId)}`,
     userById: (bookId: string) => `${baseURL}/user/books/${encodeURIComponent(bookId)}`,
+    /** Bluebook home — marketplace, showcase, borrow, swap, bookshelves, following */
+    userFeed: `${baseURL}/user/books/feed`,
+    userBrowse: `${baseURL}/user/books/browse`,
+    userBrowseBookshelves: `${baseURL}/user/books/browse/bookshelves`,
+    // Discovery feed endpoints (auth required)
+    feedSemester: `${baseURL}/user/books/feed/semester`,
+    feedSeniorPicks: `${baseURL}/user/books/feed/senior-picks`,
+    feedDepartment: (deptId: string) => `${baseURL}/user/books/feed/department/${encodeURIComponent(deptId)}`,
 };
 
 export const bookBorrowingEndpoints = {
@@ -195,6 +249,67 @@ export const bookBorrowingEndpoints = {
         `${baseURL}/book-borrowing/extend/${encodeURIComponent(borrowId)}/${encodeURIComponent(extendId)}`,
     borrowed: `${baseURL}/book-borrowing/borrowed`,
     lent: `${baseURL}/book-borrowing/lent`,
+};
+
+export const bookReviewEndpoints = {
+    base: `${baseURL}/book-review`,
+    byBook: (bookId: string) => `${baseURL}/book-review/${encodeURIComponent(bookId)}`,
+    byId: (reviewId: string) => `${baseURL}/book-review/${encodeURIComponent(reviewId)}`,
+};
+
+export const bookDonationEndpoints = {
+    base: `${baseURL}/book-donation`,
+    mine: `${baseURL}/book-donation/mine`,
+    byId: (donationId: string) => `${baseURL}/book-donation/${encodeURIComponent(donationId)}`,
+    request: (donationId: string) =>
+        `${baseURL}/book-donation/${encodeURIComponent(donationId)}/request`,
+    fulfill: (donationId: string, queueEntryId: string) =>
+        `${baseURL}/book-donation/${encodeURIComponent(donationId)}/fulfill/${encodeURIComponent(queueEntryId)}`,
+};
+
+export const userLibraryEndpoints = {
+    base: `${baseURL}/user/library`,
+    me: `${baseURL}/user/library/me`,
+    leaderboard: `${baseURL}/user/library/leaderboard`,
+    activityFeed: `${baseURL}/user/library/feed`,
+    byId: (profileId: string) => `${baseURL}/user/library/${encodeURIComponent(profileId)}`,
+    hub: (profileId: string) =>
+        `${baseURL}/user/library/${encodeURIComponent(profileId)}/hub`,
+    followers: (profileId: string) =>
+        `${baseURL}/user/library/${encodeURIComponent(profileId)}/followers`,
+    following: (profileId: string) =>
+        `${baseURL}/user/library/${encodeURIComponent(profileId)}/following`,
+    readingList: `${baseURL}/user/library/reading-list`,
+    readingListBook: (bookId: string) =>
+        `${baseURL}/user/library/reading-list/${encodeURIComponent(bookId)}`,
+    follow: (profileId: string) =>
+        `${baseURL}/user/library/follow/${encodeURIComponent(profileId)}`,
+    report: `${baseURL}/user/library/report`,
+    recommendation: (bookId: string) =>
+        `${baseURL}/user/library/recommendations/${encodeURIComponent(bookId)}`,
+    recommendationsOrder: `${baseURL}/user/library/recommendations/order`,
+};
+
+export const bookSwapEndpoints = {
+    base: `${baseURL}/book-swap`,
+    incoming: `${baseURL}/book-swap/incoming`,
+    outgoing: `${baseURL}/book-swap/outgoing`,
+    accept: (swapId: string) =>
+        `${baseURL}/book-swap/${encodeURIComponent(swapId)}/accept`,
+    reject: (swapId: string) =>
+        `${baseURL}/book-swap/${encodeURIComponent(swapId)}/reject`,
+    complete: (swapId: string) =>
+        `${baseURL}/book-swap/${encodeURIComponent(swapId)}/complete`,
+    cancel: (swapId: string) =>
+        `${baseURL}/book-swap/${encodeURIComponent(swapId)}/cancel`,
+};
+
+export const libraryProfileReviewEndpoints = {
+    base: `${baseURL}/library-profile-review`,
+    byProfile: (profileId: string) =>
+        `${baseURL}/library-profile-review/profile/${encodeURIComponent(profileId)}`,
+    byId: (reviewId: string) =>
+        `${baseURL}/library-profile-review/${encodeURIComponent(reviewId)}`,
 };
 
 export const buySellEndpoints = {
@@ -218,6 +333,13 @@ export const referralEndpoints = {
     myCode: `${baseURL}/referral/my-code`,
     myReferrals: `${baseURL}/referral/my-referrals`,
     leaderboard: `${baseURL}/referral/leaderboard`,
+};
+
+export const supportEndpoints = {
+    base: `${baseURL}/support/tickets`,
+    byId: (id: string) => `${baseURL}/support/tickets/${encodeURIComponent(id)}`,
+    reply: (id: string) => `${baseURL}/support/tickets/${encodeURIComponent(id)}/reply`,
+    reopen: (id: string) => `${baseURL}/support/tickets/${encodeURIComponent(id)}/reopen`,
 };
 
 /** Browse shops, products, and food (guest or authenticated; university from cookie or query). */

@@ -255,7 +255,7 @@ export default function BuySellLanding() {
         ) : (
           <>
             <div className="mt-6">
-              <FeatureHeroAds universityId={universityId} />
+              <FeatureHeroAds universityId={universityId} placement="buy_sell" />
             </div>
 
             <SectionWrapper

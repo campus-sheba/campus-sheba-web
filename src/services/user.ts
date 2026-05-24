@@ -154,6 +154,33 @@ export async function verifyUpdateEmailAction(email: string, code: string) {
     }
 }
 
+/** Send a verification code to the student's institutional email. */
+export async function sendStudentVerificationCodeAction(email: string) {
+    try {
+        await postPrivate(userProfileEndpoints.studentVerificationSendCode, { email });
+        return { success: true as const };
+    } catch (error) {
+        return {
+            success: false as const,
+            message:
+                error instanceof Error ? error.message : "Failed to send verification code",
+        };
+    }
+}
+
+/** Verify the emailed code and mark the account as a verified student. */
+export async function verifyStudentAccountAction(email: string, code: string) {
+    try {
+        await putPrivate(userProfileEndpoints.studentVerificationVerify, { email, code });
+        return { success: true as const };
+    } catch (error) {
+        return {
+            success: false as const,
+            message: error instanceof Error ? error.message : "Failed to verify student account",
+        };
+    }
+}
+
 export type DashboardProfile = AuthMe & {
     bio?: string;
     blood?: string;
@@ -168,4 +195,10 @@ export type DashboardProfile = AuthMe & {
     roomNo?: string;
     campus?: string;
     university?: University | string | null;
+    referralCode?: string;
+    totalReferrals?: number;
+    // Student-account verification via institutional email.
+    studentEmail?: string;
+    isStudentVerified?: boolean;
+    studentVerifiedAt?: string | null;
 };

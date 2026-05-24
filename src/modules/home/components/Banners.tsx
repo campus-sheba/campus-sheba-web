@@ -18,8 +18,7 @@ interface BannersProps {
 
 /** Matches slide heights to avoid CLS between skeleton and real banners */
 const BANNER_H = "h-[30vh] min-h-[200px] md:h-[55vh] md:min-h-0";
-const BANNER_FRAME =
-  "mr-4 overflow-hidden lg:rounded-xl md:mr-4 md:rounded-none lg:mr-0";
+const BANNER_FRAME = "mr-4 overflow-hidden  md:mr-4 md:rounded-none lg:mr-0";
 
 function BannerShimmer() {
   return (

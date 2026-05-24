@@ -45,7 +45,7 @@ export default function ParcelLanding() {
           </div>
         ) : (
           <div className="mt-6">
-            <FeatureHeroAds universityId={universityId} />
+            <FeatureHeroAds universityId={universityId} placement="parcel" />
           </div>
         )}
 

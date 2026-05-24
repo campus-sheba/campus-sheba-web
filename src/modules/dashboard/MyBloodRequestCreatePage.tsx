@@ -4,9 +4,13 @@ import { useState, useTransition } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui";
 import { createBloodRequestAction } from "@/services/blood-donor";
-import { BLOOD_GROUPS, type BloodRequestUrgency } from "@/types/blood-donor";
+import { BLOOD_GROUPS, URGENCY_LEVELS, type BloodRequestUrgency } from "@/types/blood-donor";
 
-const URGENCY: BloodRequestUrgency[] = ["Low", "Medium", "High", "Critical"];
+const URGENCY_HINTS: Record<string, string> = {
+  Urgent: "Auto-published immediately, notifies donors now",
+  Moderate: "Goes to moderation queue, active within 24h",
+  Planned: "Goes to moderation queue, active within 72h",
+};
 
 function normalizePhoneDigits(value: string): string {
   const onlyDigits = value.replace(/\D/g, "");
@@ -20,7 +24,7 @@ function buildApiPhone(digits: string): string {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#00A651]";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#E30B12]";
 const labelClass = "text-xs font-medium text-gray-500";
 
 export default function MyBloodRequestCreatePage() {
@@ -29,7 +33,7 @@ export default function MyBloodRequestCreatePage() {
   const [error, setError] = useState<string | null>(null);
 
   const [bloodGroup, setBloodGroup] = useState("");
-  const [urgencyLevel, setUrgencyLevel] = useState<BloodRequestUrgency>("Medium");
+  const [urgencyLevel, setUrgencyLevel] = useState<BloodRequestUrgency>("Moderate");
   const [hospital, setHospital] = useState("");
   const [location, setLocation] = useState("");
   const [contactDigits, setContactDigits] = useState("");
@@ -111,12 +115,15 @@ export default function MyBloodRequestCreatePage() {
             value={urgencyLevel}
             onChange={(e) => setUrgencyLevel(e.target.value as BloodRequestUrgency)}
           >
-            {URGENCY.map((u) => (
+            {URGENCY_LEVELS.map((u) => (
               <option key={u} value={u}>
                 {u}
               </option>
             ))}
           </select>
+          {URGENCY_HINTS[urgencyLevel] ? (
+            <p className="mt-1 text-[11px] text-gray-500">{URGENCY_HINTS[urgencyLevel]}</p>
+          ) : null}
         </div>
         <div className="md:col-span-2">
           <label className={labelClass}>Hospital (optional)</label>

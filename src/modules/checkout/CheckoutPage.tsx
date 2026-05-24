@@ -482,6 +482,10 @@ export default function CheckoutPage() {
       emitCartUpdated();
       if (res.requiresRedirect && res.paymentUrl) {
         window.location.href = res.paymentUrl;
+      } else if (res.paymentUrl) {
+        router.push(res.paymentUrl);
+      } else if (res.orderId) {
+        router.push(`/my-orders/${res.orderId}?placed=1`);
       } else {
         router.push("/my-orders");
       }

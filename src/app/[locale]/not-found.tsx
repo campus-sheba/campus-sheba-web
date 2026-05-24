@@ -42,9 +42,9 @@ export default function NotFound() {
             </Button>
           </Link>
 
-          <Link href="/news">
+          <Link href="/explore">
             <Button variant="outline" size="md">
-              View Latest News
+              Explore Campus Sheba
             </Button>
           </Link>
         </div>

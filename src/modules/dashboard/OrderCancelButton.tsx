@@ -47,7 +47,7 @@ export function OrderCancelButton({ orderId }: Props) {
               onChange={(e) => setReason(e.target.value)}
               placeholder="Reason (optional)"
               rows={3}
-              className="mt-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#00A651]"
+              className="mt-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#E30B12]"
             />
             {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
             <div className="mt-4 flex justify-end gap-2">
