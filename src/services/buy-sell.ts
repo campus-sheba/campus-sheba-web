@@ -2,6 +2,7 @@
 
 import type {
   BuySellCategory,
+  BuySellFeedResponse,
   BuySellListing,
   BuySellPaginatedResponse,
   CreateBuySellListingPayload,
@@ -64,6 +65,31 @@ export async function fetchUserBuySellById(id: string): Promise<BuySellListing |
     includeUniversity: false,
   });
   return res?.data ?? null;
+}
+
+/**
+ * Curated home feed: GET /api/user/buy-sell/feed
+ * Sections: featured → recent → trending → topRated (or byCategory when category passed).
+ */
+export async function fetchUserBuySellFeed(params: {
+  university?: string;
+  category?: string;
+}): Promise<BuySellFeedResponse> {
+  const empty: BuySellFeedResponse = { featured: [], recent: [], trending: [], topRated: [] };
+  const q = new URLSearchParams();
+  if (params.university) q.set("university", params.university);
+  if (params.category) q.set("category", params.category);
+  const query = q.toString();
+  const url = query ? `${buySellEndpoints.userFeed}?${query}` : buySellEndpoints.userFeed;
+  try {
+    const res = await getPublic<{ data?: BuySellFeedResponse }>(url, {
+      universityId: params.university,
+      includeUniversity: false,
+    });
+    return res?.data ?? empty;
+  } catch {
+    return empty;
+  }
 }
 
 /**

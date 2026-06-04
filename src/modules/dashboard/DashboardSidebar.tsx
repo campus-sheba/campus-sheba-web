@@ -17,6 +17,7 @@ import {
   Tag,
   Receipt,
   Store,
+  ShieldAlert,
   Droplets,
   HeartPulse,
   ChevronDown,
@@ -88,6 +89,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Buy & Sell", href: "/my-buy-sell", icon: Tag },
       { label: "My Orders", href: "/my-orders", icon: Receipt },
       { label: "My Sales", href: "/my-sales", icon: Store },
+      { label: "My Disputes", href: "/my-disputes", icon: ShieldAlert },
     ],
   },
   {

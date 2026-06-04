@@ -73,6 +73,39 @@ export async function submitUniversityLocationReviewAction(
   }
 }
 
+/**
+ * Submit a review for a delivered Buy & Sell purchase.
+ * POST /user/reviews { reviewableType: "BuySell", ... }
+ * Passing `orderId` lets the backend flag it as a verified purchase.
+ */
+export async function submitBuySellReviewAction(
+  listingId: string,
+  rating: number,
+  comment?: string,
+  orderId?: string,
+  photos?: { url: string; key?: string; size?: number }[],
+) {
+  const trimmed = listingId?.trim();
+  if (!trimmed) return { success: false as const, message: "Invalid listing" };
+  if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+    return { success: false as const, message: "Rating must be between 1 and 5" };
+  }
+  try {
+    const body = {
+      reviewableType: "BuySell",
+      reviewableId: trimmed,
+      orderId: orderId?.trim() || undefined,
+      rating,
+      comment: comment?.trim() || undefined,
+      photos: photos && photos.length ? photos : undefined,
+    };
+    const res = await postPrivate<unknown>(reviewEndpoints.base, body, privateOpts);
+    return { success: true as const, data: res };
+  } catch (e) {
+    return { success: false as const, message: e instanceof Error ? e.message : "Failed" };
+  }
+}
+
 export async function updateUniversityLocationReviewAction(
   reviewId: string,
   rating: number,

@@ -93,6 +93,12 @@ export const lostFoundEndpoints = {
         `${baseURL}/user/lost-and-found/${encodeURIComponent(postId)}/escalate-to-parcel`,
 };
 
+export const busEndpoints = {
+    list: `${baseURL}/buses`,
+    live: `${baseURL}/buses/live`,
+    myStatus: `${baseURL}/bus-tracking/me/status`,
+};
+
 export const parcelEndpoints = {
     base: `${baseURL}/user/parcel`,
     estimate: `${baseURL}/user/parcel/estimate`,
@@ -317,8 +323,14 @@ export const buySellEndpoints = {
     creatorOwn: `${baseURL}/creator/buy-sell/own`,
     creatorById: (id: string) => `${baseURL}/creator/buy-sell/${id}`,
     userBase: `${baseURL}/user/buy-sell`,
+    userFeed: `${baseURL}/user/buy-sell/feed`,
     userMyListed: `${baseURL}/user/buy-sell/my-listed`,
     userById: (id: string) => `${baseURL}/user/buy-sell/${id}`,
+};
+
+export const disputeEndpoints = {
+    base: `${baseURL}/user/disputes`,
+    byId: (id: string) => `${baseURL}/user/disputes/${encodeURIComponent(id)}`,
 };
 
 export const pointsEndpoints = {

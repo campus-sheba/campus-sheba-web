@@ -48,6 +48,17 @@ export type BuySellPaginatedResponse = {
   data: BuySellListing[];
 };
 
+/** Curated home feed: GET /api/user/buy-sell/feed */
+export type BuySellFeedResponse = {
+  featured: BuySellListing[];
+  recent: BuySellListing[];
+  trending: BuySellListing[];
+  /** Present when no `category` filter is passed. */
+  topRated?: BuySellListing[];
+  /** Present when a `category` filter is passed (replaces topRated). */
+  byCategory?: BuySellListing[];
+};
+
 /** Request body for POST /api/creator/buy-sell */
 export type BuySellPhotoPayload = {
   url: string;

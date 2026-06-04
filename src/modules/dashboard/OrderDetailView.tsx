@@ -5,6 +5,7 @@ import type { UserOrderRow } from "@/types/order";
 import { shouldUnoptimizeRemoteImage } from "@/utils/media/remoteImage";
 import { OrderFulfillmentTimeline } from "@/modules/orders/OrderFulfillmentTimeline";
 import SellerOrderDetailActions from "@/modules/orders/SellerOrderDetailActions";
+import BuyerBuySellActions from "@/modules/orders/BuyerBuySellActions";
 import {
   BUYER_FULFILMENT_STEPS,
   SELLER_FULFILMENT_STEPS,
@@ -156,6 +157,8 @@ export default function OrderDetailView({
       {isSeller && sellerItem ? (
         <SellerOrderDetailActions order={order} sellerItem={sellerItem} />
       ) : null}
+
+      {!isSeller ? <BuyerBuySellActions order={order} /> : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {showDeliveryOtp ? (

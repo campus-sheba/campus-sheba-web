@@ -137,6 +137,22 @@ export default function MyBuySellCreatePage() {
     }
 
     setSubmitting(true);
+    console.log("creating listing with", {
+      title,
+      brand,
+      modelName,
+      categoryId,
+      condition,
+      price: priceNum,
+      negotiable,
+      quantity: qty,
+      description,
+      contactName,
+      contactPhone,
+      contactEmail,
+      addressId,
+      photos,
+    });
     const res = await createBuySellListingAction({
       title: title.trim(),
       ...(brand.trim() ? { brand: brand.trim() } : {}),
@@ -153,6 +169,7 @@ export default function MyBuySellCreatePage() {
       negotiable,
       quantity: qty,
     });
+    console.log("create listing res", res);
     setSubmitting(false);
 
     if (!res.success) {
