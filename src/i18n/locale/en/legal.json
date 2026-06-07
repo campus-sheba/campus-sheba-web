@@ -1,0 +1,201 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: 7 June 2026",
+    "intro": [
+      "This Privacy Policy explains how Campus Sheba (\"Campus Sheba\", \"we\", \"us\", or \"our\") collects, uses, shares, and protects your personal information when you use the Campus Sheba mobile application and website (collectively, the \"Service\").",
+      "We are committed to protecting your privacy. We do not sell your personal information to third parties. By using the Service, you agree to the practices described in this Privacy Policy."
+    ],
+    "sections": [
+      {
+        "heading": "1. Information We Collect",
+        "body": ["We collect the following categories of information so that we can provide and improve the Service:"],
+        "bullets": [
+          "Account information: your name, email address, and phone number that you provide when you register.",
+          "Student verification information: your student ID and the educational institution you are affiliated with, used to confirm that you are an eligible campus member.",
+          "Location data: your device's approximate or precise location, used to show nearby transport, rides, marketplace listings, and other location-based features.",
+          "Transaction information: details of bookings, marketplace activity, and communications you carry out through the Service.",
+          "Device and usage information: device type, operating system, app version, IP address, and how you interact with the Service, collected to keep the Service secure and reliable."
+        ]
+      },
+      {
+        "heading": "2. How We Use Your Information",
+        "body": ["We use your information only for legitimate purposes connected to operating the Service, including to:"],
+        "bullets": [
+          "Create and manage your account and verify your eligibility as a student.",
+          "Provide core features such as transport information, ride sharing, the buy-and-sell marketplace, and book services.",
+          "Show you relevant, location-based content and connect you with nearby users and services.",
+          "Process and facilitate transactions and communications between users.",
+          "Maintain the safety, security, and integrity of the Service and prevent fraud or abuse.",
+          "Respond to your support requests and send you important service-related notices.",
+          "Comply with applicable laws and enforce our Terms of Service."
+        ]
+      },
+      {
+        "heading": "3. Location Data",
+        "body": [
+          "Location is central to many Campus Sheba features. We only access your location with your permission, which you grant through your device settings.",
+          "You can disable location access at any time through your device settings. If you do, some location-based features may not work as intended, but you can continue to use the rest of the Service."
+        ]
+      },
+      {
+        "heading": "4. How We Share Information",
+        "body": ["We do not sell your personal information. We share information only in the limited circumstances described below:"],
+        "bullets": [
+          "With other users: when you use features like the marketplace or ride sharing, limited profile and contact details are shared with the users you choose to interact with.",
+          "With service providers: trusted vendors who help us operate the Service (such as hosting, analytics, and communications), who are bound to use your data only on our instructions.",
+          "For legal reasons: when required to comply with the law, a valid legal request, or to protect the rights, safety, and property of Campus Sheba, our users, or the public.",
+          "In a business transfer: if Campus Sheba is involved in a merger, acquisition, or sale of assets, your information may be transferred subject to this Privacy Policy."
+        ]
+      },
+      {
+        "heading": "5. Data Retention",
+        "body": [
+          "We retain your personal information for as long as your account is active or as needed to provide the Service. We also retain information where necessary to comply with our legal obligations, resolve disputes, and enforce our agreements.",
+          "When information is no longer needed, we delete or anonymize it."
+        ]
+      },
+      {
+        "heading": "6. Data Security",
+        "body": [
+          "We use administrative, technical, and physical safeguards designed to protect your personal information against unauthorized access, loss, or misuse. No method of transmission or storage is completely secure, but we work to protect your information and continuously improve our security practices."
+        ]
+      },
+      {
+        "heading": "7. Your Rights and Choices",
+        "body": ["Depending on your location, you may have rights regarding your personal information, including the right to:"],
+        "bullets": [
+          "Access and review the personal information we hold about you.",
+          "Request that we correct inaccurate or incomplete information.",
+          "Request deletion of your account and associated personal information.",
+          "Withdraw permissions, such as location access, through your device settings."
+        ]
+      },
+      {
+        "heading": "8. Children's Privacy",
+        "body": [
+          "The Service is intended for students and is not directed to children under the age of 13. We do not knowingly collect personal information from children under 13. If we learn that we have collected such information, we will delete it promptly."
+        ]
+      },
+      {
+        "heading": "9. Third-Party Services",
+        "body": [
+          "The Service may contain links to or integrate with third-party services that we do not control. This Privacy Policy does not apply to those services, and we encourage you to review their privacy policies separately."
+        ]
+      },
+      {
+        "heading": "10. Changes to This Policy",
+        "body": [
+          "We may update this Privacy Policy from time to time. When we make material changes, we will update the \"Last updated\" date above and, where appropriate, notify you within the Service. Your continued use of the Service after changes take effect constitutes acceptance of the updated policy."
+        ]
+      },
+      {
+        "heading": "11. Contact Us",
+        "body": ["If you have any questions or requests regarding this Privacy Policy or your personal information, please contact us at support@campussheba.com."]
+      }
+    ]
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "updated": "Last updated: 7 June 2026",
+    "intro": [
+      "These Terms of Service (\"Terms\") govern your access to and use of the Campus Sheba mobile application and website (collectively, the \"Service\"), operated by Campus Sheba (\"Campus Sheba\", \"we\", \"us\", or \"our\").",
+      "By creating an account or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service."
+    ],
+    "sections": [
+      {
+        "heading": "1. Eligibility",
+        "body": [
+          "The Service is intended for students and members of supported campuses. You must be at least 13 years old to use the Service, and you must provide accurate information, including valid student verification details, when required.",
+          "You are responsible for ensuring that your use of the Service complies with the rules of your educational institution and applicable law."
+        ]
+      },
+      {
+        "heading": "2. Your Account",
+        "body": [
+          "You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You agree to notify us immediately at support@campussheba.com if you suspect any unauthorized use of your account.",
+          "You may not share your account, impersonate others, or provide false information."
+        ]
+      },
+      {
+        "heading": "3. Acceptable Use",
+        "body": ["When using the Service, you agree that you will not:"],
+        "bullets": [
+          "Violate any applicable law or the rights of others.",
+          "Post or share content that is unlawful, fraudulent, harassing, hateful, or otherwise objectionable.",
+          "Use the Service to send spam or to defraud, deceive, or harm other users.",
+          "Attempt to gain unauthorized access to the Service, other accounts, or our systems.",
+          "Interfere with or disrupt the integrity or performance of the Service.",
+          "Use automated means to access or scrape the Service without our permission."
+        ]
+      },
+      {
+        "heading": "4. User Content",
+        "body": [
+          "You retain ownership of the content you submit to the Service, such as listings, messages, and profile information. By submitting content, you grant Campus Sheba a non-exclusive, worldwide, royalty-free license to host, display, and distribute that content as necessary to operate and provide the Service.",
+          "You are solely responsible for the content you submit and represent that you have the rights to share it. We may remove content that violates these Terms or applicable law."
+        ]
+      },
+      {
+        "heading": "5. Marketplace, Transport, and User Transactions",
+        "body": [
+          "Campus Sheba provides features that connect users for activities such as buying and selling items, transport information, and ride sharing. Campus Sheba is a platform that facilitates these connections; we are not a party to transactions between users.",
+          "We do not guarantee the quality, safety, legality, or accuracy of listings, rides, or items offered by users. You are responsible for exercising your own judgment, taking appropriate safety precautions, and complying with applicable law when interacting or transacting with other users."
+        ]
+      },
+      {
+        "heading": "6. Fees and Payments",
+        "body": [
+          "Certain features of the Service may involve fees or payments. Where fees apply, they will be disclosed to you before you incur them. You are responsible for any charges associated with transactions you initiate through the Service."
+        ]
+      },
+      {
+        "heading": "7. Intellectual Property",
+        "body": [
+          "The Service, including its design, features, logos, and content provided by Campus Sheba, is owned by Campus Sheba and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works from our content without our prior written permission."
+        ]
+      },
+      {
+        "heading": "8. Termination",
+        "body": [
+          "You may stop using the Service and delete your account at any time. We may suspend or terminate your access to the Service if you violate these Terms or if we reasonably believe your use poses a risk to the Service or other users.",
+          "Upon termination, the provisions of these Terms that by their nature should survive will continue to apply."
+        ]
+      },
+      {
+        "heading": "9. Disclaimers",
+        "body": [
+          "The Service is provided on an \"as is\" and \"as available\" basis without warranties of any kind, whether express or implied, to the fullest extent permitted by law. We do not warrant that the Service will be uninterrupted, error-free, or secure."
+        ]
+      },
+      {
+        "heading": "10. Limitation of Liability",
+        "body": [
+          "To the fullest extent permitted by law, Campus Sheba and its affiliates will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss arising from your use of the Service or from transactions or interactions with other users."
+        ]
+      },
+      {
+        "heading": "11. Indemnification",
+        "body": [
+          "You agree to indemnify and hold harmless Campus Sheba from any claims, damages, or expenses arising out of your use of the Service, your content, or your violation of these Terms or applicable law."
+        ]
+      },
+      {
+        "heading": "12. Governing Law",
+        "body": [
+          "These Terms are governed by the laws of the People's Republic of Bangladesh, without regard to its conflict of law principles. Any disputes arising from these Terms or the Service will be subject to the exclusive jurisdiction of the courts of Bangladesh."
+        ]
+      },
+      {
+        "heading": "13. Changes to These Terms",
+        "body": [
+          "We may update these Terms from time to time. When we make material changes, we will update the \"Last updated\" date above and, where appropriate, notify you within the Service. Your continued use of the Service after changes take effect constitutes acceptance of the updated Terms."
+        ]
+      },
+      {
+        "heading": "14. Contact Us",
+        "body": ["If you have any questions about these Terms, please contact us at support@campussheba.com."]
+      }
+    ]
+  }
+}
