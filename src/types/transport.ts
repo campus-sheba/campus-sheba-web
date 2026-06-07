@@ -75,6 +75,81 @@ export type RideOffer = {
   note?: string;
 };
 
+// ---- Transport Fare Module (live API) ----
+// Real fare-guide backend: campus Locations (stops) + a directional Fare
+// matrix (price from A→B per vehicle type). Distinct from the mock `VehicleType`
+// / `FareRoute` preview types above — these mirror the server schema exactly.
+export type FareVehicleType = "pedal_rickshaw" | "auto_rickshaw" | "electric_cart";
+
+/** A named campus stop, addressable by a per-campus unique slug. */
+export type TransportLocation = {
+  _id: string;
+  university: string;
+  name: string;
+  nameBn?: string | null;
+  slug: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** Populated location shape embedded in matrix / admin-list fare rows. */
+export type LocationRef = {
+  _id: string;
+  name: string;
+  nameBn?: string | null;
+  slug: string;
+};
+
+/** One directional price for one vehicle type. */
+export type TransportFare = {
+  _id: string;
+  university: string;
+  vehicleType: FareVehicleType;
+  /** Populated (LocationRef) in matrix/admin-list; raw id string in lookup. */
+  fromLocation: LocationRef | string;
+  toLocation: LocationRef | string;
+  fare: number;
+  note?: string | null;
+  isActive: boolean;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ---- Transport Fare admin payloads ----
+export type CreateLocationPayload = {
+  name: string;
+  nameBn?: string;
+  slug: string;
+  isActive?: boolean;
+};
+export type UpdateLocationPayload = Partial<{
+  name: string;
+  nameBn: string;
+  slug: string;
+  isActive: boolean;
+}>;
+export type CreateFarePayload = {
+  vehicleType: FareVehicleType;
+  fromLocation: string;
+  toLocation: string;
+  fare: number;
+  note?: string;
+  isActive?: boolean;
+};
+export type BulkFareEntry = {
+  fromLocation: string;
+  toLocation: string;
+  fare: number;
+  note?: string;
+};
+export type UpdateFarePayload = Partial<{
+  fare: number;
+  note: string;
+  isActive: boolean;
+}>;
+
 // ---- Intercity Ticket ----
 export type SeatState = "available" | "booked" | "selected" | "ladies";
 export type IntercityTrip = {

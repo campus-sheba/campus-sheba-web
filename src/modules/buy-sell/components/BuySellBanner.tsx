@@ -1,20 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { useAppState } from "@/contexts/AppStateContext";
 import { useModuleBanners } from "@/modules/home/hooks/useModuleBanners";
 import Slider from "@/components/slider/Slider";
+import BannerLink from "@/components/banner/BannerLink";
+import BannerMedia from "@/components/banner/BannerMedia";
+import type { Banner } from "@/types/banner";
 
-export interface Banner {
-  src: string;
-  alt: string;
-}
-
-export interface HeroSliderProps {
-  banners: Banner[];
-}
-
-function HeroSlider({ banners }: HeroSliderProps) {
+function HeroSlider({ banners }: { banners: Banner[] }) {
   return (
     <div className="w-full relative">
       <Slider
@@ -36,21 +29,19 @@ function HeroSlider({ banners }: HeroSliderProps) {
         containerClassName="!overflow-visible"
       >
         {banners.map((banner, idx) => (
-          <div
-            key={idx}
-            className="group relative overflow-hidden rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 h-[240px] sm:h-[280px] md:h-[340px] lg:h-[420px]"
+          <BannerLink
+            key={banner._id}
+            banner={banner}
+            className="group relative block overflow-hidden rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 h-[240px] sm:h-[280px] md:h-[340px] lg:h-[420px]"
           >
-            <Image
-              src={banner.src}
-              alt={banner.alt}
-              fill
+            <BannerMedia
+              banner={banner}
               priority={idx === 0}
-              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
+              className="object-center transition-transform duration-500 group-hover:scale-105"
             />
-
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent opacity-80 pointer-events-none" />
-          </div>
+          </BannerLink>
         ))}
       </Slider>
 
@@ -79,14 +70,9 @@ const BuySellBanner = () => {
   if (isLoading) return renderSkeleton();
   if (banners.length === 0) return null;
 
-  const sliderBanners: Banner[] = banners.map((b) => ({
-    src: b.photo?.url || "/placeholder.jpg",
-    alt: b.title || "Banner",
-  }));
-
   return (
     <div className="relative mb-10 w-full">
-      <HeroSlider banners={sliderBanners} />
+      <HeroSlider banners={banners} />
     </div>
   );
 };

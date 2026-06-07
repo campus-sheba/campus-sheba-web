@@ -31,6 +31,7 @@ import { HomeFoodRails } from "./sections/HomeFoodRails";
 import { HomeLostFoundRails } from "./sections/HomeLostFoundRails";
 import { HomeMarketplaceRails } from "./sections/HomeMarketplaceRails";
 import { HomeParcelCampusCtas } from "./sections/HomeParcelCampusCtas";
+import ServerDrivenHomeFeed from "../feed/ServerDrivenHomeFeed";
 
 type CardIcon = ComponentType<{ className?: string }>;
 
@@ -423,6 +424,9 @@ export function HomePageContent() {
           {/* <HomeJumpNav tt={tt} /> */}
         </ContentWrapper>
       </SectionWrapper>
+
+      {/* Server-driven home feed (SDUI) — ordered shelves from /user/home/feed */}
+      <ServerDrivenHomeFeed />
 
       {/* <HomeMarketplaceRails />
       <HomeCampusMartRails />

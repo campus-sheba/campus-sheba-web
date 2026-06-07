@@ -15,7 +15,12 @@ import {
   X,
 } from "lucide-react";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import TransportSubHeader from "./TransportSubHeader";
+import TransportSubHeader, {
+  TransportFilterPanel,
+  TransportSegment,
+  transportBtnPrimaryClass,
+  transportInputClass,
+} from "./TransportSubHeader";
 import { MOCK_RIDES } from "../mock/data";
 import type { RideOffer } from "@/types/transport";
 
@@ -42,23 +47,29 @@ export default function RideSharing() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="full" padding="md" className="mx-auto max-w-4xl space-y-6 pb-16 pt-4">
+      <ContentWrapper
+        maxWidth="full"
+        padding="md"
+        className="mx-auto max-w-4xl space-y-5 pb-20 pt-2"
+      >
         <TransportSubHeader
           icon={Users}
-          title="Ride Sharing"
-          subtitle="Split the fare with classmates going your way. Safer, cheaper, greener."
-          gradient="from-rose-500 to-pink-600"
+          title="Ride sharing"
+          subtitle="Split the fare with classmates going your way. Post an offer or find a seat."
+          breadcrumbLabel="Ride sharing"
           preview
-        >
-          <div className="inline-flex rounded-xl bg-white/15 p-1 backdrop-blur">
-            <TabBtn active={tab === "find"} onClick={() => setTab("find")}>
-              Find a ride
-            </TabBtn>
-            <TabBtn active={tab === "offer"} onClick={() => setTab("offer")}>
-              Offer a ride
-            </TabBtn>
-          </div>
-        </TransportSubHeader>
+        />
+
+        <TransportFilterPanel>
+          <TransportSegment
+            value={tab}
+            onChange={(id) => setTab(id as "find" | "offer")}
+            options={[
+              { id: "find", label: "Find a ride" },
+              { id: "offer", label: "Offer a ride" },
+            ]}
+          />
+        </TransportFilterPanel>
 
         {tab === "find" ? (
           <>
@@ -68,7 +79,7 @@ export default function RideSharing() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by destination — e.g. Farmgate, Savar"
-                className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm shadow-sm outline-none focus:border-rose-400"
+                className={`${transportInputClass} py-3 pl-10`}
               />
             </div>
 
@@ -113,25 +124,28 @@ export default function RideSharing() {
 function RideCard({ ride, onRequest }: { ride: RideOffer; onRequest: () => void }) {
   const mins = minsFromNow(ride.departAt);
   const soon = mins <= 15;
+
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 text-sm font-bold text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700">
             {ride.host.initials}
           </div>
           <div>
             <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
               {ride.host.name}
-              <span className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+              <span className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
                 <ShieldCheck className="h-3 w-3" /> {ride.host.trustScore}
               </span>
             </p>
-            <p className="text-xs text-gray-500">★ {ride.host.rating} · {ride.vehicle}</p>
+            <p className="text-xs text-gray-500">
+              ★ {ride.host.rating} · {ride.vehicle}
+            </p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-sm font-bold text-gray-900">
+          <p className="text-sm font-bold tabular-nums text-gray-900">
             {ride.perSeatFare === 0 ? "Free" : `৳${ride.perSeatFare}`}
           </p>
           <p className="text-[11px] text-gray-400">per seat</p>
@@ -147,10 +161,10 @@ function RideCard({ ride, onRequest }: { ride: RideOffer; onRequest: () => void 
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold ${
-              soon ? "bg-rose-50 text-rose-700" : "bg-gray-100 text-gray-600"
+              soon ? "bg-amber-50 text-amber-800" : "bg-gray-100 text-gray-600"
             }`}
           >
             <Clock className="h-3 w-3" /> {timeLabel(ride.departAt)} · in {mins}m
@@ -159,19 +173,21 @@ function RideCard({ ride, onRequest }: { ride: RideOffer; onRequest: () => void 
             <Users className="h-3 w-3" /> {ride.seatsLeft}/{ride.seatsTotal} left
           </span>
           {ride.recurring ? (
-            <span className="rounded-full bg-violet-50 px-2 py-1 font-semibold text-violet-700">Daily</span>
+            <span className="rounded-full bg-gray-100 px-2 py-1 font-semibold text-gray-600">
+              Daily
+            </span>
           ) : null}
         </div>
         <button
           type="button"
           disabled={ride.seatsLeft === 0}
           onClick={onRequest}
-          className="rounded-lg bg-rose-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400"
+          className={`${transportBtnPrimaryClass} px-4 py-1.5 text-xs`}
         >
           {ride.seatsLeft === 0 ? "Full" : "Request seat"}
         </button>
       </div>
-      {ride.note ? <p className="mt-2 text-xs italic text-gray-400">“{ride.note}”</p> : null}
+      {ride.note ? <p className="mt-2 text-xs text-gray-400">"{ride.note}"</p> : null}
     </div>
   );
 }
@@ -205,22 +221,22 @@ function OfferForm({ onPost }: { onPost: (o: RideOffer) => void }) {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
       <h3 className="text-base font-bold text-gray-900">Post a ride offer</h3>
       <p className="text-sm text-gray-500">Heading somewhere? Offer your empty seats.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <Field label="Pickup point" value={from} onChange={setFrom} placeholder="Bishmail Gate" />
         <Field label="Destination" value={to} onChange={setTo} placeholder="Farmgate, Dhaka" />
-        <label className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-gray-600">Departure time</span>
           <input
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+            className={transportInputClass}
           />
         </label>
-        <label className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-gray-600">Fare per seat (৳, 0 = free)</span>
           <input
             type="number"
@@ -228,7 +244,7 @@ function OfferForm({ onPost }: { onPost: (o: RideOffer) => void }) {
             value={fare}
             onChange={(e) => setFare(e.target.value)}
             placeholder="120"
-            className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+            className={transportInputClass}
           />
         </label>
       </div>
@@ -240,8 +256,10 @@ function OfferForm({ onPost }: { onPost: (o: RideOffer) => void }) {
               key={n}
               type="button"
               onClick={() => setSeats(n)}
-              className={`h-10 w-10 rounded-xl text-sm font-bold transition ${
-                seats === n ? "bg-rose-600 text-white" : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+              className={`h-10 w-10 rounded-lg text-sm font-bold transition ${
+                seats === n
+                  ? "bg-[#00A651] text-white"
+                  : "border border-gray-200 text-gray-600 hover:bg-gray-50"
               }`}
             >
               {n}
@@ -249,11 +267,7 @@ function OfferForm({ onPost }: { onPost: (o: RideOffer) => void }) {
           ))}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={submit}
-        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 py-3 text-sm font-bold text-white transition hover:bg-rose-700"
-      >
+      <button type="button" onClick={submit} className={`mt-5 w-full ${transportBtnPrimaryClass} py-3`}>
         <Plus className="h-4 w-4" /> Post offer
       </button>
     </div>
@@ -279,23 +293,27 @@ function ConfirmModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-3xl"
+        className="w-full max-w-md overflow-hidden rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900">
             {step === "review" ? "Request a seat" : "Request sent"}
           </h3>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {step === "review" ? (
           <>
-            <div className="rounded-xl bg-gray-50 p-4 text-sm">
+            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm">
               <div className="flex items-center gap-2 font-semibold text-gray-900">
-                <Car className="h-4 w-4 text-rose-500" /> {ride.fromName} → {ride.toName}
+                <Car className="h-4 w-4 text-gray-500" /> {ride.fromName} → {ride.toName}
               </div>
               <p className="mt-1 text-gray-500">
                 {timeLabel(ride.departAt)} · {ride.vehicle} · with {ride.host.name}
@@ -311,7 +329,7 @@ function ConfirmModal({
                 onConfirmed();
                 toast.success("Seat requested — chat opened with the host.");
               }}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 py-3 text-sm font-bold text-white hover:bg-rose-700"
+              className={`mt-4 w-full ${transportBtnPrimaryClass} py-3 font-bold`}
             >
               <MessageCircle className="h-4 w-4" /> Request &amp; open chat
             </button>
@@ -328,7 +346,7 @@ function ConfirmModal({
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 w-full rounded-xl bg-gray-900 py-2.5 text-sm font-semibold text-white"
+              className="mt-5 w-full rounded-lg bg-gray-900 py-2.5 text-sm font-semibold text-white"
             >
               Done
             </button>
@@ -336,28 +354,6 @@ function ConfirmModal({
         )}
       </div>
     </div>
-  );
-}
-
-function TabBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
-        active ? "bg-white text-rose-600 shadow-sm" : "text-white/90 hover:text-white"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -373,13 +369,13 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex flex-col gap-1.5">
       <span className="text-xs font-semibold text-gray-600">{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+        className={transportInputClass}
       />
     </label>
   );
@@ -387,7 +383,7 @@ function Field({
 
 function Empty() {
   return (
-    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/70 p-10 text-center">
+    <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-10 text-center">
       <Users className="mx-auto h-10 w-10 text-gray-300" />
       <p className="mt-3 text-sm font-medium text-gray-700">No rides match your search</p>
       <p className="mt-1 text-sm text-gray-500">Try a different destination, or offer your own ride.</p>

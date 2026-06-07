@@ -12,7 +12,7 @@ const Logo = () => {
         className="h-8 w-8"
       />
       <Image
-        src="/assets/images/logo-text.png"
+        src="/assets/images/logo-text.svg"
         alt="Logo"
         width={100}
         height={100}

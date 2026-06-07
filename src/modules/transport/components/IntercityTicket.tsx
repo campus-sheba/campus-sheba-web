@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowRight,
   Armchair,
+  ArrowRight,
   Check,
   Clock,
   Download,
@@ -14,7 +14,11 @@ import {
   X,
 } from "lucide-react";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
-import TransportSubHeader from "./TransportSubHeader";
+import TransportSubHeader, {
+  TransportFilterPanel,
+  transportBtnPrimaryClass,
+  transportInputClass,
+} from "./TransportSubHeader";
 import { INTERCITY_DESTINATIONS, MOCK_TRIPS } from "../mock/data";
 import type { IntercityTrip } from "@/types/transport";
 
@@ -33,28 +37,34 @@ export default function IntercityTicket() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="full" padding="md" className="mx-auto max-w-5xl space-y-6 pb-16 pt-4">
+      <ContentWrapper
+        maxWidth="full"
+        padding="md"
+        className="mx-auto max-w-5xl space-y-5 pb-20 pt-2"
+      >
         <TransportSubHeader
           icon={Ticket}
-          title="Intercity Ticket"
+          title="Intercity ticket"
           subtitle="Book your trip home with a live seat map. E-ticket delivered instantly."
-          gradient="from-blue-500 to-indigo-600"
+          breadcrumbLabel="Intercity ticket"
           preview
-        >
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <label className="flex flex-1 flex-col gap-1">
-              <span className="text-xs font-semibold text-white/85">From</span>
-              <div className="flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2.5 text-sm font-medium text-gray-900">
-                <MapPin className="h-4 w-4 text-blue-500" /> JU (Dairy Gate)
+        />
+
+        <TransportFilterPanel title="Search trips">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <label className="flex flex-1 flex-col gap-1.5">
+              <span className="text-xs font-semibold text-gray-600">From</span>
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-medium text-gray-900">
+                <MapPin className="h-4 w-4 text-[#00A651]" /> JU (Dairy Gate)
               </div>
             </label>
-            <ArrowRight className="mx-auto hidden h-5 w-5 self-center text-white/80 sm:mb-2.5 sm:block" />
-            <label className="flex flex-1 flex-col gap-1">
-              <span className="text-xs font-semibold text-white/85">To</span>
+            <ArrowRight className="mx-auto hidden h-5 w-5 self-center text-gray-300 sm:mb-2.5 sm:block" />
+            <label className="flex flex-1 flex-col gap-1.5">
+              <span className="text-xs font-semibold text-gray-600">To</span>
               <select
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                className="w-full rounded-xl border-0 bg-white/95 px-3 py-2.5 text-sm font-medium text-gray-900 outline-none focus:ring-2 focus:ring-white"
+                className={transportInputClass}
               >
                 <option value="">All destinations</option>
                 {INTERCITY_DESTINATIONS.map((d) => (
@@ -65,7 +75,7 @@ export default function IntercityTicket() {
               </select>
             </label>
           </div>
-        </TransportSubHeader>
+        </TransportFilterPanel>
 
         <div className="space-y-3">
           {trips.map((t) => (
@@ -83,20 +93,22 @@ export default function IntercityTicket() {
 
 function TripCard({ trip, onSelect }: { trip: IntercityTrip; onSelect: () => void }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold text-gray-900">{trip.operator}</span>
-          <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
             {trip.coachType}
           </span>
-          <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-amber-600">
+          <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-gray-600">
             <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {trip.rating}
           </span>
         </div>
         <div className="mt-2 flex items-center gap-3">
           <div className="text-center">
-            <p className="text-lg font-extrabold text-gray-900">{timeLabel(trip.departAt)}</p>
+            <p className="text-lg font-bold tabular-nums text-gray-900">
+              {timeLabel(trip.departAt)}
+            </p>
             <p className="text-[11px] text-gray-400">{trip.fromName}</p>
           </div>
           <div className="flex flex-col items-center text-gray-300">
@@ -105,13 +117,15 @@ function TripCard({ trip, onSelect }: { trip: IntercityTrip; onSelect: () => voi
             <Clock className="h-3 w-3" />
           </div>
           <div className="text-center">
-            <p className="text-lg font-extrabold text-gray-900">{timeLabel(trip.arriveAt)}</p>
+            <p className="text-lg font-bold tabular-nums text-gray-900">
+              {timeLabel(trip.arriveAt)}
+            </p>
             <p className="text-[11px] text-gray-400">{trip.toName}</p>
           </div>
         </div>
         <p className="mt-2 flex items-center gap-1 text-xs text-gray-500">
           <MapPin className="h-3 w-3" /> Boarding: {trip.boardingPoint} ·{" "}
-          <span className={trip.seatsLeft <= 8 ? "font-semibold text-rose-600" : ""}>
+          <span className={trip.seatsLeft <= 8 ? "font-semibold text-amber-700" : ""}>
             {trip.seatsLeft} seats left
           </span>
         </p>
@@ -119,14 +133,10 @@ function TripCard({ trip, onSelect }: { trip: IntercityTrip; onSelect: () => voi
 
       <div className="flex items-center justify-between gap-4 border-t border-gray-100 pt-3 sm:flex-col sm:items-end sm:border-0 sm:pt-0">
         <div className="text-right">
-          <span className="text-xl font-extrabold text-gray-900">৳{trip.fare}</span>
+          <span className="text-xl font-bold tabular-nums text-gray-900">৳{trip.fare}</span>
           <p className="text-[11px] text-gray-400">per seat</p>
         </div>
-        <button
-          type="button"
-          onClick={onSelect}
-          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-        >
+        <button type="button" onClick={onSelect} className={transportBtnPrimaryClass}>
           Select seats
         </button>
       </div>
@@ -134,10 +144,9 @@ function TripCard({ trip, onSelect }: { trip: IntercityTrip; onSelect: () => voi
   );
 }
 
-// --- Seat map + checkout + e-ticket ---
 const ROWS = 10;
 const COLS = ["A", "B", "C", "D"];
-// Deterministic "booked" seats per trip for a realistic map.
+
 function bookedSet(tripId: string): Set<string> {
   const set = new Set<string>();
   let seed = tripId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -169,13 +178,13 @@ function SeatBookingFlow({ trip, onClose }: { trip: IntercityTrip; onClose: () =
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:rounded-3xl"
+        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
@@ -187,7 +196,11 @@ function SeatBookingFlow({ trip, onClose }: { trip: IntercityTrip; onClose: () =
               {trip.operator} · {trip.fromName} → {trip.toName} · {timeLabel(trip.departAt)}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -196,21 +209,32 @@ function SeatBookingFlow({ trip, onClose }: { trip: IntercityTrip; onClose: () =
           <>
             <div className="flex-1 overflow-y-auto p-5">
               <Legend />
-              {/* coach */}
-              <div className="mx-auto mt-4 max-w-xs rounded-2xl border-2 border-gray-200 bg-gray-50 p-4">
+              <div className="mx-auto mt-4 max-w-xs rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase text-gray-400">
                   <span>Front · Driver</span>
-                  <span>🚌</span>
+                  <span>Coach</span>
                 </div>
                 <div className="space-y-2">
                   {Array.from({ length: ROWS }, (_, i) => i + 1).map((row) => (
                     <div key={row} className="flex items-center justify-center gap-2">
                       {COLS.slice(0, 2).map((c) => (
-                        <Seat key={c} id={`${row}${c}`} booked={booked} selected={selected} onClick={toggle} />
+                        <Seat
+                          key={c}
+                          id={`${row}${c}`}
+                          booked={booked}
+                          selected={selected}
+                          onClick={toggle}
+                        />
                       ))}
                       <span className="w-6 text-center text-[10px] text-gray-300">{row}</span>
                       {COLS.slice(2).map((c) => (
-                        <Seat key={c} id={`${row}${c}`} booked={booked} selected={selected} onClick={toggle} />
+                        <Seat
+                          key={c}
+                          id={`${row}${c}`}
+                          booked={booked}
+                          selected={selected}
+                          onClick={toggle}
+                        />
                       ))}
                     </div>
                   ))}
@@ -227,7 +251,7 @@ function SeatBookingFlow({ trip, onClose }: { trip: IntercityTrip; onClose: () =
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-extrabold text-gray-900">৳{total}</span>
+                  <span className="text-lg font-bold tabular-nums text-gray-900">৳{total}</span>
                 </div>
               </div>
               <button
@@ -238,7 +262,7 @@ function SeatBookingFlow({ trip, onClose }: { trip: IntercityTrip; onClose: () =
                   setStep("ticket");
                   toast.success("Payment successful — e-ticket sent via SMS.");
                 }}
-                className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400"
+                className={`w-full ${transportBtnPrimaryClass} py-3 font-bold`}
               >
                 {selected.length === 0
                   ? "Select at least one seat"
@@ -277,8 +301,8 @@ function Seat({
         isBooked
           ? "cursor-not-allowed border-gray-200 bg-gray-200 text-gray-300"
           : isSel
-            ? "border-blue-600 bg-blue-600 text-white shadow"
-            : "border-gray-200 bg-white text-gray-500 hover:border-blue-400 hover:bg-blue-50"
+            ? "border-[#00A651] bg-[#00A651] text-white"
+            : "border-gray-200 bg-white text-gray-500 hover:border-emerald-400 hover:bg-emerald-50"
       }`}
     >
       <Armchair className="h-3.5 w-3.5" />
@@ -289,7 +313,7 @@ function Seat({
 function Legend() {
   const items = [
     { label: "Available", cls: "border-gray-200 bg-white" },
-    { label: "Selected", cls: "border-blue-600 bg-blue-600" },
+    { label: "Selected", cls: "border-[#00A651] bg-[#00A651]" },
     { label: "Booked", cls: "border-gray-200 bg-gray-200" },
   ];
   return (
@@ -326,11 +350,12 @@ function ETicket({
         <p className="text-sm text-gray-500">E-ticket delivered in-app &amp; via SMS.</p>
       </div>
 
-      {/* ticket stub */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-white">
+      <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between bg-gray-900 px-5 py-3 text-white">
           <span className="font-bold">{trip.operator}</span>
-          <span className="rounded bg-white/20 px-2 py-0.5 text-xs font-semibold">{trip.coachType}</span>
+          <span className="rounded bg-white/15 px-2 py-0.5 text-xs font-semibold">
+            {trip.coachType}
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-y-3 p-5 text-sm">
           <Cell label="From" value={trip.fromName} />
@@ -340,11 +365,7 @@ function ETicket({
           <Cell label="Seats" value={seats.join(", ")} />
           <Cell label="Boarding" value={trip.boardingPoint} />
         </div>
-        {/* perforation */}
-        <div className="relative border-t-2 border-dashed border-gray-200">
-          <span className="absolute -left-2 -top-2 h-4 w-4 rounded-full bg-black/40" />
-          <span className="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-black/40" />
-        </div>
+        <div className="relative border-t-2 border-dashed border-gray-200" />
         <div className="flex items-center justify-between px-5 py-4">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-gray-400">Ticket ID</p>
@@ -352,7 +373,7 @@ function ETicket({
           </div>
           <div className="text-right">
             <p className="text-[11px] uppercase tracking-wide text-gray-400">Paid</p>
-            <p className="text-lg font-extrabold text-gray-900">৳{total}</p>
+            <p className="text-lg font-bold tabular-nums text-gray-900">৳{total}</p>
           </div>
         </div>
       </div>
@@ -361,14 +382,14 @@ function ETicket({
         <button
           type="button"
           onClick={() => toast.info("E-ticket PDF download starting…")}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
         >
           <Download className="h-4 w-4" /> Download PDF
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 rounded-xl bg-gray-900 py-2.5 text-sm font-semibold text-white"
+          className="flex-1 rounded-lg bg-gray-900 py-2.5 text-sm font-semibold text-white"
         >
           Done
         </button>

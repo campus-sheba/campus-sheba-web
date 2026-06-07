@@ -36,6 +36,12 @@ const nextConfig: NextConfig = {
         hostname: "neexg-amlaa.s3.amazonaws.com",
         port: "",
         pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.campussheba.app",
+        port: "",
+        pathname: "/**",
       }
     ],
   },

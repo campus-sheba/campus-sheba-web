@@ -1,5 +1,5 @@
-import FareGuide from "@/modules/transport/components/FareGuide";
+import FareGuideLive from "@/modules/transport/components/FareGuideLive";
 
 export default function FareGuidePage() {
-  return <FareGuide />;
+  return <FareGuideLive />;
 }

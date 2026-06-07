@@ -1,61 +1,117 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { ChevronLeft, Sparkles } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 
 type Props = {
   icon: LucideIcon;
   title: string;
   subtitle: string;
-  /** Tailwind gradient classes for the header background. */
-  gradient: string;
+  breadcrumbLabel: string;
   preview?: boolean;
-  children?: React.ReactNode;
 };
 
-/** Consistent gradient header used across every Transport sub-module. */
+/** Page hero + breadcrumb shared across Transport sub-modules. */
 export default function TransportSubHeader({
   icon: Icon,
   title,
   subtitle,
-  gradient,
+  breadcrumbLabel,
   preview = false,
-  children,
 }: Props) {
   return (
-    <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient} p-6 text-white shadow-lg md:p-8`}>
-      {/* decorative blobs */}
-      <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-16 -left-8 h-44 w-44 rounded-full bg-black/10 blur-2xl" />
+    <>
+      <AppBreadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Transport", href: "/transport" },
+          { label: breadcrumbLabel },
+        ]}
+      />
 
-      <div className="relative">
-        <Link
-          href="/transport"
-          className="inline-flex items-center gap-1 text-sm font-medium text-white/80 transition hover:text-white"
-        >
-          <ChevronLeft className="h-4 w-4" /> Transport
-        </Link>
-
-        <div className="mt-3 flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur">
+      <div className="mt-4 rounded-2xl border border-gray-100 bg-gradient-to-br from-emerald-50/40 to-white p-6 md:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#00A651] text-white shadow-sm">
               <Icon className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight md:text-2xl">{title}</h1>
-              <p className="mt-0.5 max-w-xl text-sm text-white/85">{subtitle}</p>
+              <h1 className="text-xl font-bold tracking-tight text-gray-900 md:text-2xl">{title}</h1>
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-600">{subtitle}</p>
             </div>
           </div>
           {preview ? (
-            <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
-              <Sparkles className="h-3 w-3" /> Preview
+            <span className="inline-flex shrink-0 self-start rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500 ring-1 ring-gray-200/80">
+              Preview
             </span>
           ) : null}
         </div>
-
-        {children ? <div className="mt-5">{children}</div> : null}
       </div>
+    </>
+  );
+}
+
+/** White panel for filters, tabs, and route selectors below the hero. */
+export function TransportFilterPanel({
+  title,
+  children,
+  className = "",
+}: {
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:p-5 ${className}`}
+    >
+      {title ? (
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</p>
+      ) : null}
+      {children}
     </div>
   );
 }
+
+/** Neutral segmented control — brand accent on active segment only. */
+export function TransportSegment({
+  options,
+  value,
+  onChange,
+}: {
+  options: { id: string; label: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+      {options.map((opt) => {
+        const active = opt.id === value;
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            aria-pressed={active}
+            className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+              active
+                ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/80"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export const transportInputClass =
+  "w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-[#00A651] focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60";
+
+export const transportBtnPrimaryClass =
+  "inline-flex items-center justify-center gap-2 rounded-lg bg-[#00A651] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400";
+
+export const transportBtnSecondaryClass =
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50";

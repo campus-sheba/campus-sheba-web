@@ -2,19 +2,22 @@ const baseURL = process.env.BASE_URL || process.env.NEXT_PUBLIC_API_URL;
 
 
 export const landingPageEndpoints = {
-    heroBanner: `${baseURL}/banners`,
-    heroBannerByUniversity: (universityId: string) =>
-        `${baseURL}/banners?page=1&limit=10&isActive=true&type=home&placement=home&university=${universityId}`,
-    heroBannerByUniversityAndType: (universityId: string, bannerType: string) =>
-        `${baseURL}/banners?page=1&limit=10&isActive=true&type=${encodeURIComponent(bannerType)}&university=${universityId}`,
-    heroBannerByUniversityAndPlacement: (universityId: string, placement: string) =>
-        `${baseURL}/banners?page=1&limit=10&isActive=true&placement=${encodeURIComponent(placement)}&university=${universityId}`,
     universityFeatures: (universityId: string) =>
         `${baseURL}/user/features/university/${universityId}`,
+    /** Canonical banner runtime endpoint — scope fallback + platform/placement + date window (BANNER_PUBLIC_API.md §6.1). */
     bannersResolve: (params: string) => `${baseURL}/banners/resolve?${params}`,
 };
 
 // careers page endpoints
+// Home feed (SDUI) — app-launch shell + server-driven home screen.
+// Optional auth: logged-in → campus from JWT; guest → ?university= (auto-injected).
+export const homeEndpoints = {
+    /** GET — app-launch shell: version check, features, splash, popups, quick actions, unread badge. */
+    bootstrap: `${baseURL}/user/home/bootstrap`,
+    /** GET — the scrollable home: an ordered list of sections (shelves). */
+    feed: `${baseURL}/user/home/feed`,
+};
+
 export const careersEndpoints = {
     universities: `${baseURL}/universities`,
     universityLocations: `${baseURL}/university-locations`,
@@ -97,6 +100,21 @@ export const busEndpoints = {
     list: `${baseURL}/buses`,
     live: `${baseURL}/buses/live`,
     myStatus: `${baseURL}/bus-tracking/me/status`,
+};
+
+export const transportFareEndpoints = {
+    // ── User (token only) ──────────────────────────────────────────────
+    locations: `${baseURL}/transport/fare/locations`,
+    matrix: `${baseURL}/transport/fare/matrix`,
+    lookup: `${baseURL}/transport/fare/lookup`,
+    // ── Admin (+ permission) ───────────────────────────────────────────
+    adminLocations: `${baseURL}/admin/transport/fare/locations`,
+    adminLocationById: (id: string) =>
+        `${baseURL}/admin/transport/fare/locations/${encodeURIComponent(id)}`,
+    adminFares: `${baseURL}/admin/transport/fare`,
+    adminFareBulk: `${baseURL}/admin/transport/fare/bulk`,
+    adminFareById: (id: string) =>
+        `${baseURL}/admin/transport/fare/${encodeURIComponent(id)}`,
 };
 
 export const parcelEndpoints = {

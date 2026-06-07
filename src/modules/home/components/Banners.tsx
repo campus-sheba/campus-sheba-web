@@ -1,14 +1,7 @@
-import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import "swiper/css/effect-fade";
-import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
-import "../styles/banner-pagination.css";
 import { useAppState } from "@/contexts/AppStateContext";
 import { ContentWrapper } from "@/components/wrappers";
 import { useHomeBanners } from "../hooks/useHomeBanners";
+import SliderClient from "@/components/slider/SliderClient";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/utils";
 
@@ -79,37 +72,16 @@ const Banners = ({ bottomOverlay }: BannersProps) => {
                   : "pointer-events-none absolute inset-0 z-[1] opacity-0",
               )}
             >
-              <Swiper
-                modules={[Autoplay, Pagination, Navigation, EffectFade]}
-                spaceBetween={0}
-                slidesPerView={1}
-                effect="fade"
-                autoplay={{ delay: 5000, disableOnInteraction: false }}
-                pagination={{
-                  clickable: true,
-                  el: ".custom-pagination",
-                  type: "bullets",
-                }}
-                className="banner-swiper h-full w-full"
-              >
-                {banners.map((banner, index) => (
-                  <SwiperSlide key={banner._id}>
-                    <div className={cn("relative h-full w-full")}>
-                      <Image
-                        src={banner.photo?.url || "/placeholder.jpg"}
-                        alt={banner.title}
-                        fill
-                        sizes="100vw"
-                        priority={index === 0}
-                        className="object-cover"
-                        onLoad={handleImageLoad}
-                      />
-                      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/50 to-transparent" />
-                    </div>
-                  </SwiperSlide>
-                ))}
-                <div className="custom-pagination absolute right-5 top-5 z-10" />
-              </Swiper>
+              <SliderClient
+                sliders={banners}
+                sliderHeight={BANNER_H}
+                fade
+                rounded={false}
+                showArrows={false}
+                showOverlay
+                onImageLoad={handleImageLoad}
+                paginationClassName="absolute right-5 top-5"
+              />
             </div>
           ) : null}
         </div>

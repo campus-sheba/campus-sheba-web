@@ -1,17 +1,73 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppState } from "@/contexts/AppStateContext";
-import { fetchBannersResolve, type BannerResolveItem } from "@/services/home";
+import { fetchPopupBanners } from "@/services/banner";
+import type { Banner } from "@/types/banner";
+import PopupModal from "./PopupModal";
 
-const SESSION_KEY = "cs_popup_banner_shown";
+// Popup suppression is client-enforced (BANNER_PUBLIC_API.md §8.3): the server
+// stores the rules, the client honours them.
+//   - showOncePerSession → suppress after the first dismiss this session
+//   - frequencyCapPerUser → cap total impressions per user (persisted)
+const SESSION_PREFIX = "cs_popup_seen_";
+const FREQ_PREFIX = "cs_popup_freq_";
+const SHOW_DELAY_MS = 1000;
 
+function sessionSeen(id: string): boolean {
+  try {
+    return sessionStorage.getItem(SESSION_PREFIX + id) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSessionSeen(id: string): void {
+  try {
+    sessionStorage.setItem(SESSION_PREFIX + id, "1");
+  } catch {
+    /* storage unavailable (private mode) — degrade to showing again */
+  }
+}
+
+function impressionCount(id: string): number {
+  try {
+    return Number(localStorage.getItem(FREQ_PREFIX + id)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function recordImpression(id: string): void {
+  try {
+    localStorage.setItem(FREQ_PREFIX + id, String(impressionCount(id) + 1));
+  } catch {
+    /* storage unavailable — cap simply won't persist */
+  }
+}
+
+/** A popup is eligible when it isn't session-suppressed or over its frequency cap. */
+function isEligible(banner: Banner): boolean {
+  if (banner.showOncePerSession && sessionSeen(banner._id)) return false;
+  if (
+    typeof banner.frequencyCapPerUser === "number" &&
+    banner.frequencyCapPerUser > 0 &&
+    impressionCount(banner._id) >= banner.frequencyCapPerUser
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Launch-popup container ("section"): resolves popups for the selected campus
+ * (`displayType=popup`), filters by the client suppression rules, then surfaces
+ * {@link PopupModal} after a short delay. Mirrors the data → modal split used by
+ * the other app-launch surfaces.
+ */
 export default function PopupBannerModal() {
   const { state } = useAppState();
-  const [banners, setBanners] = useState<BannerResolveItem[]>([]);
-  const [index, setIndex] = useState(0);
+  const [popups, setPopups] = useState<Banner[]>([]);
   const [open, setOpen] = useState(false);
 
   const universityId =
@@ -19,108 +75,48 @@ export default function PopupBannerModal() {
 
   useEffect(() => {
     if (!universityId) return;
-    if (sessionStorage.getItem(SESSION_KEY)) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
-    void fetchBannersResolve({ displayType: "popup", universityId }).then(
-      (data) => {
-        if (data.length > 0) {
-          setBanners(data);
-          setOpen(true);
-          sessionStorage.setItem(SESSION_KEY, "1");
-        }
-      },
-    );
+    void fetchPopupBanners(universityId).then((data) => {
+      if (cancelled) return;
+      const eligible = data.filter(isEligible);
+      if (eligible.length === 0) return;
+      // Count one impression per popup the moment it's queued for display.
+      eligible.forEach((b) => recordImpression(b._id));
+      setPopups(eligible);
+      timer = setTimeout(() => {
+        if (!cancelled) setOpen(true);
+      }, SHOW_DELAY_MS);
+    });
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [universityId]);
 
-  if (!open || banners.length === 0) return null;
+  // A set is dismissible only if every popup in it allows dismissal (§8.3).
+  const dismissible = useMemo(
+    () => popups.every((b) => b.isDismissible !== false),
+    [popups],
+  );
 
-  const banner = banners[index];
-  const total = banners.length;
-
-  function prev() {
-    setIndex((i) => (i - 1 + total) % total);
-  }
-  function next() {
-    setIndex((i) => (i + 1) % total);
-  }
-  function close() {
+  const close = useCallback(() => {
+    popups.forEach((b) => {
+      if (b.showOncePerSession) markSessionSeen(b._id);
+    });
     setOpen(false);
-  }
+  }, [popups]);
+
+  if (popups.length === 0) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
-      onClick={close}
-    >
-      <div
-        className="relative w-full max-w-4xl overflow-hidden  bg-white "
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={close}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        {banner.photo?.url ? (
-          <div className="relative w-full aspect-[16/9] bg-gray-100">
-            <Image
-              src={banner.photo.url}
-              alt={banner.title}
-              fill
-              className="object-contain"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
-              priority
-            />
-          </div>
-        ) : null}
-
-        {/* <div className="p-5">
-          <h3 className="text-base font-bold text-gray-900">{banner.title}</h3>
-          {banner.description ? (
-            <p className="mt-1 text-sm text-gray-600">{banner.description}</p>
-          ) : null}
-
-          {banner.link ? (
-            <a
-              href={banner.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#00A651] py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-              onClick={close}
-            >
-              View offer
-            </a>
-          ) : null}
-        </div> */}
-
-        {total > 1 ? (
-          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-            <button
-              type="button"
-              onClick={prev}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-xs text-gray-400">
-              {index + 1} / {total}
-            </span>
-            <button
-              type="button"
-              onClick={next}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-              aria-label="Next"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        ) : null}
-      </div>
-    </div>
+    <PopupModal
+      open={open}
+      onClose={close}
+      popups={popups}
+      dismissible={dismissible}
+    />
   );
 }

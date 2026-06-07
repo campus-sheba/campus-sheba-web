@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType } from "react";
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -7,86 +8,169 @@ import {
   CircleDollarSign,
   MapPinned,
   Navigation,
-  Radio,
+  Package,
   Ticket,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ContentWrapper, SectionWrapper } from "@/components/wrappers";
 import AppBreadcrumb from "@/components/common/AppBreadcrumb";
 import { fetchLiveBusesAction } from "@/services/bus";
 
-type Tile = {
+type TransportIcon = ComponentType<{ className?: string }>;
+
+type TransportModule = {
   key: string;
   title: string;
-  desc: string;
+  description: string;
   href: string;
-  icon: LucideIcon;
+  icon: TransportIcon;
   gradient: string;
-  accent: string;
-  live?: boolean;
-  preview?: boolean;
-  span?: boolean;
+  ring: string;
+  status: "live" | "preview";
 };
 
-const TILES: Tile[] = [
+const LIVE_MODULES: TransportModule[] = [
   {
     key: "live",
-    title: "Schedule & Live Tracking",
-    desc: "Real-time campus shuttle map, routes, stops & ETA. Share your bus when the driver is offline.",
+    title: "Schedule & live tracking",
+    description:
+      "Campus shuttle map with routes, stops, and ETA. Share your bus when the driver is offline.",
     href: "/live-bus",
     icon: Navigation,
-    gradient: "from-emerald-500 to-green-600",
-    accent: "text-emerald-50",
-    live: true,
-    span: true,
+    gradient: "from-emerald-500/12 to-teal-500/8",
+    ring: "ring-emerald-500/25",
+    status: "live",
   },
   {
+    key: "parcel",
+    title: "Parcel delivery",
+    description: "Send packages between halls and landmarks with a campus rider.",
+    href: "/parcel",
+    icon: Package,
+    gradient: "from-slate-500/10 to-gray-500/5",
+    ring: "ring-gray-200",
+    status: "live",
+  },
+];
+
+const MORE_MODULES: TransportModule[] = [
+  {
     key: "fare",
-    title: "Fare Guide",
-    desc: "Verified rickshaw, CNG, auto & e-cart fares between campus landmarks.",
+    title: "Fare guide",
+    description: "Verified rickshaw, CNG, auto, and e-cart fares between campus landmarks.",
     href: "/transport/fare-guide",
     icon: CircleDollarSign,
-    gradient: "from-amber-500 to-orange-600",
-    accent: "text-amber-50",
-    preview: true,
+    gradient: "from-amber-500/10 to-orange-500/5",
+    ring: "ring-amber-500/15",
+    status: "preview",
   },
   {
     key: "rent",
-    title: "Vehicle Rent",
-    desc: "Rent a cycle, e-cart or scooter by the hour or day — pay from your wallet.",
+    title: "Vehicle rent",
+    description: "Rent a cycle, e-cart, or scooter by the hour or day from your wallet.",
     href: "/transport/rent",
     icon: Bus,
-    gradient: "from-violet-500 to-purple-600",
-    accent: "text-violet-50",
-    preview: true,
+    gradient: "from-violet-500/10 to-purple-500/5",
+    ring: "ring-violet-500/15",
+    status: "preview",
   },
   {
     key: "ride",
-    title: "Ride Sharing",
-    desc: "Split a ride with classmates heading your way. Post an offer or find one.",
+    title: "Ride sharing",
+    description: "Split a ride with classmates heading your way. Post an offer or find one.",
     href: "/transport/ride-share",
     icon: Users,
-    gradient: "from-rose-500 to-pink-600",
-    accent: "text-rose-50",
-    preview: true,
+    gradient: "from-rose-500/10 to-pink-500/5",
+    ring: "ring-rose-500/15",
+    status: "preview",
   },
   {
     key: "ticket",
-    title: "Intercity Ticket",
-    desc: "Book Sylhet, Chattogram & Cox's Bazar coaches with a live seat map.",
+    title: "Intercity ticket",
+    description: "Book Sylhet, Chattogram, and Cox's Bazar coaches with a live seat map.",
     href: "/transport/tickets",
     icon: Ticket,
-    gradient: "from-blue-500 to-indigo-600",
-    accent: "text-blue-50",
-    preview: true,
+    gradient: "from-blue-500/10 to-indigo-500/5",
+    ring: "ring-blue-500/15",
+    status: "preview",
   },
 ];
+
+function StatusBadge({ status }: { status: "live" | "preview" }) {
+  if (status === "live") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        Live
+      </span>
+    );
+  }
+
+  return (
+    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 ring-1 ring-gray-200/80">
+      Preview
+    </span>
+  );
+}
+
+function ModuleCard({ mod }: { mod: TransportModule }) {
+  const Icon = mod.icon;
+
+  return (
+    <Link
+      href={mod.href}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm ring-1 ring-black/[0.04] transition duration-200 hover:shadow-md ${mod.ring}`}
+    >
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-br opacity-90 ${mod.gradient}`}
+        aria-hidden
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/90 text-[#00A651] shadow-sm ring-1 ring-gray-200/80">
+          <Icon className="h-5 w-5" />
+        </div>
+        <StatusBadge status={mod.status} />
+      </div>
+      <h3 className="relative mt-4 text-base font-bold text-gray-900">{mod.title}</h3>
+      <p className="relative mt-1.5 flex-1 text-sm leading-relaxed text-gray-600">
+        {mod.description}
+      </p>
+      <span className="relative mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#00A651]">
+        Open
+        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+      </span>
+    </Link>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  loading,
+}: {
+  label: string;
+  value: number | null;
+  loading?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm">
+      <p className="text-xs font-medium text-gray-500">{label}</p>
+      {loading ? (
+        <div className="mt-2 h-8 w-12 animate-pulse rounded-md bg-gray-100" />
+      ) : (
+        <p className="mt-1 text-2xl font-bold tabular-nums text-gray-900">
+          {value == null ? "—" : value}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function TransportHub() {
   const [liveCount, setLiveCount] = useState<number | null>(null);
   const [busCount, setBusCount] = useState<number | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -96,6 +180,7 @@ export default function TransportHub() {
         setBusCount(r.data.length);
         setLiveCount(r.data.filter((b) => b.isLive).length);
       }
+      setStatsLoading(false);
     });
     return () => {
       active = false;
@@ -104,135 +189,89 @@ export default function TransportHub() {
 
   return (
     <SectionWrapper spacing="none" background="transparent" className="my-0">
-      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-16 pt-2">
+      <ContentWrapper maxWidth="max-w-7xl mx-auto" padding="md" className="pb-20 pt-2">
         <AppBreadcrumb items={[{ label: "Home", href: "/" }, { label: "Transport" }]} />
 
         {/* Hero */}
-        <div className="relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#00A651] via-emerald-600 to-teal-700 p-8 text-white shadow-xl md:p-12">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-20 left-1/3 h-56 w-56 rounded-full bg-black/10 blur-3xl" />
-          <div className="relative max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
-              <Radio className="h-3.5 w-3.5 animate-pulse" /> Campus Mobility
-            </span>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-              Get anywhere on campus, in real time
-            </h1>
-            <p className="mt-3 text-sm text-white/85 md:text-base">
-              Track shuttles live, check fair fares, rent a ride, share a trip, or book an
-              intercity coach — all in one place, scoped to your campus.
-            </p>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/live-bus"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
-              >
-                <Navigation className="h-4 w-4" /> Track a bus now
-              </Link>
-              <Link
-                href="/transport/tickets"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20"
-              >
-                <Ticket className="h-4 w-4" /> Book intercity
-              </Link>
+        <div className="mt-6 rounded-2xl border border-gray-100 bg-gradient-to-br from-emerald-50/60 to-white p-8 md:p-10">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#00A651] text-white shadow-sm">
+                <Navigation className="h-6 w-6" />
+              </div>
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+                Campus transport
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-gray-600 md:text-base">
+                Track shuttles in real time, compare local fares, rent a vehicle, share a ride, or
+                book intercity coaches — scoped to your campus.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href="/live-bus"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#00A651] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-95"
+                >
+                  <Navigation className="h-4 w-4" />
+                  Track a bus
+                </Link>
+                <Link
+                  href="/transport/fare-guide"
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50"
+                >
+                  <CircleDollarSign className="h-4 w-4" />
+                  Check fares
+                </Link>
+              </div>
             </div>
 
-            {/* live stats */}
-            <div className="mt-7 flex flex-wrap gap-6">
-              <Stat label="Buses live now" value={liveCount} accent />
-              <Stat label="Routes on campus" value={busCount} />
-              <Stat label="Avg wait saved" value={"~40%"} isText />
+            <div className="grid w-full max-w-md grid-cols-2 gap-3 sm:grid-cols-3 lg:max-w-lg">
+              <StatCard label="Buses live now" value={liveCount} loading={statsLoading} />
+              <StatCard label="Routes on campus" value={busCount} loading={statsLoading} />
+              <div className="col-span-2 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm sm:col-span-1">
+                <p className="text-xs font-medium text-gray-500">Related</p>
+                <Link
+                  href="/parcel"
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#00A651] hover:underline"
+                >
+                  <MapPinned className="h-4 w-4" />
+                  Parcel delivery
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Sub-module bento grid */}
-        <div className="mt-8 grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {TILES.map((t) => (
-            <Link
-              key={t.key}
-              href={t.href}
-              className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${t.gradient} p-6 text-white shadow-md transition hover:-translate-y-1 hover:shadow-xl ${
-                t.span ? "md:col-span-2 lg:col-span-1 lg:row-span-1" : ""
-              }`}
-            >
-              <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl transition group-hover:scale-125" />
-              <div className="relative flex h-full flex-col">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-                    <t.icon className="h-5 w-5" />
-                  </div>
-                  {t.live ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide backdrop-blur">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /> Live
-                    </span>
-                  ) : t.preview ? (
-                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide backdrop-blur">
-                      Preview
-                    </span>
-                  ) : null}
-                </div>
-                <h3 className="mt-4 text-lg font-bold">{t.title}</h3>
-                <p className={`mt-1.5 text-sm ${t.accent}`}>{t.desc}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold opacity-0 transition group-hover:opacity-100">
-                  Open <ArrowRight className="h-4 w-4" />
-                </span>
-              </div>
-            </Link>
-          ))}
-
-          {/* Parcel cross-link (real module) */}
-          <Link
-            href="/parcel"
-            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-          >
-            <div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-900 text-white">
-                <MapPinned className="h-5 w-5" />
-              </div>
-              <h3 className="mt-4 text-lg font-bold text-gray-900">Parcel Delivery</h3>
-              <p className="mt-1.5 text-sm text-gray-500">
-                Send packages between halls and landmarks with a campus rider.
-              </p>
-            </div>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#00A651]">
-              Send a parcel <ArrowRight className="h-4 w-4" />
-            </span>
-          </Link>
+        {/* Live services */}
+        <div className="mt-14">
+          <h2 className="text-xl font-bold text-gray-900">Live services</h2>
+          <p className="mt-1 max-w-2xl text-sm text-gray-600">
+            Connected to real-time campus data. Open a module to get started.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {LIVE_MODULES.map((mod) => (
+              <ModuleCard key={mod.key} mod={mod} />
+            ))}
+          </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-400">
-          Live Bus &amp; Parcel are connected to live services. Fare Guide, Rent, Ride Sharing &amp;
-          Intercity Ticket are interactive previews.
+        {/* Preview modules */}
+        <div className="mt-14">
+          <h2 className="text-xl font-bold text-gray-900">More mobility tools</h2>
+          <p className="mt-1 max-w-2xl text-sm text-gray-600">
+            Interactive previews — explore flows before full launch on your campus.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {MORE_MODULES.map((mod) => (
+              <ModuleCard key={mod.key} mod={mod} />
+            ))}
+          </div>
+        </div>
+
+        <p className="mt-10 text-center text-xs text-gray-400">
+          Live bus tracking and parcel delivery use production services. Fare guide, vehicle rent,
+          ride sharing, and intercity tickets are preview experiences.
         </p>
       </ContentWrapper>
     </SectionWrapper>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-  isText,
-}: {
-  label: string;
-  value: number | string | null;
-  accent?: boolean;
-  isText?: boolean;
-}) {
-  return (
-    <div>
-      <div className="flex items-baseline gap-1">
-        <span className={`text-2xl font-extrabold ${accent ? "text-white" : "text-white/95"}`}>
-          {value == null ? "—" : isText ? value : value}
-        </span>
-        {accent && typeof value === "number" && value > 0 ? (
-          <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
-        ) : null}
-      </div>
-      <p className="text-xs text-white/70">{label}</p>
-    </div>
   );
 }
