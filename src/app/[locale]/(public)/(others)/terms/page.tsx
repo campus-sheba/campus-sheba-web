@@ -4,17 +4,17 @@ import LegalDocument, { type LegalDoc } from "@/components/legal/LegalDocument";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("legal");
-  const doc = t.raw("privacy") as LegalDoc;
+  const doc = t.raw("terms") as LegalDoc;
   return {
     title: `${doc.title} | Campus Sheba`,
     description:
-      "How Campus Sheba collects, uses, shares, and protects your personal information.",
+      "The terms that govern your access to and use of the Campus Sheba service.",
   };
 }
 
-export default async function PrivacyPolicyPage() {
+export default async function TermsPage() {
   const t = await getTranslations("legal");
-  const doc = t.raw("privacy") as LegalDoc;
+  const doc = t.raw("terms") as LegalDoc;
 
   return <LegalDocument doc={doc} />;
 }

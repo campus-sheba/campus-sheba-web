@@ -47,7 +47,7 @@ export const SUPPORT_LINKS = [
   { label: "Community Guidelines", href: "/guidelines" },
   { label: "Report an Issue", href: "/report" },
   { label: "Privacy Policy", href: "/privacy-policy" },
-  { label: "Terms & Conditions", href: "/terms-condition" },
+  { label: "Terms & Conditions", href: "/terms" },
 ];
 
 export const FALLBACK_UNIVERSITIES = [
