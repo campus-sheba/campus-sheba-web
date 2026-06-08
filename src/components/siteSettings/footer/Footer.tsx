@@ -61,7 +61,7 @@ const SUPPORT_LINKS = [
   { label: "Community Guidelines", href: "/guidelines" },
   { label: "Report an Issue", href: "/report" },
   { label: "Privacy Policy", href: "/privacy-policy" },
-  { label: "Terms & Conditions", href: "/terms-condition" },
+  { label: "Terms & Conditions", href: "/terms" },
 ];
 
 const UNIVERSITIES = [
@@ -248,7 +248,7 @@ const Footer: React.FC<FooterProps> = ({ locale = "en" }) => {
           <p>© {currentYear} Campus Sheba</p>
           <div className="flex gap-4">
             <Link href={href("/privacy-policy")}>Privacy</Link>
-            <Link href={href("/terms-condition")}>Terms</Link>
+            <Link href={href("/terms")}>Terms</Link>
           </div>
         </ContentWrapper>
       </SectionWrapper>

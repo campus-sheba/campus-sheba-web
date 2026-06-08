@@ -312,7 +312,7 @@ export default function SignupForm({ onSuccess, switchToLogin }: SignupFormProps
               />
               <span>
                 {t("agreement")}{" "}
-                <Link href="/terms-condition" className="font-medium text-[#E30B12] hover:underline">
+                <Link href="/terms" className="font-medium text-[#E30B12] hover:underline">
                   {t("termsConditions")}
                 </Link>{" "}
                 {t("and")}{" "}

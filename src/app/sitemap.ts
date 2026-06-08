@@ -19,7 +19,7 @@ const PUBLIC_PATHS = [
   "/parcel",
   "/search",
   "/privacy-policy",
-  "/terms-condition",
+  "/terms",
   "/login",
   "/signup",
 ];
