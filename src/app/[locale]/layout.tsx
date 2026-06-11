@@ -16,10 +16,14 @@ const robotoCondensed = Roboto_Condensed({
   subsets: ["latin"],
 });
 
+// While in coming-soon mode the whole site is rewritten to the coming-soon page,
+// so the global Navbar/Footer are hidden to keep it clean.
+const COMING_SOON = process.env.NEXT_PUBLIC_COMING_SOON === "true";
+
 export const metadata: Metadata = {
-  title: "The Downtown",
+  title: "Campus Sheba",
   description:
-    "The Downtown is a platform for the people of Bangladesh to connect with each other and to the world.",
+    "Campus Sheba is the digital home of campus life — one app to explore, move, eat, shop, and connect across your campus.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -44,10 +48,9 @@ export default async function RootLayout({
       <body className={`${robotoCondensed.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <Suspense fallback={<Loading />}>
-            <Navbar />
-
+            {!COMING_SOON && <Navbar />}
             {children}
-            <Footer />
+            {!COMING_SOON && <Footer />}
           </Suspense>
           <Toaster position="top-right" richColors closeButton />
         </NextIntlClientProvider>

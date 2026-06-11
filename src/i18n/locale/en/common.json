@@ -2,5 +2,88 @@
   "navHome": "Home",
   "navAbout": "About",
   "navActivities": "Activities",
-  "navContact": "Contact"
+  "navContact": "Contact",
+  "comingSoon": {
+    "badge": "Launching soon",
+    "headlinePre": "The digital home of",
+    "headlineHighlight": "campus life",
+    "headlinePost": ".",
+    "subtitle": "One platform to explore your campus, get around, eat well, shop smart, and stay connected — built for students, in Bangla and English.",
+    "pills": {
+      "superApp": "One Super App",
+      "forStudents": "Built for Students",
+      "bilingual": "Bangla & English"
+    },
+    "waitlist": {
+      "title": "Join the waitlist",
+      "subtitle": "Be the first to know when we launch.",
+      "placeholder": "Enter your email",
+      "button": "Join Waitlist",
+      "success": "Thanks! You're on the list — we'll be in touch.",
+      "invalid": "Please enter a valid email address."
+    },
+    "countdown": {
+      "title": "Launching in",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "featuresTitle": "Platform",
+    "featuresSubtitle": "Everything campus, in one place.",
+    "features": {
+      "map": {
+        "title": "Campus & Places",
+        "desc": "Explore your campus map, discover renowned spots, and find nearby shops, food and restaurants."
+      },
+      "transport": {
+        "title": "Smart Transport",
+        "desc": "Bus schedules, live GPS tracking, ride share, rentals and ticketing — get around with ease."
+      },
+      "market": {
+        "title": "Buy, Sell & Books",
+        "desc": "A student marketplace plus a book hub to buy, sell, rent, swap and donate."
+      },
+      "food": {
+        "title": "Food & Meals",
+        "desc": "Campus restaurants, student cloud kitchens and flexible meal subscriptions."
+      },
+      "health": {
+        "title": "Health & Emergency",
+        "desc": "Blood donor network, emergency contacts and telemedicine when you need it most."
+      },
+      "community": {
+        "title": "Community & Services",
+        "desc": "Clubs, events, jobs, housing, notices and the everyday services students rely on."
+      }
+    },
+    "stats": {
+      "superAppValue": "1",
+      "superAppLabel": "Super app for campus life",
+      "servicesValue": "50+",
+      "servicesLabel": "Services coming together",
+      "languagesValue": "2",
+      "languagesLabel": "Languages — Bangla & English",
+      "supportValue": "24/7",
+      "supportLabel": "Always with you"
+    },
+    "faqTitle": "Support",
+    "faqHeading": "Common questions",
+    "faq": {
+      "q1": "When is Campus Sheba launching?",
+      "a1": "We're in the final stretch of development. Join the waitlist and we'll email you the moment we go live.",
+      "q2": "What can I do on Campus Sheba?",
+      "a2": "Campus Sheba brings campus life into one app — places, transport, food, marketplace, health, community and more.",
+      "q3": "Is it free to use?",
+      "a3": "Campus Sheba is free to join. Some premium services may have their own pricing, shared transparently at launch."
+    },
+    "contact": "Questions? Reach us at",
+    "footer": "We're putting the finishing touches on Campus Sheba. Thank you for your patience.",
+    "legal": {
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "support": "Support",
+      "dataNotice": "We collect location, student ID, phone, and email to deliver campus services. Your data is used only to power the app and is never sold to third parties."
+    }
+  }
 }
