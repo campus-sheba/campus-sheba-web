@@ -12,7 +12,7 @@ function middleware(request: NextRequest) {
     if (COMING_SOON) {
         const { pathname } = request.nextUrl;
         // Let coming-soon and legal pages render; rewrite everything else to coming-soon.
-        if (!/\/(coming-soon|privacy-policy|terms)\/?$/.test(pathname)) {
+        if (!/\/(coming-soon|privacy-policy|terms|account-deletion)\/?$/.test(pathname)) {
             const locale =
                 routing.locales.find(
                     (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`),

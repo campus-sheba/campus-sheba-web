@@ -85,5 +85,27 @@
         "body": "For questions about these Terms, contact us at support@campussheba.com."
       }
     }
+  },
+  "accountDeletion": {
+    "title": "Account Deletion Process",
+    "lastUpdated": "Last updated: March 20, 2026",
+    "intro": "You can request deletion of your Campus Sheba account directly from the mobile app. Follow the steps below to start the process.",
+    "processTitle": "Account Deletion Process",
+    "steps": {
+      "1": "Open the Campus Sheba application and navigate to the Menu tab.",
+      "2": "Tap on the Delete Account button.",
+      "3": "A confirmation prompt will appear. Confirm your request to delete the account.",
+      "4": "Once confirmed, your account will be disabled immediately.",
+      "5": "The account will then be placed in a pending deletion state.",
+      "6": "Final account deletion will be completed by the Admin Team after review and processing."
+    },
+    "note": {
+      "title": "Important note",
+      "body": "After confirming the deletion request, you may lose access to your account and associated services while waiting for final deletion approval."
+    },
+    "contact": {
+      "title": "Need help?",
+      "body": "For further questions about account deletion, contact us at"
+    }
   }
 }

@@ -82,6 +82,7 @@
     "legal": {
       "privacyPolicy": "Privacy Policy",
       "termsOfService": "Terms of Service",
+      "accountDeletion": "Account Deletion",
       "support": "Support",
       "dataNotice": "We collect location, student ID, phone, and email to deliver campus services. Your data is used only to power the app and is never sold to third parties."
     }

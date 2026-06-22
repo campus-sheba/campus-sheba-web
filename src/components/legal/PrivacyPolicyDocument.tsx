@@ -398,6 +398,9 @@ export default function PrivacyPolicyDocument() {
             <Link href="/terms" className="transition-colors hover:text-gray-900">
               Terms of Service
             </Link>
+            <Link href="/account-deletion" className="transition-colors hover:text-gray-900">
+              Account Deletion
+            </Link>
             <a href={`mailto:${SUPPORT}`} className="transition-colors hover:text-gray-900">
               Support
             </a>

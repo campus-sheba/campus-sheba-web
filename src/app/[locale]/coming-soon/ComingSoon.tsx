@@ -202,6 +202,12 @@ export default function ComingSoon() {
             >
               {t("legal.termsOfService")}
             </Link>
+            <Link
+              href="/account-deletion"
+              className="transition-colors hover:text-gray-900"
+            >
+              {t("legal.accountDeletion")}
+            </Link>
             <a
               href={`mailto:${EMAIL}`}
               className="transition-colors hover:text-gray-900"
