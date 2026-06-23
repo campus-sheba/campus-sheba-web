@@ -7,7 +7,7 @@ export const routing = defineRouting({
     // Used when no locale matches
     defaultLocale: "en",
 
-    // Always prefix locales in the URL (including the default locale),
-    // so that routes like `/en` and `/bn` exist and `/` can redirect properly.
-    localePrefix: "always",
+    // Default locale (en) serves URLs without a prefix (e.g. `/delete-account`);
+    // non-default locales stay prefixed (e.g. `/bn/delete-account`).
+    localePrefix: "as-needed",
 });

@@ -203,7 +203,7 @@ export default function ComingSoon() {
               {t("legal.termsOfService")}
             </Link>
             <Link
-              href="/account-deletion"
+              href="/delete-account"
               className="transition-colors hover:text-gray-900"
             >
               {t("legal.accountDeletion")}
