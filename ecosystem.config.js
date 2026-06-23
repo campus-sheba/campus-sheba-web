@@ -5,8 +5,8 @@ module.exports = {
       script: "npm",
       args: "start",
       cwd: "/home/ubuntu/campus-sheba-web",
-      instances: "max",
-      exec_mode: "cluster",
+      instances: 1,
+      exec_mode: "fork",
       max_memory_restart: "300M"
     }
   ]
