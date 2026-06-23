@@ -1,0 +1,107 @@
+# Deploy to Production (EC2) using PM2
+# Trigger: push to production branch
+# Flow: build on runner → zip necessary files → scp to EC2 → extract, install deps, pm2 reload
+
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------
+      # Checkout & Setup Node
+      # -----------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      # -----------------------------
+      # Build Application
+      # -----------------------------
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build application
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: yarn build
+
+      # -----------------------------
+      # Bundle necessary files for deploy
+      # -----------------------------
+      - name: Create deployment zip
+        run: |
+          zip -r .next.zip \
+            .next \
+            public \
+            package.json \
+            yarn.lock \
+            next.config.ts \
+            ecosystem.config.js \
+            postcss.config.js \
+            tailwind.config.js
+
+      # -----------------------------
+      # Copy zip to EC2 via SCP
+      # -----------------------------
+      - name: Write SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+
+      - name: Copy to EC2
+        run: |
+          scp -i ec2_key.pem \
+            -o StrictHostKeyChecking=no \
+            .next.zip \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:~/campus-sheba-web/
+
+      # -----------------------------
+      # Deploy on EC2 (Zero-Downtime)
+      # -----------------------------
+      - name: Deploy on EC2
+        run: |
+          ssh -i ec2_key.pem \
+            -o StrictHostKeyChecking=no \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} << 'ENDSSH'
+              set -e
+
+              # Load nvm (required for non-interactive SSH)
+              export NVM_DIR="$HOME/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+              cd ~/campus-sheba-web
+
+              echo "Extracting .next.zip..."
+              unzip -o .next.zip
+
+              echo "Installing production dependencies..."
+              yarn install --frozen-lockfile --production
+
+              echo "Reloading PM2..."
+              pm2 reload ecosystem.config.js --only campus_sheba_prod \
+                || pm2 start ecosystem.config.js --only campus_sheba_prod
+
+              echo "Cleaning up zip..."
+              rm -f .next.zip
+
+              echo "Deployment successful."
+          ENDSSH
+
+      # -----------------------------
+      # Cleanup local key
+      # -----------------------------
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ec2_key.pem
